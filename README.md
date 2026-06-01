@@ -3,7 +3,7 @@
 
 # 🏃 RunPace
 
-Aplicação Full Stack para gerenciamento de treinos de corrida.
+Aplicação para gerenciamento de treinos de corrida.
 
 ## 🚀 Tecnologias
 
