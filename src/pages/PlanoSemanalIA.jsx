@@ -175,7 +175,6 @@ function PlanoSemanalIA() {
 
   useEffect(() => {
     if (!carregando) {
-      setIndiceMensagemLoading(0);
       return undefined;
     }
 
@@ -280,6 +279,7 @@ function PlanoSemanalIA() {
     setCarregando(true);
     setErro("");
     setSucesso("");
+    setIndiceMensagemLoading(0);
     setPlano(null);
     try {
       const {
@@ -322,7 +322,7 @@ function PlanoSemanalIA() {
   return (
     <section className="coach-ia-page plano-ia-page">
       <header className="coach-ia-hero">
-        <span>▦ PLANO SEMANAL IA</span>
+        <span>▦ PLANO SEMANAL ENDURAX</span>
         <h1>Uma semana inteira no seu ritmo.</h1>
         <p>Organize corrida, recuperação e descanso em uma rotina equilibrada.</p>
       </header>

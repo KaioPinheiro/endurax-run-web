@@ -41,7 +41,8 @@ function Navbar({ atualizarToken }) {
   return (
     <nav className="navbar">
       <Link to="/" className="logo">
-        🏃 RunPace
+        <span className="logo-marca">ENDURAX</span>
+        <span className="logo-marca-destaque">RUN</span>
       </Link>
 
       <div className="navbar-links">
@@ -83,7 +84,7 @@ function Navbar({ atualizarToken }) {
                   onClick={fecharMenu}
                 >
                   <span className="menu-link-icone" aria-hidden="true">▦</span>
-                  <span>Plano Semanal IA</span>
+                  <span>Plano Semanal Endurax</span>
                 </NavLink>
 
                 <NavLink

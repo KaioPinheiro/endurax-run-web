@@ -1,4 +1,4 @@
-# 🏃 RunPace
+# Endurax Run
 
 Aplicação Full Stack para gerenciamento de treinos de corrida.
 

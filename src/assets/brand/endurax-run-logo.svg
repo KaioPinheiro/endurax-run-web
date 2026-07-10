@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="96" viewBox="0 0 420 96" role="img" aria-labelledby="title desc">
+  <title id="title">Endurax Run</title>
+  <desc id="desc">Marca textual provisória Endurax Run</desc>
+  <rect width="420" height="96" rx="24" fill="#0f172a"/>
+  <path d="M34 63 56 28h34L68 63h42" fill="none" stroke="#38bdf8" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="132" y="48" fill="#f8fafc" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="900" letter-spacing="4">ENDURAX</text>
+  <text x="132" y="72" fill="#7dd3fc" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="800" letter-spacing="8">RUN</text>
+</svg>

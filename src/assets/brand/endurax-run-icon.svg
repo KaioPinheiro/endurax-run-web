@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" role="img" aria-labelledby="title desc">
+  <title id="title">Endurax Run</title>
+  <desc id="desc">Ícone provisório Endurax Run</desc>
+  <rect width="96" height="96" rx="24" fill="#0f172a"/>
+  <path d="M22 63 43 28h31L53 63h31" fill="none" stroke="#38bdf8" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M25 72h46" stroke="#7dd3fc" stroke-width="5" stroke-linecap="round"/>
+</svg>

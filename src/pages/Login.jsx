@@ -117,20 +117,15 @@ function Login({ atualizarToken }) {
 
       <div className="login-layout">
         <div className="login-marca">
-          <div className="login-logo" aria-hidden="true">
-            <svg viewBox="0 0 80 80">
-              <path d="M18 48c9-2 14-9 18-21l7 8 12 2" />
-              <path d="m37 38-9 13-13 8" />
-              <path d="m44 44 9 9 13 3" />
-              <circle cx="48" cy="20" r="6" />
-              <path className="login-logo-velocidade" d="M8 31h15M5 40h18M10 49h10" />
-            </svg>
+          <div className="login-logo-textual" aria-label="Endurax Run">
+            <span>ENDURAX</span>
+            <strong>RUN</strong>
           </div>
 
           <div className="login-marca-texto">
             <span className="login-eyebrow">SEU RITMO. SUA EVOLUÇÃO.</span>
-            <h1>RunPace</h1>
-            <p className="login-slogan">Treine com inteligência. Evolua com propósito.</p>
+            <h1>Endurax Run</h1>
+            <p className="login-slogan">Seu ritmo. Sua evolução. Seu melhor.</p>
           </div>
 
           <ul className="login-beneficios">
@@ -148,7 +143,7 @@ function Login({ atualizarToken }) {
             </li>
           </ul>
 
-          <div className="login-estatisticas" aria-label="Estatísticas do RunPace">
+          <div className="login-estatisticas" aria-label="Estatísticas do Endurax Run">
             <div>
               <strong>15+</strong>
               <span>Tipos de treino</span>
@@ -254,7 +249,7 @@ function Login({ atualizarToken }) {
                 </button>
 
                 <button className="login-botao-principal" type="submit">
-                  Entrar no RunPace
+                  Entrar no Endurax Run
                   <span aria-hidden="true">→</span>
                 </button>
               </form>

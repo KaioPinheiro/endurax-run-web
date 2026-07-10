@@ -43,7 +43,6 @@ function GerarTreinoIA() {
 
   useEffect(() => {
     if (!carregando) {
-      setIndiceMensagemLoading(0);
       return undefined;
     }
 
@@ -151,6 +150,7 @@ function GerarTreinoIA() {
     setCarregando(true);
     setErro("");
     setSucesso("");
+    setIndiceMensagemLoading(0);
     setTreino(null);
 
     try {
@@ -193,7 +193,7 @@ function GerarTreinoIA() {
   return (
     <section className="coach-ia-page">
       <header className="coach-ia-hero">
-        <span>✦ RUNPACE COACH</span>
+        <span>✦ ENDURAX COACH</span>
         <h1>Seu próximo treino, pensado para você.</h1>
         <p>
           Conte como está sua rotina e receba uma sugestão segura,

@@ -1171,10 +1171,20 @@
 }
 
 .logo {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
   color: #f8fafc;
   text-decoration: none;
-  font-size: 1.8rem;
-  font-weight: 700;
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.logo-marca-destaque {
+  color: #38bdf8;
+  font-size: 0.82em;
+  letter-spacing: 0.16em;
 }
 
 .logo:hover {
@@ -1533,13 +1543,16 @@
   box-sizing: border-box;
 }
 
-.login-logo {
+.login-logo-textual {
   position: relative;
   z-index: 0;
-  display: grid;
-  place-items: center;
-  width: 152px;
-  height: 152px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  width: 176px;
+  height: 118px;
   margin-bottom: 44px;
   background:
     linear-gradient(145deg, rgba(56, 189, 248, 0.22), rgba(37, 99, 235, 0.08)),
@@ -1553,7 +1566,7 @@
   animation: login-marca-entrada 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.login-logo::before {
+.login-logo-textual::before {
   position: absolute;
   z-index: -1;
   inset: -30px;
@@ -1563,26 +1576,24 @@
   filter: blur(14px);
 }
 
-.login-logo svg {
-  width: 102px;
-  height: 102px;
-  overflow: visible;
-  fill: none;
-  stroke: #e0f2fe;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 5;
+.login-logo-textual span,
+.login-logo-textual strong {
   transform: rotate(3deg);
+  line-height: 0.92;
 }
 
-.login-logo svg circle {
-  fill: #38bdf8;
-  stroke: #38bdf8;
+.login-logo-textual span {
+  color: #f8fafc;
+  font-size: 25px;
+  font-weight: 950;
+  letter-spacing: 0.18em;
 }
 
-.login-logo .login-logo-velocidade {
-  stroke: #38bdf8;
-  stroke-width: 3;
+.login-logo-textual strong {
+  color: #7dd3fc;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.38em;
 }
 
 .login-eyebrow {
@@ -2112,16 +2123,19 @@
     text-align: center;
   }
 
-  .login-logo {
-    width: 126px;
-    height: 126px;
+  .login-logo-textual {
+    width: 156px;
+    height: 104px;
     margin: 0 auto 34px;
     border-radius: 31px;
   }
 
-  .login-logo svg {
-    width: 84px;
-    height: 84px;
+  .login-logo-textual span {
+    font-size: 22px;
+  }
+
+  .login-logo-textual strong {
+    font-size: 16px;
   }
 
   .login-marca h1 {
@@ -2182,16 +2196,19 @@
     padding: 4px 8px 34px;
   }
 
-  .login-logo {
-    width: 104px;
-    height: 104px;
+  .login-logo-textual {
+    width: 138px;
+    height: 94px;
     margin-bottom: 30px;
     border-radius: 27px;
   }
 
-  .login-logo svg {
-    width: 70px;
-    height: 70px;
+  .login-logo-textual span {
+    font-size: 19px;
+  }
+
+  .login-logo-textual strong {
+    font-size: 14px;
   }
 
   .login-eyebrow {
@@ -2263,7 +2280,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .login-logo,
+  .login-logo-textual,
   .login-marca-texto,
   .login-beneficios,
   .login-estatisticas,
