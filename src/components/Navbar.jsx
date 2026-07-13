@@ -73,7 +73,7 @@ function Navbar({ atualizarToken }) {
                   onClick={fecharMenu}
                 >
                   <span className="menu-link-icone" aria-hidden="true">✦</span>
-                  <span>Coach IA</span>
+                  <span>Endurax Coach</span>
                 </NavLink>
 
                 <NavLink
@@ -85,46 +85,6 @@ function Navbar({ atualizarToken }) {
                 >
                   <span className="menu-link-icone" aria-hidden="true">▦</span>
                   <span>Plano Semanal Endurax</span>
-                </NavLink>
-
-                <NavLink
-                  to="/"
-                  className={({ isActive }) =>
-                    isActive ? "menu-ativo" : ""
-                  }
-                  onClick={fecharMenu}
-                >
-                  📊 Dashboard
-                </NavLink>
-
-                <NavLink
-                  to="/meus-treinos"
-                  className={({ isActive }) =>
-                    isActive ? "menu-ativo" : ""
-                  }
-                  onClick={fecharMenu}
-                >
-                  🏃 Meus Treinos
-                </NavLink>
-
-                <NavLink
-                  to="/historico"
-                  className={({ isActive }) =>
-                    isActive ? "menu-ativo" : ""
-                  }
-                  onClick={fecharMenu}
-                >
-                  📜 Histórico
-                </NavLink>
-
-                <NavLink
-                  to="/calendario"
-                  className={({ isActive }) =>
-                    isActive ? "menu-ativo" : ""
-                  }
-                  onClick={fecharMenu}
-                >
-                  📅 Calendário
                 </NavLink>
               </div>
             )}
