@@ -30,7 +30,7 @@ function App() {
             path="/"
             element={
               token
-                ? <Dashboard />
+                ? <PlanoSemanalIA />
                 : <Login atualizarToken={atualizarToken} />
             }
           />
@@ -40,6 +40,15 @@ function App() {
             element={
               token
                 ? <MeusTreinos />
+                : <Login atualizarToken={atualizarToken} />
+            }
+          />
+
+          <Route
+            path="/dashboard"
+            element={
+              token
+                ? <Dashboard />
                 : <Login atualizarToken={atualizarToken} />
             }
           />
@@ -84,7 +93,7 @@ function App() {
             path="/login"
             element={
               token
-                ? <GerarTreinoIA />
+                ? <PlanoSemanalIA />
                 : <Login atualizarToken={atualizarToken} />
             }
           />
