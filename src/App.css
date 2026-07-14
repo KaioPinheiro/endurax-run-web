@@ -1077,6 +1077,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: visible;
 }
 
 .navbar h2 {
@@ -1087,7 +1091,9 @@
 .navbar-links {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   gap: 16px;
+  min-width: 0;
 }
 
 .navbar a {
@@ -1116,6 +1122,7 @@
 
 .menu-principal {
   position: relative;
+  flex-shrink: 0;
 }
 
 .menu-principal-botao {
@@ -1173,7 +1180,9 @@
 .logo {
   display: inline-flex;
   align-items: baseline;
+  flex: 1 1 auto;
   gap: 7px;
+  min-width: 0;
   color: #f8fafc;
   text-decoration: none;
   font-size: 1.4rem;
@@ -1276,6 +1285,81 @@
 
 .btn-sair:hover {
   opacity: 0.9;
+}
+
+@media (max-width: 560px) {
+  .navbar {
+    gap: 10px;
+    padding: 12px;
+    border-radius: 14px;
+    overflow-x: clip;
+  }
+
+  .logo {
+    gap: 4px;
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+  }
+
+  .logo-marca-destaque {
+    letter-spacing: 0.08em;
+  }
+
+  .navbar-links {
+    gap: 8px;
+  }
+
+  .usuario-logado,
+  .btn-sair {
+    min-height: 38px;
+    padding: 7px 9px;
+    border-radius: 9px;
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  .usuario-logado {
+    max-width: 118px;
+  }
+
+  .btn-sair {
+    margin-left: 0;
+    white-space: nowrap;
+  }
+
+  .menu-principal-opcoes {
+    right: 0;
+    min-width: min(220px, calc(100vw - 24px));
+  }
+}
+
+@media (max-width: 380px) {
+  .navbar {
+    gap: 8px;
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .logo {
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+  }
+
+  .navbar-links {
+    gap: 6px;
+  }
+
+  .usuario-logado {
+    max-width: 42px;
+    justify-content: center;
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .btn-sair {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
 }
 
 .modal-conclusao-overlay {
