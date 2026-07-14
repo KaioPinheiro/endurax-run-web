@@ -135,28 +135,9 @@ function Login({ atualizarToken }) {
             </li>
             <li>
               <span aria-hidden="true">✓</span>
-              Acompanhe sua evolução
-            </li>
-            <li>
-              <span aria-hidden="true">✓</span>
               Organize sua rotina de corrida
             </li>
           </ul>
-
-          <div className="login-estatisticas" aria-label="Estatísticas do Endurax Run">
-            <div>
-              <strong>15+</strong>
-              <span>Tipos de treino</span>
-            </div>
-            <div>
-              <strong>100%</strong>
-              <span>Progresso acompanhado</span>
-            </div>
-            <div>
-              <strong>24h</strong>
-              <span>Acesso ao histórico</span>
-            </div>
-          </div>
         </div>
 
         <div className="login-card-area">

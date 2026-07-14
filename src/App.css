@@ -1663,75 +1663,6 @@
   box-shadow: 0 0 22px rgba(56, 189, 248, 0.22);
 }
 
-.login-estatisticas {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 150px));
-  gap: 12px;
-  margin-top: 44px;
-  animation: login-texto-entrada 650ms 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.login-estatisticas div {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-width: 0;
-  min-height: 95px;
-  overflow: hidden;
-  padding: 18px 16px;
-  background:
-    linear-gradient(145deg, rgba(30, 41, 59, 0.68), rgba(15, 23, 42, 0.45));
-  border: 1px solid rgba(186, 230, 253, 0.22);
-  border-radius: 16px;
-  box-shadow:
-    0 10px 26px rgba(2, 6, 23, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.045);
-  backdrop-filter: blur(12px);
-  box-sizing: border-box;
-  transition:
-    border-color 240ms ease,
-    box-shadow 240ms ease,
-    transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.login-estatisticas div::before {
-  position: absolute;
-  top: 0;
-  right: 16px;
-  left: 16px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(125, 211, 252, 0.58), transparent);
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.14);
-  content: "";
-}
-
-.login-estatisticas div:hover {
-  border-color: rgba(125, 211, 252, 0.38);
-  box-shadow:
-    0 16px 32px rgba(2, 6, 23, 0.26),
-    0 0 22px rgba(56, 189, 248, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.07);
-  transform: translateY(-4px) scale(1.018);
-}
-
-.login-estatisticas strong {
-  display: block;
-  margin-bottom: 8px;
-  color: #7dd3fc;
-  font-size: 31px;
-  font-weight: 900;
-  line-height: 1;
-}
-
-.login-estatisticas span {
-  display: block;
-  color: #94a3b8;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.35;
-}
-
 .login-card-area {
   position: relative;
   align-self: center;
@@ -2160,13 +2091,6 @@
     text-align: center;
   }
 
-  .login-estatisticas {
-    width: min(100%, 520px);
-    margin-right: auto;
-    margin-left: auto;
-    text-align: center;
-  }
-
   .login-card-area {
     padding: 34px 0 0;
   }
@@ -2229,26 +2153,6 @@
     display: none;
   }
 
-  .login-estatisticas {
-    gap: 7px;
-    margin-top: 33px;
-  }
-
-  .login-estatisticas div {
-    min-height: 86px;
-    padding: 12px 7px;
-    border-radius: 13px;
-  }
-
-  .login-estatisticas strong {
-    margin-bottom: 6px;
-    font-size: 23px;
-  }
-
-  .login-estatisticas span {
-    font-size: 9.5px;
-  }
-
   .login-card-area {
     padding-top: 26px;
   }
@@ -2283,7 +2187,6 @@
   .login-logo-textual,
   .login-marca-texto,
   .login-beneficios,
-  .login-estatisticas,
   .login-card-area {
     animation: none;
   }
@@ -2294,7 +2197,6 @@
   .login-mostrar-senha,
   .login-toggle,
   .login-toggle span,
-  .login-estatisticas div,
   .login-botao-principal,
   .login-botao-principal span {
     transition: none;
