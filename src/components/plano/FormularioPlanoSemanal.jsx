@@ -1,13 +1,23 @@
 import {
   DIAS_SEMANA,
   DURACOES_PLANO,
+  EXPERIENCIA_6_MESES_A_1_ANO,
+  EXPERIENCIA_MENOS_6_MESES,
   EXPERIENCIAS_INICIANTES,
   EXPERIENCIAS_CORRIDA,
   OBJETIVOS_PLANO,
+  OBJETIVOS_PLANO_6_MESES_A_1_ANO,
+  OBJETIVOS_PLANO_MENOS_6_MESES,
   OBJETIVOS_PLANO_SEM_EXPERIENCIA,
   RITMOS_CONFORTAVEIS,
+  VOLUMES_SEMANAIS_MARATONA,
   VOLUMES_SEMANAIS
 } from "../../constants/planoTreino";
+import {
+  normalizarIdade,
+  planoIndicaMaratona,
+  validarBloqueiosMaratona
+} from "../../utils/planoTreino";
 
 function OpcoesSelect({ opcoes }) {
   return opcoes.map((opcao) => (
@@ -33,11 +43,25 @@ function FormularioPlanoSemanal({
   mensagemLoading,
   onAlterar,
   onAlternarDia,
-  onSubmit
+  onSubmit,
+  validarMaratonaEmTempoReal = false
 }) {
   const objetivosDisponiveis = EXPERIENCIAS_INICIANTES.includes(form.experienciaCorrida)
     ? OBJETIVOS_PLANO_SEM_EXPERIENCIA
+    : form.experienciaCorrida === EXPERIENCIA_MENOS_6_MESES
+      ? OBJETIVOS_PLANO_MENOS_6_MESES
+    : form.experienciaCorrida === EXPERIENCIA_6_MESES_A_1_ANO
+      ? OBJETIVOS_PLANO_6_MESES_A_1_ANO
     : OBJETIVOS_PLANO;
+  const erroTempoReal = validarMaratonaEmTempoReal
+    ? validarBloqueiosMaratona(form)
+    : null;
+  const planoMaratona = planoIndicaMaratona(form);
+  const volumesDisponiveis = planoMaratona
+    ? VOLUMES_SEMANAIS_MARATONA
+    : VOLUMES_SEMANAIS;
+  const erroVisivel = erroTempoReal || erro;
+  const submitBloqueado = carregando || Boolean(erroTempoReal);
 
   return (
     <form className="coach-ia-form plano-ia-form" onSubmit={onSubmit}>
@@ -54,9 +78,35 @@ function FormularioPlanoSemanal({
             name="idade"
             value={form.idade}
             onChange={onAlterar}
+            onBlur={(event) => {
+              if (event.target.value !== "" && Number(event.target.value) < 16) {
+                onAlterar({
+                  target: {
+                    name: "idade",
+                    value: "",
+                    type: "text"
+                  }
+                });
+              }
+            }}
+            onKeyDown={(event) => {
+              if ([".", ",", "e", "E", "+", "-"].includes(event.key)) {
+                event.preventDefault();
+              }
+            }}
+            onPaste={(event) => {
+              event.preventDefault();
+              onAlterar({
+                target: {
+                  name: "idade",
+                  value: normalizarIdade(event.clipboardData.getData("text")),
+                  type: "text"
+                }
+              });
+            }}
             placeholder="Digite sua idade"
-            min="18"
-            max="100"
+            min="16"
+            max="80"
             step="1"
             required
           />
@@ -118,7 +168,7 @@ function FormularioPlanoSemanal({
             required
           >
             <PlaceholderSelect>Quantos km você corre por semana?</PlaceholderSelect>
-            <OpcoesSelect opcoes={VOLUMES_SEMANAIS} />
+            <OpcoesSelect opcoes={volumesDisponiveis} />
           </select>
         </label>
 
@@ -266,14 +316,14 @@ function FormularioPlanoSemanal({
         </label>
       </div>
 
-      {erro && <p className="coach-ia-erro">{erro}</p>}
+      {erroVisivel && <p className="coach-ia-erro">{erroVisivel}</p>}
       {sucesso && <p className="coach-ia-sucesso">{sucesso}</p>}
       {carregando && (
         <p className="coach-ia-loading-mensagem">
           {mensagemLoading}
         </p>
       )}
-      <button className="coach-ia-submit" type="submit" disabled={carregando}>
+      <button className="coach-ia-submit" type="submit" disabled={submitBloqueado}>
         {carregando
           ? <><span className="coach-ia-spinner" />Gerando plano...</>
           : <><span>▦</span>Gerar meu plano</>}

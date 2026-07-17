@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { DIAS_SEMANA } from "../constants/diasSemana";
 import { gerarTreinoComIA } from "../services/api";
 import { obterMensagemErroIa } from "../utils/mensagemErroIa";
+import { normalizarIdade } from "../utils/planoTreino";
 import "./GerarTreinoIA.css";
 
 const FORM_INICIAL = {
@@ -119,10 +120,10 @@ function GerarTreinoIA() {
     const idadeNumero = Number(form.idade);
     if (
       !Number.isInteger(idadeNumero) ||
-      idadeNumero < 18 ||
-      idadeNumero > 100
+      idadeNumero < 16 ||
+      idadeNumero > 80
     ) {
-      setErro("Informe uma idade inteira entre 18 e 100 anos.");
+      setErro("Informe uma idade inteira entre 16 e 80 anos.");
       return;
     }
 
@@ -248,19 +249,15 @@ function GerarTreinoIA() {
                 name="idade"
                 value={form.idade}
                 onChange={(event) => {
-                  const valor = event.target.value;
-                  if (valor === "" || /^\d+$/.test(valor)) {
-                    if (valor === "" || Number(valor) <= 100) {
-                      alterarCampo(event);
-                    } else {
-                      setErro("A idade máxima permitida é 100 anos.");
-                    }
-                  }
+                  setForm((atual) => ({
+                    ...atual,
+                    idade: normalizarIdade(event.target.value)
+                  }));
                 }}
                 onBlur={() => {
-                  if (form.idade !== "" && Number(form.idade) < 18) {
+                  if (form.idade !== "" && Number(form.idade) < 16) {
                     setForm((atual) => ({ ...atual, idade: "" }));
-                    setErro("A idade mínima permitida é 18 anos.");
+                    setErro("A idade mínima permitida é 16 anos.");
                   }
                 }}
                 onKeyDown={(event) => {
@@ -269,13 +266,20 @@ function GerarTreinoIA() {
                     setErro("A idade deve ser informada somente com números inteiros.");
                   }
                 }}
-                min="18"
-                max="100"
+                onPaste={(event) => {
+                  event.preventDefault();
+                  setForm((atual) => ({
+                    ...atual,
+                    idade: normalizarIdade(event.clipboardData.getData("text"))
+                  }));
+                }}
+                min="16"
+                max="80"
                 step="1"
                 placeholder="Ex.: 30"
                 onInvalid={(event) => {
                   event.preventDefault();
-                  setErro("Informe uma idade inteira entre 18 e 100 anos.");
+                  setErro("Informe uma idade inteira entre 16 e 80 anos.");
                 }}
                 required
               />

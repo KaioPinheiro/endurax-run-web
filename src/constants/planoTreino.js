@@ -53,6 +53,8 @@ export const OBJETIVOS_PLANO = [
 
 export const EXPERIENCIA_SEM_CORRIDA = "Nunca corri";
 export const EXPERIENCIA_PARADO = "Estou parado(a)";
+export const EXPERIENCIA_MENOS_6_MESES = "Menos de 6 meses";
+export const EXPERIENCIA_6_MESES_A_1_ANO = "6 meses a 1 ano";
 
 export const EXPERIENCIAS_INICIANTES = [
   EXPERIENCIA_SEM_CORRIDA,
@@ -66,11 +68,30 @@ export const OBJETIVOS_PLANO_SEM_EXPERIENCIA = [
   "Primeiros 10 km"
 ];
 
+export const OBJETIVOS_PLANO_MENOS_6_MESES = [
+  "Melhorar condicionamento",
+  "Emagrecer",
+  "Primeiros 5 km",
+  "Primeiros 10 km",
+  "Sub 30 nos 5 km"
+];
+
+export const OBJETIVOS_PLANO_6_MESES_A_1_ANO = OBJETIVOS_PLANO.filter(
+  (objetivo) => objetivo !== "Primeira Maratona"
+);
+
+export const VOLUME_SEMANAL_MARATONA = "40-60 km";
+export const VOLUMES_SEMANAIS_MARATONA = [
+  VOLUME_SEMANAL_MARATONA,
+  "60-80 km",
+  "80+ km"
+];
+
 export const EXPERIENCIAS_CORRIDA = [
   EXPERIENCIA_SEM_CORRIDA,
   EXPERIENCIA_PARADO,
-  "Menos de 6 meses",
-  "6 meses a 1 ano",
+  EXPERIENCIA_MENOS_6_MESES,
+  EXPERIENCIA_6_MESES_A_1_ANO,
   "1 a 3 anos",
   "Mais de 3 anos"
 ];
@@ -80,7 +101,7 @@ export const VOLUMES_SEMANAIS = [
   "Menos de 10 km",
   "10-20 km",
   "20-40 km",
-  "40-60 km",
+  VOLUME_SEMANAL_MARATONA,
   "60-80 km",
   "80+ km"
 ];

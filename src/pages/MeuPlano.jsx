@@ -56,6 +56,7 @@ function MeuPlano() {
       type,
       checked
     }));
+    setErro("");
   }
 
   function alternarDia(dia) {
@@ -117,6 +118,7 @@ function MeuPlano() {
         onAlterar={alterar}
         onAlternarDia={alternarDia}
         onSubmit={enviar}
+        validarMaratonaEmTempoReal
         setErro={setErro}
       />
 

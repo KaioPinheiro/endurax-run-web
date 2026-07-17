@@ -1,10 +1,16 @@
-import {
+﻿import {
+  EXPERIENCIA_6_MESES_A_1_ANO,
+  EXPERIENCIA_MENOS_6_MESES,
   EXPERIENCIAS_INICIANTES,
   FORM_INICIAL_PLANO,
-  OBJETIVOS_PLANO_SEM_EXPERIENCIA
+  OBJETIVOS_PLANO,
+  OBJETIVOS_PLANO_6_MESES_A_1_ANO,
+  OBJETIVOS_PLANO_MENOS_6_MESES,
+  OBJETIVOS_PLANO_SEM_EXPERIENCIA,
+  VOLUMES_SEMANAIS_MARATONA
 } from "../constants/planoTreino";
 
-const SEM_VALOR = "—";
+const SEM_VALOR = "â€”";
 
 const NOMENCLATURAS_TREINO = {
   "corrida continua": "Corrida continua",
@@ -74,32 +80,82 @@ export function criarEstadoInicialPlano() {
 
 export function normalizarCampoPlano(formulario, campo) {
   const { name, value, type, checked } = campo;
+  const valorNormalizado = name === "idade"
+    ? normalizarIdade(value)
+    : value;
+  const objetivosPermitidos = name === "experienciaCorrida"
+    ? objetivosDisponiveisPorExperiencia(valorNormalizado)
+    : null;
   const objetivoIncompativelComExperiencia =
     name === "experienciaCorrida" &&
-    EXPERIENCIAS_INICIANTES.includes(value) &&
     formulario.objetivo &&
-    !OBJETIVOS_PLANO_SEM_EXPERIENCIA.includes(formulario.objetivo);
+    !objetivosPermitidos.includes(formulario.objetivo);
 
-  return {
+  const proximoFormulario = {
     ...formulario,
-    [name]: type === "checkbox" ? checked : value,
+    [name]: type === "checkbox" ? checked : valorNormalizado,
     ...(objetivoIncompativelComExperiencia
       ? { objetivo: "", objetivoPersonalizado: "" }
       : {}),
-    ...(name === "objetivo" && value !== "Outro"
+    ...(name === "objetivo" && valorNormalizado !== "Outro"
       ? { objetivoPersonalizado: "" }
       : {}),
     ...(name === "possuiLesao" && !checked ? { descricaoLesao: "" } : {}),
-    ...(name === "possuiProva" && value !== "sim"
+    ...(name === "possuiProva" && valorNormalizado !== "sim"
       ? limparCamposProva()
       : {}),
-    ...(name === "distanciaProva" && value !== "Outra"
+    ...(name === "distanciaProva" && valorNormalizado !== "Outra"
       ? { outraDistanciaProva: "" }
       : {}),
     ...(name === "objetivoProva" && value !== "Buscar um tempo específico"
       ? { tempoDesejadoProva: "" }
       : {})
   };
+
+  if (
+    ehPlanoMaratona(proximoFormulario) &&
+    proximoFormulario.volumeSemanalAtual &&
+    !volumeMaratonaPermitido(proximoFormulario.volumeSemanalAtual)
+  ) {
+    return {
+      ...proximoFormulario,
+      volumeSemanalAtual: ""
+    };
+  }
+
+  return proximoFormulario;
+}
+
+export function normalizarIdade(valor) {
+  const apenasNumeros = String(valor).replace(/\D/g, "");
+
+  if (!apenasNumeros) {
+    return "";
+  }
+
+  const idade = Number(apenasNumeros);
+
+  if (idade > 80) {
+    return "80";
+  }
+
+  return apenasNumeros;
+}
+
+function objetivosDisponiveisPorExperiencia(experienciaCorrida) {
+  if (EXPERIENCIAS_INICIANTES.includes(experienciaCorrida)) {
+    return OBJETIVOS_PLANO_SEM_EXPERIENCIA;
+  }
+
+  if (experienciaCorrida === EXPERIENCIA_MENOS_6_MESES) {
+    return OBJETIVOS_PLANO_MENOS_6_MESES;
+  }
+
+  if (experienciaCorrida === EXPERIENCIA_6_MESES_A_1_ANO) {
+    return OBJETIVOS_PLANO_6_MESES_A_1_ANO;
+  }
+
+  return OBJETIVOS_PLANO;
 }
 
 export function limparCamposProva() {
@@ -132,10 +188,10 @@ export function validarFormularioPlano(formulario) {
 
   if (
     !Number.isInteger(idade) ||
-    idade < 18 ||
-    idade > 100
+    idade < 16 ||
+    idade > 80
   ) {
-    return "Informe uma idade inteira entre 18 e 100 anos.";
+    return "Informe uma idade inteira entre 16 e 80 anos.";
   }
 
   if (formulario.diasDisponiveis.length === 0) {
@@ -169,6 +225,11 @@ export function validarFormularioMeuPlano(formulario) {
     return erroBase;
   }
 
+  const erroMaratona = validarBloqueiosMaratona(formulario);
+  if (erroMaratona) {
+    return erroMaratona;
+  }
+
   if (
     formulario.possuiProva !== "sim" &&
     !["4", "5", "6"].includes(String(formulario.duracaoSemanas))
@@ -177,6 +238,40 @@ export function validarFormularioMeuPlano(formulario) {
   }
 
   return null;
+}
+
+export function validarBloqueiosMaratona(formulario) {
+  if (!ehPlanoMaratona(formulario)) {
+    return null;
+  }
+
+  if (Number(formulario.idade) < 18) {
+    return "Para plano de maratona, a idade mínima é 18 anos.";
+  }
+
+  if (formulario.diasDisponiveis.length < 4) {
+    return "Para plano de maratona, selecione pelo menos 4 dias disponíveis para treinar.";
+  }
+
+  if (
+    formulario.volumeSemanalAtual &&
+    !volumeMaratonaPermitido(formulario.volumeSemanalAtual)
+  ) {
+    return "Para plano de maratona, o volume semanal atual deve ser 40-60 km, 60-80 km ou 80+ km.";
+  }
+
+  if (
+    formulario.experienciaCorrida &&
+    !experienciaMaratonaPermitida(formulario.experienciaCorrida)
+  ) {
+    return "Para plano de maratona, a experiência na corrida deve ser a partir de 1 a 3 anos.";
+  }
+
+  return null;
+}
+
+export function planoIndicaMaratona(formulario) {
+  return ehPlanoMaratona(formulario);
 }
 
 export function montarPayloadPlanoSemanal(formulario) {
@@ -278,6 +373,51 @@ function inferirDistanciaAlvo(formulario) {
   return "Sem distância alvo definida";
 }
 
+function ehPlanoMaratona(formulario) {
+  const objetivo = formulario.objetivo === "Outro"
+    ? formulario.objetivoPersonalizado
+    : formulario.objetivo;
+  const distanciaAlvo = inferirDistanciaAlvo(formulario);
+  const distanciaProva = inferirDistanciaProva(formulario, distanciaAlvo);
+
+  return campoIndicaMaratona(objetivo) ||
+    campoIndicaMaratona(distanciaAlvo) ||
+    campoIndicaMaratona(distanciaProva);
+}
+
+function campoIndicaMaratona(valor) {
+  const texto = textoNormalizado(valor);
+
+  if (/\b42\s*(km|k|quilometros?)\b/.test(texto)) {
+    return true;
+  }
+
+  return texto.includes("maratona") &&
+    !texto.includes("meia maratona") &&
+    !texto.includes("21 km") &&
+    !texto.includes("21k");
+}
+
+function experienciaMaratonaPermitida(valor) {
+  const texto = textoNormalizado(valor);
+
+  return texto.includes("1 a 3 anos") ||
+    texto.includes("1-3 anos") ||
+    texto.includes("mais de 3 anos") ||
+    texto.includes("mais que 3 anos") ||
+    texto.includes("acima de 3 anos");
+}
+
+function volumeMaratonaPermitido(valor) {
+  const texto = textoNormalizado(valor)
+    .replace(/[–—]/g, "-")
+    .replace(/\s+/g, "");
+
+  return VOLUMES_SEMANAIS_MARATONA.some((volume) =>
+    texto === textoNormalizado(volume).replace(/\s+/g, "")
+  );
+}
+
 function inferirDistanciaProva(formulario, distanciaAlvo) {
   if (formulario.distanciaProva === "Outra" && formulario.outraDistanciaProva.trim()) {
     return formulario.outraDistanciaProva.trim();
@@ -364,7 +504,7 @@ function ehValorSemMetrica(valor) {
   return (
     !texto ||
     texto === "-" ||
-    texto === "—" ||
+    texto === "â€”" ||
     texto === "0" ||
     texto === "0 km" ||
     texto === "nao se aplica"
@@ -469,10 +609,10 @@ export function formatarPace(valor) {
 
   const texto = String(valor)
     .trim()
-    .replace(/\s*-\s*/g, "–")
-    .replace(/\s*–\s*/g, "–");
+    .replace(/\s*-\s*/g, "â€“")
+    .replace(/\s*â€“\s*/g, "â€“");
 
-  if (/^\d+:\d{2}(?:–\d+:\d{2})?$/.test(texto)) {
+  if (/^\d+:\d{2}(?:â€“\d+:\d{2})?$/.test(texto)) {
     return `${texto} min/km`;
   }
 
