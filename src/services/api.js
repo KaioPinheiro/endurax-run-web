@@ -85,4 +85,37 @@ export async function gerarPlanoComIA(dadosPlano) {
   return response.data;
 }
 
+export async function buscarConfigPublica() {
+  const response = await api.get("/api/config/publica");
+  return response.data;
+}
+
+export async function criarSolicitacaoPlano(email, formulario) {
+  const response = await api.post("/api/solicitacoes-plano", { email, formulario });
+  return response.data;
+}
+
+export async function criarPagamentoPix(email, solicitacaoPlanoId) {
+  const response = await api.post("/api/pagamentos/pix", { email, solicitacaoPlanoId });
+  return response.data;
+}
+
+export async function buscarResultadoPagamento(pagamentoId) {
+  const response = await api.get(`/api/pagamentos/${pagamentoId}/resultado`);
+  return response.data;
+}
+
+export async function tentarGeracaoNovamente(pagamentoId) {
+  await api.post(`/api/pagamentos/${pagamentoId}/geracao/tentar-novamente`);
+}
+
+export async function buscarPlanoGerado(planoId) {
+  const response = await api.get(`/training-plans/${planoId}`);
+  const planoPersistido = response.data;
+
+  return typeof planoPersistido?.descricao === "string"
+    ? JSON.parse(planoPersistido.descricao)
+    : planoPersistido?.descricao;
+}
+
 export default api;

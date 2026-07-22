@@ -74,6 +74,7 @@ const INDICADORES_CORRIDA = [
 export function criarEstadoInicialPlano() {
   return {
     ...FORM_INICIAL_PLANO,
+    email: localStorage.getItem("email") || "",
     diasDisponiveis: []
   };
 }

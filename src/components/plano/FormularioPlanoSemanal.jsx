@@ -71,6 +71,19 @@ function FormularioPlanoSemanal({
       </div>
 
       <div className="coach-ia-campos plano-ia-campos">
+        <label className="coach-ia-campo coach-ia-largo">
+          <span>E-mail *</span>
+          <input
+            type="email"
+            name="email"
+            value={form.email || ""}
+            onChange={onAlterar}
+            placeholder="seu@email.com"
+            autoComplete="email"
+            required
+          />
+        </label>
+
         <label className="coach-ia-campo">
           <span>Idade *</span>
           <input

@@ -53,6 +53,7 @@ function Login({ atualizarToken }) {
       localStorage.setItem("userId", dados.userId);
       localStorage.setItem("nome", dados.nome);
       localStorage.setItem("role", dados.role);
+      localStorage.setItem("email", form.email);
 
       atualizarToken();
       navigate("/meu-plano");
