@@ -6,8 +6,16 @@ function formatarTempo(segundos) {
   return `${String(minutos).padStart(2, "0")}:${String(restante).padStart(2, "0")}`;
 }
 
-function PagamentoPix({ pagamento, estado, mensagem, onTentarNovamente, onGerarNovo }) {
+function PagamentoPix({
+  pagamento,
+  estado,
+  mensagem,
+  onTentarNovamente,
+  onGerarNovo,
+  onCancelarPagamento
+}) {
   const [copiado, setCopiado] = useState(false);
+  const [modalCancelamentoAberto, setModalCancelamentoAberto] = useState(false);
   const [agora, setAgora] = useState(() => Date.now());
   const expiracao = pagamento?.dataExpiracao || pagamento?.expirationDate;
   const copiaCola = pagamento?.pixCopiaCola || pagamento?.copiaCola || pagamento?.qrCode || "";
@@ -70,6 +78,15 @@ function PagamentoPix({ pagamento, estado, mensagem, onTentarNovamente, onGerarN
         {aguardando && <span className="coach-ia-spinner" aria-hidden="true" />}
         {mensagem}
       </p>
+      {estado === "PENDING" && (
+        <button
+          className="pix-cancelar-pagamento"
+          type="button"
+          onClick={() => setModalCancelamentoAberto(true)}
+        >
+          Cancelar pagamento
+        </button>
+      )}
       <p className="pix-informacao">
         Após a confirmação do pagamento seu plano será gerado automaticamente.
       </p>
@@ -83,6 +100,52 @@ function PagamentoPix({ pagamento, estado, mensagem, onTentarNovamente, onGerarN
         <button className="coach-ia-submit" type="button" onClick={onGerarNovo}>
           Gerar novo QR Code
         </button>
+      )}
+
+      {modalCancelamentoAberto && (
+        <div
+          className="pix-modal-overlay"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setModalCancelamentoAberto(false);
+          }}
+        >
+          <section
+            className="pix-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="pix-modal-titulo"
+            aria-describedby="pix-modal-descricao"
+          >
+            <h3 id="pix-modal-titulo">Cancelar pagamento?</h3>
+            <div id="pix-modal-descricao">
+              <p>Você realmente deseja cancelar este pagamento?</p>
+              <p>
+                O QR Code atual será descartado e você retornará ao formulário para
+                gerar um novo pagamento quando desejar.
+              </p>
+              <p className="pix-modal-observacao">
+                <strong>Observação:</strong> Caso o pagamento seja realizado posteriormente
+                utilizando este QR Code, ele continuará sendo processado normalmente pelo sistema.
+              </p>
+            </div>
+            <div className="pix-modal-acoes">
+              <button type="button" onClick={() => setModalCancelamentoAberto(false)}>
+                Cancelar
+              </button>
+              <button
+                className="pix-modal-confirmar"
+                type="button"
+                onClick={() => {
+                  setModalCancelamentoAberto(false);
+                  onCancelarPagamento();
+                }}
+              >
+                Confirmar cancelamento
+              </button>
+            </div>
+          </section>
+        </div>
       )}
     </section>
   );

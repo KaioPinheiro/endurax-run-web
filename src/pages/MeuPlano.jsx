@@ -216,6 +216,16 @@ function MeuPlano() {
     }
   }
 
+  function cancelarJornadaPagamento() {
+    limparPagamentoPersistido();
+    setPagamento(null);
+    setEstadoPagamento(null);
+    setMensagemPagamento("");
+    setErro("");
+    setCarregando(false);
+    payloadRef.current = null;
+  }
+
   const fluxoAtivo = carregando || Boolean(pagamento);
 
   return (
@@ -244,6 +254,7 @@ function MeuPlano() {
             mensagem={mensagemDoEstado(estadoPagamento || "PENDING", mensagemPagamento)}
             onTentarNovamente={tentarNovamente}
             onGerarNovo={gerarNovoQrCode}
+            onCancelarPagamento={cancelarJornadaPagamento}
           />
         </>
       )}

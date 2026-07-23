@@ -4,6 +4,9 @@
 }
 
 .pix-card {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
   width: min(100%, 620px);
   margin: 0 auto;
   padding: 32px;
@@ -12,7 +15,16 @@
   border: 1px solid rgba(56, 189, 248, .32);
   border-radius: 22px;
   box-shadow: 0 24px 60px rgba(2, 6, 23, .3);
+  box-sizing: border-box;
   text-align: center;
+}
+
+.pix-card > header,
+.pix-copia-cola,
+.pix-status,
+.pix-informacao {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .pix-card header > span {
@@ -52,18 +64,21 @@
 }
 
 .pix-copia-cola > div {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 8px;
+  width: 100%;
 }
 
 .pix-copia-cola textarea {
-  flex: 1;
+  width: 100%;
   min-width: 0;
   padding: 12px;
   color: #e2e8f0;
   background: rgba(2, 6, 23, .55);
   border: 1px solid #475569;
   border-radius: 9px;
+  box-sizing: border-box;
   font: inherit;
   font-size: 12px;
   resize: none;
@@ -71,6 +86,8 @@
 }
 
 .pix-copia-cola button {
+  width: 100%;
+  min-height: 44px;
   padding: 0 18px;
   color: #082f49;
   background: #7dd3fc;
@@ -88,6 +105,7 @@
 
 .pix-valor {
   display: block;
+  width: 100%;
   margin: 14px 0 5px;
   color: #7dd3fc;
   font-size: 28px;
@@ -95,8 +113,10 @@
 
 .pix-expiracao,
 .pix-informacao {
+  width: 100%;
   color: #94a3b8;
   font-size: 13px;
+  text-align: center;
 }
 
 .pix-status {
@@ -120,6 +140,123 @@
   color: #fecaca;
   background: rgba(239, 68, 68, .08);
   border-color: rgba(248, 113, 113, .25);
+}
+
+.pix-cancelar-pagamento {
+  width: 100%;
+  min-height: 44px;
+  margin: 4px 0 8px;
+  color: #f8fafc;
+  background: transparent;
+  border: 1px solid #38bdf8;
+  border-radius: 9px;
+  cursor: pointer;
+  font-weight: 850;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.pix-cancelar-pagamento:hover {
+  color: #e0f2fe;
+  background: rgba(14, 165, 233, .12);
+  border-color: #7dd3fc;
+}
+
+.pix-cancelar-pagamento:focus-visible,
+.pix-modal button:focus-visible {
+  outline: 3px solid rgba(125, 211, 252, .35);
+  outline-offset: 2px;
+}
+
+.pix-modal-overlay {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(2, 6, 23, .78);
+  backdrop-filter: blur(5px);
+  box-sizing: border-box;
+}
+
+.pix-modal {
+  width: min(100%, 520px);
+  padding: 28px;
+  color: #f8fafc;
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  border: 1px solid rgba(56, 189, 248, .32);
+  border-radius: 18px;
+  box-shadow: 0 28px 80px rgba(2, 6, 23, .65);
+  box-sizing: border-box;
+  text-align: left;
+  animation: pix-modal-entrada 180ms ease-out;
+}
+
+.pix-modal h3 {
+  margin: 0 0 16px;
+  color: #f8fafc;
+  font-size: 24px;
+}
+
+.pix-modal p {
+  margin: 0 0 12px;
+  color: #cbd5e1;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.pix-modal .pix-modal-observacao {
+  margin: 18px 0 0;
+  padding: 12px 14px;
+  color: #bae6fd;
+  background: rgba(14, 165, 233, .08);
+  border: 1px solid rgba(56, 189, 248, .2);
+  border-radius: 9px;
+}
+
+.pix-modal-acoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.pix-modal-acoes button {
+  min-height: 44px;
+  padding: 8px 14px;
+  color: #f8fafc;
+  background: transparent;
+  border: 1px solid #38bdf8;
+  border-radius: 9px;
+  cursor: pointer;
+  font-weight: 850;
+  transition: background-color 180ms ease, border-color 180ms ease;
+}
+
+.pix-modal-acoes button:hover {
+  background: rgba(14, 165, 233, .12);
+  border-color: #7dd3fc;
+}
+
+.pix-modal-acoes .pix-modal-confirmar {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.pix-modal-acoes .pix-modal-confirmar:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+@keyframes pix-modal-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .pix-card > .coach-ia-submit {
@@ -490,12 +627,16 @@
     padding: 24px 16px;
   }
 
-  .pix-copia-cola > div {
-    flex-direction: column;
-  }
-
   .pix-copia-cola > div button {
     min-height: 42px;
+  }
+
+  .pix-modal {
+    padding: 22px 18px;
+  }
+
+  .pix-modal-acoes {
+    grid-template-columns: 1fr;
   }
 
   .plano-ia-campos {
