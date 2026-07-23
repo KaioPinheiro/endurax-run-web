@@ -32,10 +32,18 @@ export function obterMensagemErroIa(error, mensagemIndisponivel) {
   }
 
   if (status >= 400 && mensagemBackend) {
-    return String(mensagemBackend);
+    return neutralizarTecnologiaNaMensagem(mensagemBackend);
   }
 
-  return mensagemIndisponivel;
+  return neutralizarTecnologiaNaMensagem(mensagemIndisponivel);
+}
+
+function neutralizarTecnologiaNaMensagem(mensagem) {
+  return String(mensagem ?? "")
+    .replace(/\b(?:a\s+)?IA\b/gi, "o sistema")
+    .replace(/\bintelig[eê]ncia artificial\b/gi, "sistema")
+    .replace(/\b(?:OpenAI|ChatGPT|Gemini|Claude)\b/gi, "serviço de geração")
+    .replace(/^o sistema\s+/i, "O sistema ");
 }
 
 function extrairMensagemBackend(dadosErro) {
