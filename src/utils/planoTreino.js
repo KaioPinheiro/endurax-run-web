@@ -275,33 +275,6 @@ export function planoIndicaMaratona(formulario) {
   return ehPlanoMaratona(formulario);
 }
 
-export function montarPayloadPlanoSemanal(formulario) {
-  const dadosPlano = { ...formulario };
-  const possuiProva = formulario.possuiProva === "sim";
-  const distanciaAlvo = inferirDistanciaAlvo(formulario);
-  delete dadosPlano.objetivoPersonalizado;
-  delete dadosPlano.distanciaAlvo;
-  delete dadosPlano.outraDistanciaAlvo;
-  delete dadosPlano.diaLongao;
-  delete dadosPlano.observacoes;
-
-  return {
-    ...dadosPlano,
-    idade: Number(formulario.idade),
-    objetivo: formulario.objetivo === "Outro"
-      ? formulario.objetivoPersonalizado.trim()
-      : formulario.objetivo,
-    distanciaAlvo,
-    distanciaProva: possuiProva ? inferirDistanciaProva(formulario, distanciaAlvo) : "",
-    objetivoProva: possuiProva ? null : "",
-    tempoDesejadoProva: possuiProva ? null : "",
-    importanciaProva: possuiProva ? inferirImportanciaProva(formulario) : "",
-    possuiProva,
-    intensidadeDesejada: "adequada ao perfil informado",
-    observacoes: montarObservacoesComLongao(formulario)
-  };
-}
-
 export function montarPayloadMeuPlano(formulario) {
   const possuiProva = formulario.possuiProva === "sim";
   const objetivo = formulario.objetivo === "Outro"

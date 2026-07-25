@@ -75,11 +75,6 @@ export async function gerarTreinoComIA(dadosTreino) {
   return response.data;
 }
 
-export async function gerarPlanoSemanalComIA(dadosPlano) {
-  const response = await api.post("/api/ai/gerar-plano-semanal", dadosPlano);
-  return response.data;
-}
-
 export async function gerarPlanoComIA(dadosPlano) {
   const response = await api.post("/api/ai/gerar-plano", dadosPlano);
   return response.data;
