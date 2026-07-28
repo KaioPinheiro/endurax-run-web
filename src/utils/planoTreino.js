@@ -1,6 +1,7 @@
 ﻿import {
   EXPERIENCIA_6_MESES_A_1_ANO,
   EXPERIENCIA_MENOS_6_MESES,
+  EXPERIENCIA_SEM_CORRIDA,
   EXPERIENCIAS_INICIANTES,
   FORM_INICIAL_PLANO,
   OBJETIVOS_PLANO,
@@ -10,7 +11,7 @@
   VOLUMES_SEMANAIS_MARATONA
 } from "../constants/planoTreino";
 
-const SEM_VALOR = "â€”";
+const SEM_VALOR = "—";
 
 const NOMENCLATURAS_TREINO = {
   "corrida continua": "Corrida continua",
@@ -98,8 +99,19 @@ export function normalizarCampoPlano(formulario, campo) {
     ...(objetivoIncompativelComExperiencia
       ? { objetivo: "", objetivoPersonalizado: "" }
       : {}),
+    ...(name === "experienciaCorrida" &&
+      valorNormalizado === EXPERIENCIA_SEM_CORRIDA
+      ? { corre5KmSemCaminhar: "nao", tempo5Km: "" }
+      : {}),
+    ...(name === "experienciaCorrida" &&
+      EXPERIENCIAS_INICIANTES.includes(valorNormalizado)
+      ? { volumeSemanalAtual: "" }
+      : {}),
     ...(name === "objetivo" && valorNormalizado !== "Outro"
       ? { objetivoPersonalizado: "" }
+      : {}),
+    ...(name === "corre5KmSemCaminhar" && valorNormalizado !== "sim"
+      ? { tempo5Km: "" }
       : {}),
     ...(name === "possuiLesao" && !checked ? { descricaoLesao: "" } : {}),
     ...(name === "possuiProva" && valorNormalizado !== "sim"
@@ -124,7 +136,9 @@ export function normalizarCampoPlano(formulario, campo) {
     };
   }
 
-  return proximoFormulario;
+  return planoIndicaMeiaOuMaratona(proximoFormulario)
+    ? proximoFormulario
+    : { ...proximoFormulario, maiorDistanciaCorrida: "" };
 }
 
 export function normalizarIdade(valor) {
@@ -204,6 +218,28 @@ export function validarFormularioPlano(formulario) {
   }
 
   if (
+    formulario.experienciaCorrida !== EXPERIENCIA_SEM_CORRIDA &&
+    !["sim", "nao"].includes(formulario.corre5KmSemCaminhar)
+  ) {
+    return "Informe se você já corre 5 km direto sem caminhar.";
+  }
+
+  if (
+    formulario.experienciaCorrida !== EXPERIENCIA_SEM_CORRIDA &&
+    formulario.corre5KmSemCaminhar === "sim" &&
+    !formulario.tempo5Km.trim()
+  ) {
+    return "Informe em quanto tempo você corre 5 km.";
+  }
+
+  if (
+    planoIndicaMeiaOuMaratona(formulario) &&
+    !formulario.maiorDistanciaCorrida.trim()
+  ) {
+    return "Informe a maior distância que você já correu.";
+  }
+
+  if (
     formulario.diaLongao &&
     !formulario.diasDisponiveis.includes(formulario.diaLongao)
   ) {
@@ -275,6 +311,22 @@ export function planoIndicaMaratona(formulario) {
   return ehPlanoMaratona(formulario);
 }
 
+export function planoIndicaMeiaOuMaratona(formulario) {
+  const objetivo = formulario.objetivo === "Outro"
+    ? formulario.objetivoPersonalizado
+    : formulario.objetivo;
+  const texto = textoNormalizado([
+    objetivo,
+    formulario.distanciaAlvo,
+    formulario.distanciaProva
+  ].filter(Boolean).join(" "));
+
+  return texto.includes("meia maratona") ||
+    texto.includes("21 km") ||
+    texto.includes("21k") ||
+    campoIndicaMaratona(texto);
+}
+
 export function montarPayloadMeuPlano(formulario) {
   const possuiProva = formulario.possuiProva === "sim";
   const objetivo = formulario.objetivo === "Outro"
@@ -287,8 +339,21 @@ export function montarPayloadMeuPlano(formulario) {
   return {
     idade: Number(formulario.idade),
     objetivo,
+    corre5KmSemCaminhar:
+      formulario.experienciaCorrida !== EXPERIENCIA_SEM_CORRIDA &&
+      formulario.corre5KmSemCaminhar === "sim",
+    tempo5Km:
+      formulario.experienciaCorrida !== EXPERIENCIA_SEM_CORRIDA &&
+      formulario.corre5KmSemCaminhar === "sim"
+      ? formulario.tempo5Km.trim()
+      : null,
+    maiorDistanciaCorrida: planoIndicaMeiaOuMaratona(formulario)
+      ? formulario.maiorDistanciaCorrida.trim()
+      : null,
     experienciaCorrida: formulario.experienciaCorrida,
-    volumeSemanalAtual: formulario.volumeSemanalAtual,
+    volumeSemanalAtual: EXPERIENCIAS_INICIANTES.includes(formulario.experienciaCorrida)
+      ? null
+      : formulario.volumeSemanalAtual,
     ritmoConfortavel: formulario.ritmoConfortavel,
     distanciaAlvo,
     diasDisponiveis: formulario.diasDisponiveis,
@@ -441,6 +506,10 @@ export function normalizarNomenclaturaTreino(valor) {
 }
 
 export function ehTreinoCorrida(treino) {
+  const categoria = textoNormalizado([
+    treino?.tipo,
+    treino?.titulo
+  ].filter(Boolean).join(" "));
   const textoTreino = textoNormalizado([
     treino?.tipo,
     treino?.titulo,
@@ -451,12 +520,20 @@ export function ehTreinoCorrida(treino) {
     return false;
   }
 
-  if (TIPOS_SEM_CORRIDA.some((tipo) => textoTreino.includes(tipo))) {
+  const categoriaSemCorrida = TIPOS_SEM_CORRIDA
+    .filter((tipo) => tipo !== "caminhada")
+    .some((tipo) => categoria.includes(tipo));
+  const caminhadaSemCorridaOuTrote = categoria.includes("caminhada") &&
+    !categoria.includes("corrida") &&
+    !categoria.includes("trote");
+
+  if (categoriaSemCorrida || caminhadaSemCorridaOuTrote) {
     return false;
   }
 
   return (
     temDistanciaValida(treino?.distanciaKm) ||
+    textoTreino.includes("trote") ||
     INDICADORES_CORRIDA.some((tipo) => textoTreino.includes(tipo))
   );
 }

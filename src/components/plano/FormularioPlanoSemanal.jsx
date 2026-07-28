@@ -3,6 +3,7 @@ import {
   DURACOES_PLANO,
   EXPERIENCIA_6_MESES_A_1_ANO,
   EXPERIENCIA_MENOS_6_MESES,
+  EXPERIENCIA_SEM_CORRIDA,
   EXPERIENCIAS_INICIANTES,
   EXPERIENCIAS_CORRIDA,
   OBJETIVOS_PLANO,
@@ -15,6 +16,7 @@ import {
 } from "../../constants/planoTreino";
 import {
   normalizarIdade,
+  planoIndicaMeiaOuMaratona,
   planoIndicaMaratona,
   validarBloqueiosMaratona
 } from "../../utils/planoTreino";
@@ -57,6 +59,9 @@ function FormularioPlanoSemanal({
     ? validarBloqueiosMaratona(form)
     : null;
   const planoMaratona = planoIndicaMaratona(form);
+  const planoMeiaOuMaratona = planoIndicaMeiaOuMaratona(form);
+  const nuncaCorreu = form.experienciaCorrida === EXPERIENCIA_SEM_CORRIDA;
+  const ocultarVolumeSemanal = EXPERIENCIAS_INICIANTES.includes(form.experienciaCorrida);
   const volumesDisponiveis = planoMaratona
     ? VOLUMES_SEMANAIS_MARATONA
     : VOLUMES_SEMANAIS;
@@ -172,18 +177,78 @@ function FormularioPlanoSemanal({
           </select>
         </label>
 
-        <label className="coach-ia-campo">
-          <span>Volume semanal atual *</span>
+        {!nuncaCorreu && (
+          <fieldset className="coach-ia-radio-grupo">
+            <legend>Você já corre 5 km direto sem caminhar? *</legend>
+            <div>
+              <label>
+                <input
+                  type="radio"
+                  name="corre5KmSemCaminhar"
+                  value="sim"
+                  checked={form.corre5KmSemCaminhar === "sim"}
+                  onChange={onAlterar}
+                  required
+                />
+                <span>Sim</span>
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="corre5KmSemCaminhar"
+                  value="nao"
+                  checked={form.corre5KmSemCaminhar === "nao"}
+                  onChange={onAlterar}
+                  required
+                />
+                <span>Não</span>
+              </label>
+            </div>
+          </fieldset>
+        )}
+
+        {!nuncaCorreu && form.corre5KmSemCaminhar === "sim" && (
+          <label className="coach-ia-campo">
+            <span>Em quanto tempo? *</span>
+            <input
+              name="tempo5Km"
+              value={form.tempo5Km}
+              onChange={onAlterar}
+              placeholder="Ex.: 32 minutos"
+              required
+            />
+          </label>
+        )}
+
+        {planoMeiaOuMaratona && (
+          <label className="coach-ia-campo">
+            <span>Qual foi a maior distância que você já correu? *</span>
+            <input
+              name="maiorDistanciaCorrida"
+              value={form.maiorDistanciaCorrida}
+              onChange={onAlterar}
+              placeholder="Ex.: 15 km"
+              required
+            />
+          </label>
+        )}
+
+        {!ocultarVolumeSemanal && (
+          <label className="coach-ia-campo">
+          <span>Volume semanal *</span>
           <select
             name="volumeSemanalAtual"
             value={form.volumeSemanalAtual}
             onChange={onAlterar}
             required
           >
-            <PlaceholderSelect>Quantos km você corre por semana?</PlaceholderSelect>
+            <PlaceholderSelect>
+              Quantos km você pretende correr por semana?
+            </PlaceholderSelect>
             <OpcoesSelect opcoes={volumesDisponiveis} />
           </select>
-        </label>
+          </label>
+        )}
 
         <fieldset className="coach-ia-dias">
           <legend>Dias disponíveis para treinar *</legend>
@@ -207,7 +272,7 @@ function FormularioPlanoSemanal({
         </fieldset>
 
         <label className="coach-ia-campo">
-          <span>Dia do longão</span>
+          <span>Dia do longão (treino mais longo)</span>
           <select
             name="diaLongao"
             value={form.diaLongao}

@@ -48,8 +48,101 @@ function criarPasso(tipo, titulo, texto) {
   };
 }
 
+function criarPassoPrincipal(texto) {
+  const conteudo = String(texto ?? "").trim();
+
+  if (/caminhada/i.test(conteudo)) {
+    return criarPasso("RECUPERACAO", "Caminhada", conteudo);
+  }
+  if (/trote/i.test(conteudo)) {
+    return criarPasso("CORRIDA", "Trote leve", conteudo);
+  }
+  if (/corrida/i.test(conteudo)) {
+    return criarPasso("CORRIDA", "Corrida", conteudo);
+  }
+  return criarPasso("CORRIDA", "Treino principal", conteudo);
+}
+
+function dividirPassosPrincipais(texto) {
+  const partes = [];
+  let inicio = 0;
+  let nivelParenteses = 0;
+
+  for (let indice = 0; indice < texto.length; indice += 1) {
+    if (texto[indice] === "(") nivelParenteses += 1;
+    if (texto[indice] === ")") nivelParenteses -= 1;
+    if (texto[indice] === "+" && nivelParenteses === 0) {
+      partes.push(texto.slice(inicio, indice).trim());
+      inicio = indice + 1;
+    }
+  }
+
+  partes.push(texto.slice(inicio).trim());
+  return partes.filter(Boolean);
+}
+
+function criarEtapaPrincipal(texto) {
+  const conteudo = String(texto ?? "").trim();
+  const repeticao = conteudo.match(/^(\d+)\s*x\s*\((.+)\)$/i);
+
+  if (!repeticao) {
+    return criarPassoPrincipal(conteudo);
+  }
+
+  const [, quantidade, sequencia] = repeticao;
+  return {
+    tipo: "REPETICAO",
+    titulo: "Série",
+    repeticoes: Number(quantidade),
+    descricao: "Repita os passos na ordem indicada.",
+    passos: dividirPassosPrincipais(sequencia).map(criarEtapaPrincipal)
+  };
+}
+
 function criarBlocoPrincipal(texto) {
-  const repeticao = String(texto ?? "").trim().match(
+  const textoPrincipal = String(texto ?? "").trim();
+  const sequenciaComposta = dividirPassosPrincipais(textoPrincipal);
+
+  if (sequenciaComposta.length > 1) {
+    return {
+      tipo: "SEQUENCIA",
+      titulo: "Treino principal",
+      descricao: "",
+      passos: sequenciaComposta.map(criarEtapaPrincipal)
+    };
+  }
+
+  const etapaComRepeticao = criarEtapaPrincipal(textoPrincipal);
+  if (
+    textoPrincipal.includes("+") &&
+    classeTipoBloco(etapaComRepeticao.tipo) === "repeticao"
+  ) {
+    return etapaComRepeticao;
+  }
+
+  const repeticaoNoFinal = textoPrincipal.match(
+    /^(.+?)\s*\(\s*repetir\s+(\d+)\s*x\s*\)\s*$/i
+  );
+
+  if (repeticaoNoFinal) {
+    const [, sequencia, quantidade] = repeticaoNoFinal;
+    const passos = sequencia
+      .split(/\s*,\s*/)
+      .filter(Boolean)
+      .map(criarPassoPrincipal);
+
+    if (passos.length > 1) {
+      return {
+        tipo: "REPETICAO",
+        titulo: "Série principal",
+        repeticoes: Number(quantidade),
+        descricao: "Repita os passos na ordem indicada.",
+        passos
+      };
+    }
+  }
+
+  const repeticao = textoPrincipal.match(
     /^(\d+)\s*x\s*(.+?)(?:,\s*com\s+(.+?)\s+entre\s+repeti(?:ç|c)ões?)?$/i
   );
 
@@ -57,10 +150,23 @@ function criarBlocoPrincipal(texto) {
     return criarPasso("CORRIDA", "Treino principal", texto);
   }
 
-  const [, quantidade, corrida, recuperacao] = repeticao;
+  const [, quantidade, conteudoRepeticao, recuperacaoEntreRepeticoes] = repeticao;
+  const conteudoSemParenteses = conteudoRepeticao
+    .replace(/^\(\s*/, "")
+    .replace(/\s*\)$/, "");
+  const corridaECaminhada = conteudoSemParenteses.match(
+    /^(.+?),\s*((?:\d+(?:[,.]\d+)?\s*(?:min(?:uto)?s?)?\s+de\s+)?(?:caminhada|recupera(?:ç|c)ão).*)$/i
+  );
+  const corrida = corridaECaminhada?.[1] ?? conteudoSemParenteses;
+  const recuperacao = recuperacaoEntreRepeticoes ?? corridaECaminhada?.[2];
   const passos = [criarPasso("CORRIDA", "Corrida", corrida)];
   if (recuperacao) {
-    passos.push(criarPasso("RECUPERACAO", "Recuperação", recuperacao));
+    const caminhada = /caminhada/i.test(recuperacao);
+    passos.push(criarPasso(
+      "RECUPERACAO",
+      caminhada ? "Caminhada" : "Recuperação",
+      recuperacao
+    ));
   }
 
   return {
@@ -104,6 +210,19 @@ function blocosDaDescricao(descricao) {
 function PassoTreino({ bloco }) {
   const tipo = classeTipoBloco(bloco.tipo);
   const passos = Array.isArray(bloco.passos) ? bloco.passos : [];
+
+  if (tipo === "sequencia") {
+    return (
+      <section className="plano-bloco-repeticao">
+        <header><strong>{bloco.titulo}</strong></header>
+        <div className="plano-bloco-repeticao-passos">
+          {passos.map((passo, indice) => (
+            <PassoTreino bloco={passo} key={`${passo.tipo}-${indice}`} />
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   if (tipo === "repeticao") {
     return (
@@ -157,6 +276,14 @@ function BlocosTreino({ descricao }) {
 
 function CardTreinoDia({ treino }) {
   const possuiBlocos = blocosDaDescricao(treino.descricao).length > 0;
+  const distancia = treino.distanciaKm ??
+    treino.distancia ??
+    treino.distanceKm ??
+    treino.distance;
+  const pace = treino.paceSugerido ??
+    treino.pace ??
+    treino.suggestedPace ??
+    extrairPace(treino.descricao);
 
   return (
     <article className="plano-ia-card">
@@ -167,9 +294,9 @@ function CardTreinoDia({ treino }) {
       <h3>{normalizarNomenclaturaTreino(treino.titulo)}</h3>
       {!possuiBlocos && <p>{treino.descricao}</p>}
       <dl>
-        <div><dt>Distância</dt><dd>{formatarDistancia(treino.distanciaKm)}</dd></div>
+        <div><dt>Distância</dt><dd>{formatarDistancia(distancia)}</dd></div>
         <div><dt>Duração</dt><dd>{formatarDuracao(treino.duracaoEstimada)}</dd></div>
-        <div><dt>Pace</dt><dd>{formatarPace(treino.paceSugerido)}</dd></div>
+        <div><dt>Pace</dt><dd>{formatarPace(pace)}</dd></div>
       </dl>
       <BlocosTreino descricao={treino.descricao} />
       {treino.observacoes && <small>{treino.observacoes}</small>}
