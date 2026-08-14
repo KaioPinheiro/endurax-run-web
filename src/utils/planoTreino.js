@@ -9,7 +9,7 @@
   OBJETIVOS_PLANO_MENOS_6_MESES,
   OBJETIVOS_PLANO_SEM_EXPERIENCIA,
   VOLUMES_SEMANAIS_MARATONA
-} from "../constants/planoTreino";
+} from "../constants/planoTreino.js";
 
 const SEM_VALOR = "—";
 
@@ -97,7 +97,7 @@ export function normalizarCampoPlano(formulario, campo) {
     ...formulario,
     [name]: type === "checkbox" ? checked : valorNormalizado,
     ...(objetivoIncompativelComExperiencia
-      ? { objetivo: "", objetivoPersonalizado: "" }
+      ? { objetivo: "", tempoAtual: "", tempoDesejado: "" }
       : {}),
     ...(name === "experienciaCorrida" &&
       valorNormalizado === EXPERIENCIA_SEM_CORRIDA
@@ -107,8 +107,8 @@ export function normalizarCampoPlano(formulario, campo) {
       EXPERIENCIAS_INICIANTES.includes(valorNormalizado)
       ? { volumeSemanalAtual: "" }
       : {}),
-    ...(name === "objetivo" && valorNormalizado !== "Outro"
-      ? { objetivoPersonalizado: "" }
+    ...(name === "objetivo" && !ehObjetivoPerformance(valorNormalizado)
+      ? { tempoAtual: "", tempoDesejado: "" }
       : {}),
     ...(name === "corre5KmSemCaminhar" && valorNormalizado !== "sim"
       ? { tempo5Km: "" }
@@ -246,11 +246,16 @@ export function validarFormularioPlano(formulario) {
     return "Escolha o dia do longão entre os dias disponíveis para treinar.";
   }
 
-  if (
-    formulario.objetivo === "Outro" &&
-    !formulario.objetivoPersonalizado.trim()
-  ) {
-    return "Informe o objetivo que deseja alcançar.";
+  if (ehObjetivoPerformance(formulario.objetivo)) {
+    const atual = tempoEmSegundos(formulario.tempoAtual, formulario.objetivo);
+    const desejado = tempoEmSegundos(formulario.tempoDesejado, formulario.objetivo);
+
+    if (atual === null || desejado === null) {
+      return `Informe tempos válidos no formato ${formatoTempoObjetivo(formulario.objetivo)}.`;
+    }
+    if (desejado >= atual) {
+      return "O tempo desejado deve ser melhor que o tempo atual.";
+    }
   }
 
   return null;
@@ -312,9 +317,7 @@ export function planoIndicaMaratona(formulario) {
 }
 
 export function planoIndicaMeiaOuMaratona(formulario) {
-  const objetivo = formulario.objetivo === "Outro"
-    ? formulario.objetivoPersonalizado
-    : formulario.objetivo;
+  const objetivo = formulario.objetivo;
   const texto = textoNormalizado([
     objetivo,
     formulario.distanciaAlvo,
@@ -329,9 +332,8 @@ export function planoIndicaMeiaOuMaratona(formulario) {
 
 export function montarPayloadMeuPlano(formulario) {
   const possuiProva = formulario.possuiProva === "sim";
-  const objetivo = formulario.objetivo === "Outro"
-    ? formulario.objetivoPersonalizado.trim()
-    : formulario.objetivo;
+  const objetivo = formulario.objetivo;
+  const objetivoPerformance = ehObjetivoPerformance(objetivo);
   const distanciaAlvo = inferirDistanciaAlvo(formulario);
   const distanciaProva = inferirDistanciaProva(formulario, distanciaAlvo);
   const observacoes = montarObservacoesComLongao(formulario);
@@ -339,6 +341,8 @@ export function montarPayloadMeuPlano(formulario) {
   return {
     idade: Number(formulario.idade),
     objetivo,
+    tempoAtual: objetivoPerformance ? formulario.tempoAtual.trim() : null,
+    tempoDesejado: objetivoPerformance ? formulario.tempoDesejado.trim() : null,
     corre5KmSemCaminhar:
       formulario.experienciaCorrida !== EXPERIENCIA_SEM_CORRIDA &&
       formulario.corre5KmSemCaminhar === "sim",
@@ -357,11 +361,11 @@ export function montarPayloadMeuPlano(formulario) {
     ritmoConfortavel: formulario.ritmoConfortavel,
     distanciaAlvo,
     diasDisponiveis: formulario.diasDisponiveis,
+    diaLongao: formulario.diaLongao || null,
     possuiProva,
     dataProva: possuiProva ? formulario.dataProva : null,
     distanciaProva: possuiProva ? distanciaProva : null,
     objetivoProva: null,
-    tempoDesejado: null,
     importanciaProva: possuiProva ? inferirImportanciaProva(formulario) : null,
     possuiLesao: formulario.possuiLesao,
     observacoes,
@@ -388,9 +392,7 @@ function inferirDistanciaAlvo(formulario) {
     }
   }
 
-  const objetivo = formulario.objetivo === "Outro"
-    ? formulario.objetivoPersonalizado
-    : formulario.objetivo;
+  const objetivo = formulario.objetivo;
   const textoObjetivo = textoNormalizado(objetivo);
 
   if (textoObjetivo.includes("5 km")) {
@@ -413,9 +415,7 @@ function inferirDistanciaAlvo(formulario) {
 }
 
 function ehPlanoMaratona(formulario) {
-  const objetivo = formulario.objetivo === "Outro"
-    ? formulario.objetivoPersonalizado
-    : formulario.objetivo;
+  const objetivo = formulario.objetivo;
   const distanciaAlvo = inferirDistanciaAlvo(formulario);
   const distanciaProva = inferirDistanciaProva(formulario, distanciaAlvo);
 
@@ -497,6 +497,36 @@ export function textoNormalizado(valor) {
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
     .toLowerCase();
+}
+
+export function ehObjetivoPerformance(objetivo) {
+  return textoNormalizado(objetivo).startsWith("melhorar tempo ");
+}
+
+export function distanciaObjetivoPerformance(objetivo) {
+  const texto = textoNormalizado(objetivo);
+  if (texto.includes("5 km")) return "5 km";
+  if (texto.includes("10 km")) return "10 km";
+  if (texto.includes("meia maratona")) return "Meia Maratona";
+  if (texto.includes("maratona")) return "Maratona";
+  return "distância";
+}
+
+export function formatoTempoObjetivo(objetivo) {
+  return distanciaObjetivoPerformance(objetivo) === "Maratona" ? "H:MM:SS" : "MM:SS";
+}
+
+function tempoEmSegundos(valor, objetivo) {
+  const partes = String(valor ?? "").trim().split(":");
+  const esperaHoras = formatoTempoObjetivo(objetivo) === "H:MM:SS";
+  if ((esperaHoras && partes.length !== 3) || (!esperaHoras && partes.length !== 2)) return null;
+  if (!partes.every((parte) => /^\d+$/.test(parte))) return null;
+  const numeros = partes.map(Number);
+  if (numeros.some((numero) => numero < 0) || numeros.slice(1).some((numero) => numero > 59)) return null;
+  if (numeros[0] <= 0) return null;
+  return esperaHoras
+    ? numeros[0] * 3600 + numeros[1] * 60 + numeros[2]
+    : numeros[0] * 60 + numeros[1];
 }
 
 export function normalizarNomenclaturaTreino(valor) {

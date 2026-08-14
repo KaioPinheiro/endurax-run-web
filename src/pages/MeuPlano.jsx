@@ -5,14 +5,17 @@ import ResultadoMeuPlano from "../components/plano/ResultadoMeuPlano";
 import { MENSAGENS_LOADING_PLANO } from "../constants/planoTreino";
 import {
   buscarConfigPublica,
+  buscarPagamentoPorSolicitacao,
   buscarPlanoGerado,
   buscarResultadoPagamento,
   criarPagamentoPix,
   criarSolicitacaoPlano,
   gerarPlanoComIA,
+  reconciliarPagamento,
   tentarGeracaoNovamente
 } from "../services/api";
 import { obterMensagemErroIa } from "../utils/mensagemErroIa";
+import { criarRecuperacaoCompra, estadoDoResultado } from "../utils/fluxoMeuPlano";
 import {
   alternarDiaDisponivel,
   criarEstadoInicialPlano,
@@ -25,31 +28,39 @@ import "./PlanoSemanalIA.css";
 
 const PAGAMENTO_ID_KEY = "pagamentoId";
 const SOLICITACAO_ID_KEY = "solicitacaoPlanoId";
+const PLANO_ID_KEY = "planoId";
+const PAYLOAD_PLANO_KEY = "payloadMeuPlano";
 
-function limparPagamentoPersistido() {
+function limparCompraPersistida() {
   localStorage.removeItem(PAGAMENTO_ID_KEY);
   localStorage.removeItem(SOLICITACAO_ID_KEY);
+  localStorage.removeItem(PLANO_ID_KEY);
+  localStorage.removeItem(PAYLOAD_PLANO_KEY);
 }
 
-function estadoDoResultado(resultado) {
-  if (resultado.pagamentoStatus === "EXPIRED") return "EXPIRED";
-  if (["REJECTED", "CANCELLED"].includes(resultado.pagamentoStatus)) return "FAILED";
-  if (resultado.geracaoStatus === "FAILED") return "FAILED";
-  if (resultado.geracaoStatus === "COMPLETED") return "COMPLETED";
-  if (resultado.pagamentoStatus === "APPROVED" || resultado.geracaoStatus === "PROCESSING") {
-    return "PROCESSING";
+function lerPayloadPersistido() {
+  try {
+    return JSON.parse(localStorage.getItem(PAYLOAD_PLANO_KEY)) || null;
+  } catch {
+    return null;
   }
-  return "PENDING";
 }
 
 function mensagemDoEstado(estado, mensagem) {
   if (estado === "PROCESSING") return <>Pagamento confirmado.<br />Estamos gerando seu plano...</>;
+  if (estado === "COMPLETED") return mensagem || "Pagamento confirmado. Seu plano está pronto.";
   if (estado === "FAILED") return mensagem || "Não foi possível gerar seu plano.";
   if (estado === "EXPIRED") return "Pagamento expirado.";
   return "Aguardando pagamento...";
 }
 
 function MeuPlano() {
+  const recuperacaoInicial = criarRecuperacaoCompra({
+    pagamentoId: localStorage.getItem(PAGAMENTO_ID_KEY),
+    planoId: localStorage.getItem(PLANO_ID_KEY),
+    solicitacaoPlanoId: localStorage.getItem(SOLICITACAO_ID_KEY),
+    payload: lerPayloadPersistido()
+  });
   const [form, setForm] = useState(criarEstadoInicialPlano);
   const [plano, setPlano] = useState(null);
   const [erro, setErro] = useState("");
@@ -57,43 +68,68 @@ function MeuPlano() {
   const [sucesso, setSucesso] = useState("");
   const [indiceMensagemLoading, setIndiceMensagemLoading] = useState(0);
   const [versaoPlano, setVersaoPlano] = useState(0);
-  const [pagamento, setPagamento] = useState(() => {
-    const pagamentoId = localStorage.getItem(PAGAMENTO_ID_KEY);
-    return pagamentoId ? { pagamentoId } : null;
-  });
-  const [estadoPagamento, setEstadoPagamento] = useState(() =>
-    localStorage.getItem(PAGAMENTO_ID_KEY) ? "PENDING" : null
-  );
+  const [pagamento, setPagamento] = useState(recuperacaoInicial.pagamento);
+  const [estadoPagamento, setEstadoPagamento] = useState(recuperacaoInicial.estadoPagamento);
   const [mensagemPagamento, setMensagemPagamento] = useState("");
-  const payloadRef = useRef(null);
+  const [pagamentoOculto, setPagamentoOculto] = useState(false);
+  const [pagamentoSincronizado, setPagamentoSincronizado] = useState(false);
+  const [solicitacaoSemPagamento, setSolicitacaoSemPagamento] = useState(
+    recuperacaoInicial.solicitacaoSemPagamento
+  );
+  const payloadRef = useRef(recuperacaoInicial.payload);
   const envioEmAndamento = useRef(false);
 
   const concluirComPlano = useCallback(async (planoId) => {
+    if (!planoId) {
+      throw new Error("O pagamento foi concluído, mas o plano ainda não está disponível.");
+    }
+    localStorage.setItem(PLANO_ID_KEY, String(planoId));
     const planoGerado = await buscarPlanoGerado(planoId);
     setPlano(planoGerado);
     setVersaoPlano((atual) => atual + 1);
     setSucesso("Meu Plano foi gerado com sucesso!");
     setPagamento(null);
     setEstadoPagamento(null);
-    limparPagamentoPersistido();
   }, []);
 
   const consultarPagamento = useCallback(async (pagamentoId) => {
     try {
       const resultado = await buscarResultadoPagamento(pagamentoId);
       const estado = estadoDoResultado(resultado);
+      setPagamento((atual) => ({ ...atual, ...resultado, pagamentoId }));
+      setPagamentoSincronizado(true);
       setEstadoPagamento(estado);
       setMensagemPagamento(resultado.mensagem || "");
 
-      if (estado === "COMPLETED") {
-        await concluirComPlano(resultado.planoId);
-      } else if (estado === "EXPIRED") {
-        limparPagamentoPersistido();
+      if (resultado.pagamentoStatus === "APPROVED" && resultado.geracaoStatus === "PENDING") {
+        await tentarGeracaoNovamente(pagamentoId);
+        setEstadoPagamento("PROCESSING");
+      } else if (estado === "COMPLETED") {
+        try {
+          await concluirComPlano(resultado.planoId);
+        } catch (error) {
+          setErro(obterMensagemErroIa(error, "Seu plano está pronto, mas não foi possível carregá-lo."));
+        }
       }
     } catch (error) {
       setErro(obterMensagemErroIa(error, "Não foi possível consultar o pagamento."));
     }
   }, [concluirComPlano]);
+
+  useEffect(() => {
+    const planoId = localStorage.getItem(PLANO_ID_KEY);
+    if (!planoId || plano) return undefined;
+
+    const recuperacao = setTimeout(() => {
+      concluirComPlano(planoId).catch((error) => {
+        const pagamentoId = localStorage.getItem(PAGAMENTO_ID_KEY);
+        if (pagamentoId) setPagamento((atual) => atual || { pagamentoId });
+        setEstadoPagamento("COMPLETED");
+        setErro(obterMensagemErroIa(error, "Seu plano está pronto, mas não foi possível carregá-lo."));
+      });
+    }, 0);
+    return () => clearTimeout(recuperacao);
+  }, [concluirComPlano, plano]);
 
   useEffect(() => {
     if (!pagamento?.pagamentoId || !["PENDING", "PROCESSING"].includes(estadoPagamento)) {
@@ -107,6 +143,22 @@ function MeuPlano() {
       clearInterval(intervalo);
     };
   }, [consultarPagamento, estadoPagamento, pagamento?.pagamentoId]);
+
+  // Reconciliação com o Mercado Pago: só enquanto o pagamento não foi confirmado, em
+  // frequência baixa e sem bloquear o polling. Falhas são ignoradas de propósito — quem
+  // garante o início da geração ao detectar aprovação é o backend.
+  useEffect(() => {
+    const pagamentoId = pagamento?.pagamentoId;
+    if (!pagamentoId || estadoPagamento !== "PENDING") return undefined;
+
+    const reconciliar = () => reconciliarPagamento(pagamentoId).catch(() => {});
+    const primeira = setTimeout(reconciliar, 0);
+    const intervalo = setInterval(reconciliar, 30000);
+    return () => {
+      clearTimeout(primeira);
+      clearInterval(intervalo);
+    };
+  }, [estadoPagamento, pagamento?.pagamentoId]);
 
   useEffect(() => {
     if (!carregando) return undefined;
@@ -134,12 +186,42 @@ function MeuPlano() {
   }
 
   async function iniciarPagamento(payload) {
-    const solicitacao = await criarSolicitacaoPlano(form.email.trim(), payload);
-    localStorage.setItem(SOLICITACAO_ID_KEY, String(solicitacao.solicitacaoPlanoId));
+    const email = form.email.trim() || localStorage.getItem("email") || "";
+    let solicitacaoPlanoId = localStorage.getItem(SOLICITACAO_ID_KEY);
+    const solicitacaoJaExistia = Boolean(solicitacaoPlanoId);
+    localStorage.setItem(PAYLOAD_PLANO_KEY, JSON.stringify(payload));
 
-    const cobranca = await criarPagamentoPix(form.email.trim(), solicitacao.solicitacaoPlanoId);
+    if (!solicitacaoPlanoId) {
+      const solicitacao = await criarSolicitacaoPlano(email, payload);
+      solicitacaoPlanoId = String(solicitacao.solicitacaoPlanoId);
+      localStorage.setItem(SOLICITACAO_ID_KEY, solicitacaoPlanoId);
+      setSolicitacaoSemPagamento(true);
+    }
+
+    if (solicitacaoJaExistia) {
+      try {
+        const cobrancaExistente = await buscarPagamentoPorSolicitacao(Number(solicitacaoPlanoId));
+        localStorage.setItem(PAGAMENTO_ID_KEY, String(cobrancaExistente.pagamentoId));
+        setPagamento(cobrancaExistente);
+        setPagamentoSincronizado(true);
+        setSolicitacaoSemPagamento(false);
+        const estado = estadoDoResultado(cobrancaExistente);
+        setEstadoPagamento(estado);
+        if (estado === "COMPLETED") {
+          await concluirComPlano(cobrancaExistente.planoId);
+        }
+        return;
+      } catch (error) {
+        if (error?.response?.status !== 404) throw error;
+      }
+    }
+
+    const cobranca = await criarPagamentoPix(email, Number(solicitacaoPlanoId));
     localStorage.setItem(PAGAMENTO_ID_KEY, String(cobranca.pagamentoId));
     setPagamento(cobranca);
+    setPagamentoSincronizado(true);
+    setSolicitacaoSemPagamento(false);
+    setPagamentoOculto(false);
     setEstadoPagamento("PENDING");
   }
 
@@ -160,6 +242,7 @@ function MeuPlano() {
     setIndiceMensagemLoading(0);
     const payload = montarPayloadMeuPlano(form);
     payloadRef.current = payload;
+    localStorage.setItem(PAYLOAD_PLANO_KEY, JSON.stringify(payload));
 
     try {
       localStorage.setItem("email", form.email.trim());
@@ -170,7 +253,6 @@ function MeuPlano() {
         await iniciarPagamento(payload);
       }
     } catch (error) {
-      limparPagamentoPersistido();
       setErro(obterMensagemErroIa(error, "Não foi possível iniciar a geração do plano."));
     } finally {
       envioEmAndamento.current = false;
@@ -200,15 +282,24 @@ function MeuPlano() {
   }
 
   async function gerarNovoQrCode() {
+    if (carregando) return;
+    const payload = payloadRef.current || lerPayloadPersistido();
+    if (!payload) {
+      setErro("Não foi possível recuperar os dados do formulário. Inicie uma nova solicitação.");
+      return;
+    }
+
     setPagamento(null);
     setEstadoPagamento(null);
     setMensagemPagamento("");
-    limparPagamentoPersistido();
-    if (!payloadRef.current) return;
+    setPagamentoSincronizado(false);
+    localStorage.removeItem(PAGAMENTO_ID_KEY);
+    localStorage.removeItem(SOLICITACAO_ID_KEY);
+    localStorage.removeItem(PLANO_ID_KEY);
 
     setCarregando(true);
     try {
-      await iniciarPagamento(payloadRef.current);
+      await iniciarPagamento(payload);
     } catch (error) {
       setErro(obterMensagemErroIa(error, "Não foi possível gerar um novo QR Code."));
     } finally {
@@ -216,14 +307,50 @@ function MeuPlano() {
     }
   }
 
+  async function continuarSolicitacao() {
+    const payload = payloadRef.current || lerPayloadPersistido();
+    if (!payload || carregando) return;
+    setCarregando(true);
+    setErro("");
+    try {
+      await iniciarPagamento(payload);
+    } catch (error) {
+      setErro(obterMensagemErroIa(error, "Não foi possível retomar o pagamento."));
+    } finally {
+      setCarregando(false);
+    }
+  }
+
   function cancelarJornadaPagamento() {
-    limparPagamentoPersistido();
-    setPagamento(null);
-    setEstadoPagamento(null);
-    setMensagemPagamento("");
+    setPagamentoOculto(true);
     setErro("");
     setCarregando(false);
+  }
+
+  async function buscarPlanoNovamente() {
+    if (carregando) return;
+    const planoId = localStorage.getItem(PLANO_ID_KEY);
+    setCarregando(true);
+    setErro("");
+    try {
+      await concluirComPlano(planoId);
+    } catch (error) {
+      setEstadoPagamento("COMPLETED");
+      setErro(obterMensagemErroIa(error, "Seu plano está pronto, mas não foi possível carregá-lo."));
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  function iniciarNovoPlano() {
+    limparCompraPersistida();
     payloadRef.current = null;
+    setPlano(null);
+    setPagamento(null);
+    setEstadoPagamento(null);
+    setPagamentoSincronizado(false);
+    setSolicitacaoSemPagamento(false);
+    setSucesso("");
   }
 
   const fluxoAtivo = carregando || Boolean(pagamento);
@@ -236,7 +363,7 @@ function MeuPlano() {
         <p>Receba um ciclo de corrida personalizado para sua prova-alvo ou para o objetivo que deseja alcançar.</p>
       </header>
 
-      {!pagamento && !plano && (
+      {!pagamento && !plano && !solicitacaoSemPagamento && (
         <FormularioPlanoSemanal
           form={form} erro={erro} sucesso={sucesso} carregando={fluxoAtivo}
           mensagemLoading={MENSAGENS_LOADING_PLANO[indiceMensagemLoading]}
@@ -245,23 +372,48 @@ function MeuPlano() {
         />
       )}
 
-      {pagamento && (
+      {!pagamento && !plano && solicitacaoSemPagamento && (
+        <section className="pix-card" aria-live="polite">
+          {erro && <p className="coach-ia-erro pix-erro">{erro}</p>}
+          <h2>Solicitação salva</h2>
+          <p>Seus dados foram preservados. Continue para recuperar ou gerar o Pix.</p>
+          <button className="coach-ia-submit" type="button" onClick={continuarSolicitacao} disabled={carregando}>
+            Continuar pagamento
+          </button>
+        </section>
+      )}
+
+      {pagamento && pagamentoOculto && (
+        <section className="pix-card" aria-live="polite">
+          <h2>Pagamento ocultado</h2>
+          <p>Ocultar esta tela não cancela o Pix. Continuaremos acompanhando esse pagamento.</p>
+          <button className="coach-ia-submit" type="button" onClick={() => setPagamentoOculto(false)}>
+            Retomar pagamento
+          </button>
+        </section>
+      )}
+
+      {pagamento && !pagamentoOculto && (
         <>
           {erro && <p className="coach-ia-erro pix-erro">{erro}</p>}
           <PagamentoPix
             pagamento={pagamento}
             estado={estadoPagamento || "PENDING"}
             mensagem={mensagemDoEstado(estadoPagamento || "PENDING", mensagemPagamento)}
-            onTentarNovamente={tentarNovamente}
+            onTentarNovamente={
+              pagamento.geracaoStatus === "FAILED" ? tentarNovamente : gerarNovoQrCode
+            }
+            onBuscarPlano={buscarPlanoNovamente}
             onGerarNovo={gerarNovoQrCode}
             onCancelarPagamento={cancelarJornadaPagamento}
+            sincronizado={pagamentoSincronizado}
           />
         </>
       )}
 
       <ResultadoMeuPlano
         key={versaoPlano} plano={plano} carregando={fluxoAtivo}
-        onGerarNovamente={() => { setPlano(null); setSucesso(""); }}
+        onGerarNovamente={iniciarNovoPlano}
       />
     </section>
   );

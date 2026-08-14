@@ -7,8 +7,6 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
 
-  console.log("TOKEN ENVIADO:", token);
-
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -100,6 +98,18 @@ export async function buscarResultadoPagamento(pagamentoId) {
   return response.data;
 }
 
+// Reconciliação explícita com o Mercado Pago. Fica fora do polling de progresso:
+// uma indisponibilidade do provedor não pode impedir a leitura do estado já persistido.
+// Quando detecta aprovação, quem inicia a geração é o backend, não esta chamada.
+export async function reconciliarPagamento(pagamentoId) {
+  await api.get(`/api/pagamentos/${pagamentoId}/status`);
+}
+
+export async function buscarPagamentoPorSolicitacao(solicitacaoPlanoId) {
+  const response = await api.get(`/api/pagamentos/solicitacao/${solicitacaoPlanoId}`);
+  return response.data;
+}
+
 export async function tentarGeracaoNovamente(pagamentoId) {
   await api.post(`/api/pagamentos/${pagamentoId}/geracao/tentar-novamente`);
 }
@@ -108,9 +118,22 @@ export async function buscarPlanoGerado(planoId) {
   const response = await api.get(`/training-plans/${planoId}`);
   const planoPersistido = response.data;
 
-  return typeof planoPersistido?.descricao === "string"
-    ? JSON.parse(planoPersistido.descricao)
-    : planoPersistido?.descricao;
+  if (typeof planoPersistido?.descricao !== "string") {
+    if (!planoPersistido?.descricao) {
+      throw new Error("O plano foi encontrado, mas está sem conteúdo. Tente novamente.");
+    }
+    return planoPersistido.descricao;
+  }
+
+  try {
+    const descricao = JSON.parse(planoPersistido.descricao);
+    if (!descricao || typeof descricao !== "object") {
+      throw new Error("O plano foi encontrado, mas seu conteúdo está inválido. Tente novamente.");
+    }
+    return descricao;
+  } catch {
+    throw new Error("O plano foi encontrado, mas seu conteúdo está inválido. Tente novamente.");
+  }
 }
 
 export default api;

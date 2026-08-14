@@ -11,8 +11,10 @@ function PagamentoPix({
   estado,
   mensagem,
   onTentarNovamente,
+  onBuscarPlano,
   onGerarNovo,
-  onCancelarPagamento
+  onCancelarPagamento,
+  sincronizado = false
 }) {
   const [copiado, setCopiado] = useState(false);
   const [modalCancelamentoAberto, setModalCancelamentoAberto] = useState(false);
@@ -20,6 +22,13 @@ function PagamentoPix({
   const expiracao = pagamento?.dataExpiracao || pagamento?.expirationDate;
   const copiaCola = pagamento?.pixCopiaCola || pagamento?.copiaCola || pagamento?.qrCode || "";
   const qrCodeBase64 = pagamento?.qrCodeBase64;
+  const ticketUrl = pagamento?.ticketUrl;
+  const valorFormatado = useMemo(() => {
+    const valor = Number(pagamento?.valor);
+    return Number.isFinite(valor)
+      ? valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+      : null;
+  }, [pagamento?.valor]);
 
   useEffect(() => {
     if (!expiracao) return undefined;
@@ -69,7 +78,7 @@ function PagamentoPix({
         </div>
       )}
 
-      <strong className="pix-valor">R$ 12,90</strong>
+      {valorFormatado && <strong className="pix-valor">{valorFormatado}</strong>}
       {segundosRestantes !== null && estado === "PENDING" && (
         <p className="pix-expiracao">Expira em {formatarTempo(segundosRestantes)}</p>
       )}
@@ -96,10 +105,26 @@ function PagamentoPix({
           Tentar novamente
         </button>
       )}
+      {estado === "COMPLETED" && (
+        <button className="coach-ia-submit" type="button" onClick={onBuscarPlano}>
+          Buscar meu plano
+        </button>
+      )}
       {estado === "EXPIRED" && (
         <button className="coach-ia-submit" type="button" onClick={onGerarNovo}>
           Gerar novo QR Code
         </button>
+      )}
+      {/* Só oferece nova cobrança depois que o backend confirmou que esta cobrança está
+          mesmo sem dados de Pix. Durante a reidratação após F5 os dados ainda não
+          chegaram, e criar cobrança nova aqui geraria cobrança duplicada. */}
+      {estado === "PENDING" && sincronizado && !qrCodeBase64 && !copiaCola && (
+        <>
+          {ticketUrl && <a href={ticketUrl} target="_blank" rel="noreferrer">Abrir Pix</a>}
+          <button className="coach-ia-submit" type="button" onClick={onGerarNovo}>
+            Gerar novo QR Code
+          </button>
+        </>
       )}
 
       {modalCancelamentoAberto && (
@@ -121,8 +146,7 @@ function PagamentoPix({
             <div id="pix-modal-descricao">
               <p>Você realmente deseja cancelar este pagamento?</p>
               <p>
-                O QR Code atual será descartado e você retornará ao formulário para
-                gerar um novo pagamento quando desejar.
+                A visualização será fechada, mas este Pix continuará válido até a expiração.
               </p>
               <p className="pix-modal-observacao">
                 <strong>Observação:</strong> Caso o pagamento seja realizado posteriormente

@@ -1,11 +1,12 @@
-import { DIAS_SEMANA } from "./diasSemana";
+import { DIAS_SEMANA } from "./diasSemana.js";
 
 export { DIAS_SEMANA };
 
 export const FORM_INICIAL_PLANO = {
   idade: "",
   objetivo: "",
-  objetivoPersonalizado: "",
+  tempoAtual: "",
+  tempoDesejado: "",
   corre5KmSemCaminhar: "",
   tempo5Km: "",
   maiorDistanciaCorrida: "",
@@ -44,14 +45,17 @@ export const DURACOES_PLANO = [
 ];
 
 export const OBJETIVOS_PLANO = [
+  "Começar a correr",
   "Melhorar condicionamento",
   "Emagrecer",
   "Primeiros 5 km",
   "Primeiros 10 km",
   "Primeira Meia Maratona",
   "Primeira Maratona",
-  "Sub 30 nos 5 km",
-  "Outro"
+  "Melhorar tempo nos 5 km",
+  "Melhorar tempo nos 10 km",
+  "Melhorar tempo na Meia Maratona",
+  "Melhorar tempo na Maratona"
 ];
 
 export const EXPERIENCIA_SEM_CORRIDA = "Nunca corri";
@@ -64,24 +68,9 @@ export const EXPERIENCIAS_INICIANTES = [
   EXPERIENCIA_PARADO
 ];
 
-export const OBJETIVOS_PLANO_SEM_EXPERIENCIA = [
-  "Emagrecer",
-  "Melhorar condicionamento",
-  "Primeiros 5 km",
-  "Primeiros 10 km"
-];
-
-export const OBJETIVOS_PLANO_MENOS_6_MESES = [
-  "Melhorar condicionamento",
-  "Emagrecer",
-  "Primeiros 5 km",
-  "Primeiros 10 km",
-  "Sub 30 nos 5 km"
-];
-
-export const OBJETIVOS_PLANO_6_MESES_A_1_ANO = OBJETIVOS_PLANO.filter(
-  (objetivo) => objetivo !== "Primeira Maratona"
-);
+export const OBJETIVOS_PLANO_SEM_EXPERIENCIA = OBJETIVOS_PLANO;
+export const OBJETIVOS_PLANO_MENOS_6_MESES = OBJETIVOS_PLANO;
+export const OBJETIVOS_PLANO_6_MESES_A_1_ANO = OBJETIVOS_PLANO;
 
 export const VOLUME_SEMANAL_MARATONA = "40-60 km";
 export const VOLUMES_SEMANAIS_MARATONA = [

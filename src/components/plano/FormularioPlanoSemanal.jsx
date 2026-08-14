@@ -15,6 +15,9 @@ import {
   VOLUMES_SEMANAIS
 } from "../../constants/planoTreino";
 import {
+  distanciaObjetivoPerformance,
+  ehObjetivoPerformance,
+  formatoTempoObjetivo,
   normalizarIdade,
   planoIndicaMeiaOuMaratona,
   planoIndicaMaratona,
@@ -55,6 +58,9 @@ function FormularioPlanoSemanal({
     : form.experienciaCorrida === EXPERIENCIA_6_MESES_A_1_ANO
       ? OBJETIVOS_PLANO_6_MESES_A_1_ANO
     : OBJETIVOS_PLANO;
+  const objetivoPerformance = ehObjetivoPerformance(form.objetivo);
+  const distanciaPerformance = distanciaObjetivoPerformance(form.objetivo);
+  const formatoPerformance = formatoTempoObjetivo(form.objetivo);
   const erroTempoReal = validarMaratonaEmTempoReal
     ? validarBloqueiosMaratona(form)
     : null;
@@ -151,17 +157,25 @@ function FormularioPlanoSemanal({
           </select>
         </label>
 
-        {form.objetivo === "Outro" && (
-          <label className="coach-ia-campo">
-            <span>Qual é o seu objetivo? *</span>
-            <input
-              name="objetivoPersonalizado"
-              value={form.objetivoPersonalizado}
-              onChange={onAlterar}
-              placeholder="Descreva o objetivo que deseja alcançar"
-              required
-            />
-          </label>
+        {objetivoPerformance && (
+          <>
+            <label className="coach-ia-campo">
+              <span>Tempo atual {distanciaPerformance === "Maratona" ? "na" : "nos"} {distanciaPerformance} *</span>
+              <input
+                name="tempoAtual"
+                value={form.tempoAtual}
+                onChange={onAlterar}
+                placeholder={formatoPerformance}
+                inputMode="numeric"
+                required
+              />
+            </label>
+            <label className="coach-ia-campo">
+              <span>Tempo desejado *</span>
+              <input name="tempoDesejado" value={form.tempoDesejado} onChange={onAlterar}
+                placeholder={formatoPerformance} inputMode="numeric" required />
+            </label>
+          </>
         )}
 
         <label className="coach-ia-campo">
