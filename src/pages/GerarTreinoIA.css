@@ -118,6 +118,12 @@
   font-weight: 700;
 }
 
+.coach-ia-campo-ajuda {
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
 .coach-ia-campo input,
 .coach-ia-campo select,
 .coach-ia-campo textarea {

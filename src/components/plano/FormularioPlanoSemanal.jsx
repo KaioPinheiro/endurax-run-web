@@ -18,7 +18,9 @@ import {
   distanciaObjetivoPerformance,
   ehObjetivoPerformance,
   formatoTempoObjetivo,
+  mascararTempoObjetivo,
   normalizarIdade,
+  objetivoExibePergunta5Km,
   planoIndicaMeiaOuMaratona,
   planoIndicaMaratona,
   validarBloqueiosMaratona
@@ -61,12 +63,20 @@ function FormularioPlanoSemanal({
   const objetivoPerformance = ehObjetivoPerformance(form.objetivo);
   const distanciaPerformance = distanciaObjetivoPerformance(form.objetivo);
   const formatoPerformance = formatoTempoObjetivo(form.objetivo);
+  const alterarTempoPerformance = (event) => onAlterar({
+    target: {
+      name: event.target.name,
+      value: mascararTempoObjetivo(event.target.value, form.objetivo),
+      type: "text"
+    }
+  });
   const erroTempoReal = validarMaratonaEmTempoReal
     ? validarBloqueiosMaratona(form)
     : null;
   const planoMaratona = planoIndicaMaratona(form);
   const planoMeiaOuMaratona = planoIndicaMeiaOuMaratona(form);
   const nuncaCorreu = form.experienciaCorrida === EXPERIENCIA_SEM_CORRIDA;
+  const exibirPergunta5Km = objetivoExibePergunta5Km(form.objetivo);
   const ocultarVolumeSemanal = EXPERIENCIAS_INICIANTES.includes(form.experienciaCorrida);
   const volumesDisponiveis = planoMaratona
     ? VOLUMES_SEMANAIS_MARATONA
@@ -93,6 +103,9 @@ function FormularioPlanoSemanal({
             autoComplete="email"
             required
           />
+          <small className="coach-ia-campo-ajuda">
+            Necessário para processar e identificar seu pagamento via Pix.
+          </small>
         </label>
 
         <label className="coach-ia-campo">
@@ -164,16 +177,18 @@ function FormularioPlanoSemanal({
               <input
                 name="tempoAtual"
                 value={form.tempoAtual}
-                onChange={onAlterar}
+                onChange={alterarTempoPerformance}
                 placeholder={formatoPerformance}
                 inputMode="numeric"
+                maxLength={formatoPerformance.length}
                 required
               />
             </label>
             <label className="coach-ia-campo">
               <span>Tempo desejado *</span>
-              <input name="tempoDesejado" value={form.tempoDesejado} onChange={onAlterar}
-                placeholder={formatoPerformance} inputMode="numeric" required />
+              <input name="tempoDesejado" value={form.tempoDesejado}
+                onChange={alterarTempoPerformance} placeholder={formatoPerformance}
+                inputMode="numeric" maxLength={formatoPerformance.length} required />
             </label>
           </>
         )}
@@ -191,7 +206,7 @@ function FormularioPlanoSemanal({
           </select>
         </label>
 
-        {!nuncaCorreu && (
+        {!nuncaCorreu && exibirPergunta5Km && (
           <fieldset className="coach-ia-radio-grupo">
             <legend>Você já corre 5 km direto sem caminhar? *</legend>
             <div>
@@ -221,7 +236,7 @@ function FormularioPlanoSemanal({
           </fieldset>
         )}
 
-        {!nuncaCorreu && form.corre5KmSemCaminhar === "sim" && (
+        {!nuncaCorreu && exibirPergunta5Km && form.corre5KmSemCaminhar === "sim" && (
           <label className="coach-ia-campo">
             <span>Em quanto tempo? *</span>
             <input
@@ -241,7 +256,10 @@ function FormularioPlanoSemanal({
               name="maiorDistanciaCorrida"
               value={form.maiorDistanciaCorrida}
               onChange={onAlterar}
-              placeholder="Ex.: 15 km"
+              placeholder="Ex.: 15"
+              inputMode="numeric"
+              maxLength={2}
+              pattern="\d{1,2}"
               required
             />
           </label>

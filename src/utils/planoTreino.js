@@ -84,6 +84,8 @@ export function normalizarCampoPlano(formulario, campo) {
   const { name, value, type, checked } = campo;
   const valorNormalizado = name === "idade"
     ? normalizarIdade(value)
+    : name === "maiorDistanciaCorrida"
+      ? normalizarMaiorDistancia(value)
     : value;
   const objetivosPermitidos = name === "experienciaCorrida"
     ? objetivosDisponiveisPorExperiencia(valorNormalizado)
@@ -109,6 +111,12 @@ export function normalizarCampoPlano(formulario, campo) {
       : {}),
     ...(name === "objetivo" && !ehObjetivoPerformance(valorNormalizado)
       ? { tempoAtual: "", tempoDesejado: "" }
+      : {}),
+    ...(name === "objetivo" && (
+      !objetivoExibePergunta5Km(valorNormalizado) ||
+      !objetivoExibePergunta5Km(formulario.objetivo)
+    )
+      ? { corre5KmSemCaminhar: "", tempo5Km: "" }
       : {}),
     ...(name === "corre5KmSemCaminhar" && valorNormalizado !== "sim"
       ? { tempo5Km: "" }
@@ -155,6 +163,10 @@ export function normalizarIdade(valor) {
   }
 
   return apenasNumeros;
+}
+
+export function normalizarMaiorDistancia(valor) {
+  return String(valor ?? "").replace(/\D/g, "").slice(0, 2);
 }
 
 function objetivosDisponiveisPorExperiencia(experienciaCorrida) {
@@ -218,6 +230,7 @@ export function validarFormularioPlano(formulario) {
   }
 
   if (
+    objetivoExibePergunta5Km(formulario.objetivo) &&
     formulario.experienciaCorrida !== EXPERIENCIA_SEM_CORRIDA &&
     !["sim", "nao"].includes(formulario.corre5KmSemCaminhar)
   ) {
@@ -225,6 +238,7 @@ export function validarFormularioPlano(formulario) {
   }
 
   if (
+    objetivoExibePergunta5Km(formulario.objetivo) &&
     formulario.experienciaCorrida !== EXPERIENCIA_SEM_CORRIDA &&
     formulario.corre5KmSemCaminhar === "sim" &&
     !formulario.tempo5Km.trim()
@@ -237,6 +251,15 @@ export function validarFormularioPlano(formulario) {
     !formulario.maiorDistanciaCorrida.trim()
   ) {
     return "Informe a maior distância que você já correu.";
+  }
+
+
+  if (
+    planoIndicaMeiaOuMaratona(formulario) &&
+    (!/^\d{1,2}$/.test(formulario.maiorDistanciaCorrida) ||
+      Number(formulario.maiorDistanciaCorrida) > 99)
+  ) {
+    return "Informe a maior distância com um número inteiro entre 0 e 99 km.";
   }
 
   if (
@@ -344,9 +367,13 @@ export function montarPayloadMeuPlano(formulario) {
     tempoAtual: objetivoPerformance ? formulario.tempoAtual.trim() : null,
     tempoDesejado: objetivoPerformance ? formulario.tempoDesejado.trim() : null,
     corre5KmSemCaminhar:
+      objetivoExibePergunta5Km(formulario.objetivo) &&
       formulario.experienciaCorrida !== EXPERIENCIA_SEM_CORRIDA &&
-      formulario.corre5KmSemCaminhar === "sim",
+      ["sim", "nao"].includes(formulario.corre5KmSemCaminhar)
+      ? formulario.corre5KmSemCaminhar === "sim"
+      : null,
     tempo5Km:
+      objetivoExibePergunta5Km(formulario.objetivo) &&
       formulario.experienciaCorrida !== EXPERIENCIA_SEM_CORRIDA &&
       formulario.corre5KmSemCaminhar === "sim"
       ? formulario.tempo5Km.trim()
@@ -503,6 +530,15 @@ export function ehObjetivoPerformance(objetivo) {
   return textoNormalizado(objetivo).startsWith("melhorar tempo ");
 }
 
+export function objetivoExibePergunta5Km(objetivo) {
+  return [
+    "Começar a correr",
+    "Melhorar condicionamento",
+    "Emagrecer",
+    "Primeiros 5 km"
+  ].includes(objetivo);
+}
+
 export function distanciaObjetivoPerformance(objetivo) {
   const texto = textoNormalizado(objetivo);
   if (texto.includes("5 km")) return "5 km";
@@ -514,6 +550,21 @@ export function distanciaObjetivoPerformance(objetivo) {
 
 export function formatoTempoObjetivo(objetivo) {
   return distanciaObjetivoPerformance(objetivo) === "Maratona" ? "H:MM:SS" : "MM:SS";
+}
+
+export function mascararTempoObjetivo(valor, objetivo) {
+  const maratona = formatoTempoObjetivo(objetivo) === "H:MM:SS";
+  const limite = maratona ? 5 : 4;
+  const digitos = String(valor ?? "").replace(/\D/g, "").slice(0, limite);
+
+  if (maratona) {
+    if (digitos.length <= 1) return digitos;
+    if (digitos.length <= 3) return `${digitos.slice(0, 1)}:${digitos.slice(1)}`;
+    return `${digitos.slice(0, 1)}:${digitos.slice(1, 3)}:${digitos.slice(3)}`;
+  }
+
+  if (digitos.length <= 2) return digitos;
+  return `${digitos.slice(0, 2)}:${digitos.slice(2)}`;
 }
 
 function tempoEmSegundos(valor, objetivo) {
