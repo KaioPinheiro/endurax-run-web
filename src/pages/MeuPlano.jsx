@@ -34,7 +34,6 @@ const PAYLOAD_PLANO_KEY = "payloadMeuPlano";
 function limparCompraPersistida() {
   localStorage.removeItem(PAGAMENTO_ID_KEY);
   localStorage.removeItem(SOLICITACAO_ID_KEY);
-  localStorage.removeItem(PLANO_ID_KEY);
   localStorage.removeItem(PAYLOAD_PLANO_KEY);
 }
 
@@ -78,6 +77,7 @@ function MeuPlano() {
   );
   const payloadRef = useRef(recuperacaoInicial.payload);
   const envioEmAndamento = useRef(false);
+  const ignorarRecuperacaoPlano = useRef(false);
 
   const concluirComPlano = useCallback(async (planoId) => {
     if (!planoId) {
@@ -118,7 +118,7 @@ function MeuPlano() {
 
   useEffect(() => {
     const planoId = localStorage.getItem(PLANO_ID_KEY);
-    if (!planoId || plano) return undefined;
+    if (!planoId || plano || ignorarRecuperacaoPlano.current) return undefined;
 
     const recuperacao = setTimeout(() => {
       concluirComPlano(planoId).catch((error) => {
@@ -343,6 +343,7 @@ function MeuPlano() {
   }
 
   function iniciarNovoPlano() {
+    ignorarRecuperacaoPlano.current = true;
     limparCompraPersistida();
     payloadRef.current = null;
     setPlano(null);

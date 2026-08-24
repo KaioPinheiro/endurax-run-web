@@ -263,7 +263,7 @@ export function validarFormularioPlano(formulario) {
   }
 
   if (
-    formulario.diaLongao &&
+    !formulario.diaLongao ||
     !formulario.diasDisponiveis.includes(formulario.diaLongao)
   ) {
     return "Escolha o dia do longão entre os dias disponíveis para treinar.";
@@ -748,4 +748,61 @@ export function formatarPace(valor) {
   }
 
   return texto;
+}
+
+export function extrairDuracaoExplicitaBloco(valor) {
+  const texto = String(valor ?? "");
+  const minutosESegundos = texto.match(
+    /\b(\d+:\d{2})\s*min(?:uto)?s?\b(?!\s*\/\s*km)/i
+  );
+  if (minutosESegundos) {
+    return `${minutosESegundos[1]} min`;
+  }
+
+  const minutos = texto.match(
+    /\b(\d+)\s*min(?:uto)?s?\b(?!\s*\/\s*km)/i
+  );
+  return minutos ? `${minutos[1]} min` : "";
+}
+
+export function extrairDistanciaExplicitaBloco(valor) {
+  const distancia = String(valor ?? "").match(
+    /\b(\d+(?:[,.]\d+)?)\s*(km|m)\b/i
+  );
+
+  return distancia ? `${distancia[1]} ${distancia[2].toLowerCase()}` : "";
+}
+
+export function estimarDistanciaBloco(duracao, pace) {
+  const duracaoValida = String(duracao ?? "").trim().match(
+    /^(\d+)\s*min(?:uto)?s?$/i
+  );
+  const paceValido = String(pace ?? "").trim().match(
+    /^(\d+):(\d{2})(?:\s*-\s*(\d+):(\d{2}))?\s*min\/km$/i
+  );
+
+  if (!duracaoValida || !paceValido) {
+    return "";
+  }
+
+  const duracaoSegundos = Number(duracaoValida[1]) * 60;
+  const primeiroPace = Number(paceValido[1]) * 60 + Number(paceValido[2]);
+  const segundoPace = paceValido[3] === undefined
+    ? primeiroPace
+    : Number(paceValido[3]) * 60 + Number(paceValido[4]);
+
+  if (
+    duracaoSegundos <= 0 ||
+    primeiroPace <= 0 ||
+    segundoPace <= 0 ||
+    Number(paceValido[2]) >= 60 ||
+    Number(paceValido[4] ?? 0) >= 60
+  ) {
+    return "";
+  }
+
+  const paceMedioSegundos = (primeiroPace + segundoPace) / 2;
+  const distanciaKm = duracaoSegundos / paceMedioSegundos;
+
+  return `~${distanciaKm.toFixed(1).replace(".", ",")} km`;
 }

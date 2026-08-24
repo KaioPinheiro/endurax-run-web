@@ -295,7 +295,7 @@
   text-align: left;
 }
 
-.plano-ia-resultado > header {
+.plano-ia-resultado-cabecalho {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -523,6 +523,20 @@
   line-height: 1.45;
 }
 
+.plano-ia-logo-capa {
+  display: none;
+}
+
+.plano-ia-semanas-impressao {
+  display: none;
+}
+
+.plano-ia-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .plano-blocos {
   margin: 20px 0 16px;
   padding-top: 16px;
@@ -588,6 +602,19 @@
   font-weight: 700;
 }
 
+.plano-bloco-metricas {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 2px;
+  text-align: right;
+}
+
+.plano-bloco-metricas small {
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 600;
+}
+
 .plano-bloco-conteudo > p {
   min-height: 0;
   margin: 7px 0 0;
@@ -647,7 +674,7 @@
     padding: 22px 17px;
   }
 
-  .plano-ia-resultado > header {
+  .plano-ia-resultado-cabecalho {
     align-items: flex-start;
     flex-direction: column;
   }
@@ -673,5 +700,86 @@
 
   .plano-bloco-repeticao > header span {
     text-align: left;
+  }
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .navbar,
+  .coach-ia-hero {
+    display: none;
+  }
+
+  .coach-ia-page {
+    min-height: 0;
+    padding: 0;
+  }
+
+  .plano-ia-resultado,
+  .plano-ia-resultado * {
+    visibility: visible;
+  }
+
+  .plano-ia-resultado {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    color: #000;
+    background: #fff;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .plano-ia-semanas-tabs,
+  .plano-ia-semana-tela,
+  .plano-ia-acoes {
+    display: none;
+  }
+
+  .plano-ia-semanas-impressao {
+    display: block;
+  }
+
+  .plano-ia-capa {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    break-after: page;
+  }
+
+  .plano-ia-logo-capa {
+    display: block;
+    width: 280px;
+    max-width: 70%;
+    height: auto;
+    margin: auto auto;
+  }
+
+  .plano-ia-semana + .plano-ia-semana {
+    break-before: page;
+  }
+
+  .plano-ia-card {
+    break-inside: avoid;
+  }
+
+  .plano-ia-resultado h2,
+  .plano-ia-semana h3,
+  .plano-ia-card h3,
+  .plano-ia-resumo strong,
+  .plano-ia-card small,
+  .plano-blocos h4,
+  .plano-bloco-cabecalho strong,
+  .plano-bloco-repeticao > header strong {
+    color: #000;
+  }
+
+  .plano-ia-grid {
+    grid-template-columns: 1fr;
   }
 }

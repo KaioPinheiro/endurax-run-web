@@ -1,6 +1,10 @@
 import { useMemo, useState } from "react";
+import logoEndurax from "../../assets/brand/endurax-run-logo-light.svg";
 import {
   ehTreinoCorrida,
+  estimarDistanciaBloco,
+  extrairDistanciaExplicitaBloco,
+  extrairDuracaoExplicitaBloco,
   formatarDistancia,
   formatarDuracao,
   formatarPace,
@@ -12,10 +16,7 @@ function classeTipoBloco(tipo) {
 }
 
 function metricaBloco(bloco) {
-  if (bloco.distancia) {
-    return formatarDistancia(bloco.distancia);
-  }
-  return bloco.duracao || "—";
+  return bloco.distancia || bloco.duracao || "—";
 }
 
 function extrairPace(texto) {
@@ -25,23 +26,12 @@ function extrairPace(texto) {
   return pace?.[0] ?? "";
 }
 
-function extrairMetrica(texto) {
-  const metrica = String(texto ?? "").trim().match(
-    /^(\d+(?:[,.]\d+)?\s*(?:min(?:uto)?s?|km|m|h)|\d+:\d{2})/i
-  );
-  return metrica?.[1] ?? "";
-}
-
 function criarPasso(tipo, titulo, texto) {
-  const metrica = extrairMetrica(texto);
-  const distancia = /(?:km|m)$/i.test(metrica) ? metrica : "";
-  const duracao = distancia ? "" : metrica;
-
   return {
     tipo,
     titulo,
-    distancia,
-    duracao,
+    distancia: extrairDistanciaExplicitaBloco(texto),
+    duracao: extrairDuracaoExplicitaBloco(texto),
     pace: extrairPace(texto),
     descricao: String(texto ?? "").trim(),
     passos: []
@@ -210,6 +200,9 @@ function blocosDaDescricao(descricao) {
 function PassoTreino({ bloco }) {
   const tipo = classeTipoBloco(bloco.tipo);
   const passos = Array.isArray(bloco.passos) ? bloco.passos : [];
+  const distanciaEstimada = bloco.distancia
+    ? ""
+    : estimarDistanciaBloco(bloco.duracao, bloco.pace);
 
   if (tipo === "sequencia") {
     return (
@@ -245,7 +238,10 @@ function PassoTreino({ bloco }) {
       <div className="plano-bloco-conteudo">
         <div className="plano-bloco-cabecalho">
           <strong>{bloco.titulo || bloco.tipo}</strong>
-          <span>{metricaBloco(bloco)}</span>
+          <div className="plano-bloco-metricas">
+            <span>{metricaBloco(bloco)}</span>
+            {distanciaEstimada && <small>{distanciaEstimada}</small>}
+          </div>
         </div>
         {bloco.pace && (
           <p className="plano-bloco-pace">Pace: {formatarPace(bloco.pace)}</p>
@@ -304,14 +300,34 @@ function CardTreinoDia({ treino }) {
   );
 }
 
+function SemanaPlano({ semana }) {
+  const treinosCorrida = (semana?.treinos ?? []).filter(ehTreinoCorrida);
+
+  return (
+    <section className="plano-ia-semana">
+      <header>
+        <div>
+          <span>Semana {semana.numeroSemana}</span>
+          <h3>{semana.titulo}</h3>
+        </div>
+        {semana.foco && (
+          <p><strong>Foco:</strong> {semana.foco}</p>
+        )}
+      </header>
+
+      <div className="plano-ia-grid">
+        {treinosCorrida.map((treino) => (
+          <CardTreinoDia treino={treino} key={treino.diaSemana} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function ResultadoMeuPlano({ plano, carregando, onGerarNovamente }) {
   const [semanaAtiva, setSemanaAtiva] = useState(0);
   const semanas = useMemo(() => plano?.semanas ?? [], [plano]);
   const semanaSelecionada = semanas[semanaAtiva] ?? semanas[0];
-  const treinosCorrida = useMemo(
-    () => (semanaSelecionada?.treinos ?? []).filter(ehTreinoCorrida),
-    [semanaSelecionada]
-  );
 
   if (!plano) {
     return null;
@@ -319,33 +335,41 @@ function ResultadoMeuPlano({ plano, carregando, onGerarNovamente }) {
 
   return (
     <section className="plano-ia-resultado">
-      <header className="plano-ia-resultado-cabecalho">
-        <div>
-          <span>MEU PLANO</span>
-          <h2>{plano.titulo}</h2>
-        </div>
-        <div className="plano-ia-badges">
-          <span>{plano.duracaoSemanas} semanas</span>
-        </div>
-      </header>
+      <div className="plano-ia-capa">
+        <header className="plano-ia-resultado-cabecalho">
+          <div>
+            <span>MEU PLANO</span>
+            <h2>{plano.titulo}</h2>
+          </div>
+          <div className="plano-ia-badges">
+            <span>{plano.duracaoSemanas} semanas</span>
+          </div>
+        </header>
 
-      <div className="plano-ia-resumo">
-        <div>
-          <span>Objetivo</span>
-          <strong>{plano.objetivoPlano}</strong>
+        <div className="plano-ia-resumo">
+          <div>
+            <span>Objetivo</span>
+            <strong>{plano.objetivoPlano}</strong>
+          </div>
+          <div>
+            <span>Duração</span>
+            <strong>{plano.duracaoSemanas} semanas</strong>
+          </div>
         </div>
-        <div>
-          <span>Duração</span>
-          <strong>{plano.duracaoSemanas} semanas</strong>
-        </div>
+
+        {plano.resumo && (
+          <p className="plano-ia-observacoes">{plano.resumo}</p>
+        )}
+        {plano.alerta && (
+          <p className="plano-ia-alerta">Atenção: {plano.alerta}</p>
+        )}
+
+        <img
+          className="plano-ia-logo-capa"
+          src={logoEndurax}
+          alt="Endurax Run"
+        />
       </div>
-
-      {plano.resumo && (
-        <p className="plano-ia-observacoes">{plano.resumo}</p>
-      )}
-      {plano.alerta && (
-        <p className="plano-ia-alerta">Atenção: {plano.alerta}</p>
-      )}
 
       <div className="plano-ia-semanas-tabs" role="tablist" aria-label="Semanas do plano">
         {semanas.map((semana, indice) => (
@@ -363,33 +387,34 @@ function ResultadoMeuPlano({ plano, carregando, onGerarNovamente }) {
       </div>
 
       {semanaSelecionada && (
-        <section className="plano-ia-semana">
-          <header>
-            <div>
-              <span>Semana {semanaSelecionada.numeroSemana}</span>
-              <h3>{semanaSelecionada.titulo}</h3>
-            </div>
-            {semanaSelecionada.foco && (
-              <p><strong>Foco:</strong> {semanaSelecionada.foco}</p>
-            )}
-          </header>
-
-          <div className="plano-ia-grid">
-            {treinosCorrida.map((treino) => (
-              <CardTreinoDia treino={treino} key={treino.diaSemana} />
-            ))}
-          </div>
-        </section>
+        <div className="plano-ia-semana-tela">
+          <SemanaPlano semana={semanaSelecionada} />
+        </div>
       )}
 
-      <button
-        className="coach-ia-gerar-novamente plano-ia-gerar-novamente"
-        type="button"
-        onClick={onGerarNovamente}
-        disabled={carregando}
-      >
-        Gerar novo plano
-      </button>
+      <div className="plano-ia-semanas-impressao" aria-hidden="true">
+        {semanas.map((semana) => (
+          <SemanaPlano semana={semana} key={semana.numeroSemana} />
+        ))}
+      </div>
+
+      <div className="plano-ia-acoes">
+        <button
+          className="coach-ia-gerar-novamente plano-ia-baixar-pdf"
+          type="button"
+          onClick={() => window.print()}
+        >
+          Baixar PDF
+        </button>
+        <button
+          className="coach-ia-gerar-novamente plano-ia-gerar-novamente"
+          type="button"
+          onClick={onGerarNovamente}
+          disabled={carregando}
+        >
+          Gerar novo plano
+        </button>
+      </div>
     </section>
   );
 }

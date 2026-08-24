@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { FORM_INICIAL_PLANO, OBJETIVOS_PLANO } from "../src/constants/planoTreino.js";
 import {
+  alternarDiaDisponivel,
+  estimarDistanciaBloco,
+  extrairDistanciaExplicitaBloco,
+  extrairDuracaoExplicitaBloco,
   montarPayloadMeuPlano,
   mascararTempoObjetivo,
   normalizarCampoPlano,
@@ -22,6 +26,7 @@ function formularioPerformance() {
     ...FORM_INICIAL_PLANO, idade: "30", objetivo: "Melhorar tempo nos 5 km",
     tempoAtual: "31:20", tempoDesejado: "29:30", experienciaCorrida: "1 a 3 anos",
     ritmoConfortavel: "6:00-6:30 min/km", diasDisponiveis: ["segunda-feira"],
+    diaLongao: "segunda-feira",
     possuiProva: "nao", corre5KmSemCaminhar: "nao", observacoes: ""
   };
 }
@@ -36,6 +41,50 @@ test("performance exige tempos válidos e melhora", () => {
   assert.match(validarFormularioPlano({ ...formularioPerformance(), tempoAtual: "" }), /tempos válidos/);
   assert.match(validarFormularioPlano({ ...formularioPerformance(), tempoDesejado: "31:20" }), /deve ser melhor/);
   assert.equal(validarFormularioPlano(formularioPerformance()), null);
+});
+
+test("exige longão em um dos dias disponíveis", () => {
+  const formulario = formularioPerformance();
+
+  assert.match(
+    validarFormularioPlano({ ...formulario, diaLongao: "" }),
+    /dia do longão entre os dias disponíveis/
+  );
+  assert.match(
+    validarFormularioPlano({ ...formulario, diaLongao: "sábado" }),
+    /dia do longão entre os dias disponíveis/
+  );
+  assert.equal(validarFormularioPlano(formulario), null);
+});
+
+test("extrai a duração explícita dos blocos sem confundir pace", () => {
+  assert.equal(extrairDuracaoExplicitaBloco("800 m em 3:30 min de esforço"), "3:30 min");
+  assert.equal(extrairDuracaoExplicitaBloco("2 km de aquecimento em 12 min"), "12 min");
+  assert.equal(extrairDuracaoExplicitaBloco("pace 4:25-4:35 min/km"), "");
+});
+
+test("prioriza somente distância explícita como métrica do bloco", () => {
+  assert.equal(extrairDistanciaExplicitaBloco("1000 m em 4:00 a 4:10 min/km"), "1000 m");
+  assert.equal(extrairDistanciaExplicitaBloco("800 m em 3:30 min"), "800 m");
+  assert.equal(extrairDistanciaExplicitaBloco("12 min de trote leve"), "");
+  assert.equal(extrairDistanciaExplicitaBloco("2 min de recuperação"), "");
+});
+
+test("estima distância somente com duração e pace válidos", () => {
+  assert.equal(estimarDistanciaBloco("12 min", "5:00-5:20 min/km"), "~2,3 km");
+  assert.equal(estimarDistanciaBloco("30 min", "5:30 min/km"), "~5,5 km");
+  assert.equal(estimarDistanciaBloco("12 min", ""), "");
+  assert.equal(estimarDistanciaBloco("12 min", "pace livre"), "");
+  assert.equal(estimarDistanciaBloco("3:30 min", "5:00 min/km"), "");
+  assert.equal(estimarDistanciaBloco("12 min", "3:30 min"), "");
+});
+
+test("limpa o longão quando o dia deixa de estar disponível", () => {
+  const formulario = formularioPerformance();
+  const atualizado = alternarDiaDisponivel(formulario, "segunda-feira");
+
+  assert.deepEqual(atualizado.diasDisponiveis, []);
+  assert.equal(atualizado.diaLongao, "");
 });
 
 test("troca para objetivo geral limpa tempos e payload não os envia", () => {

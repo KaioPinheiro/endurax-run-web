@@ -35,6 +35,10 @@ test("mantém travas do submit, envia diaLongao e não usa preço literal", asyn
   ]);
 
   assert.match(pagina, /envioEmAndamento\.current \|\| carregando \|\| pagamento/);
+  const limpeza = pagina.match(/function limparCompraPersistida\(\) \{([\s\S]*?)\n\}/)?.[1] || "";
+  assert.doesNotMatch(limpeza, /removeItem\(PLANO_ID_KEY\)/);
+  assert.match(pagina, /ignorarRecuperacaoPlano\.current = true/);
+  assert.match(pagina, /ignorarRecuperacaoPlano\.current/);
   assert.match(payload, /diaLongao: formulario\.diaLongao \|\| null/);
   assert.doesNotMatch(pix, /R\$ 12,90/);
   assert.match(pix, /pagamento\?\.valor/);

@@ -304,14 +304,15 @@ function FormularioPlanoSemanal({
         </fieldset>
 
         <label className="coach-ia-campo">
-          <span>Dia do longão (treino mais longo)</span>
+          <span>Dia do longão (treino mais longo) *</span>
           <select
             name="diaLongao"
             value={form.diaLongao}
             onChange={onAlterar}
             disabled={form.diasDisponiveis.length === 0}
+            required
           >
-            <option value="">Sem preferência</option>
+            <option value="">Selecione o dia do longão</option>
             {DIAS_SEMANA
               .filter((dia) => form.diasDisponiveis.includes(dia.valor))
               .map((dia) => (
