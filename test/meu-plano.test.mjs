@@ -4,8 +4,8 @@ import test from "node:test";
 import { criarRecuperacaoCompra, estadoDoResultado } from "../src/utils/fluxoMeuPlano.js";
 
 test("recupera pagamento pendente depois do reload", () => {
-  const recuperacao = criarRecuperacaoCompra({ pagamentoId: "10", payload: {} });
-  assert.deepEqual(recuperacao.pagamento, { pagamentoId: "10" });
+  const recuperacao = criarRecuperacaoCompra({ pagamentoToken: "token-pagamento", payload: {} });
+  assert.deepEqual(recuperacao.pagamento, { acessoToken: "token-pagamento" });
   assert.equal(recuperacao.estadoPagamento, "PENDING");
 });
 
@@ -15,7 +15,11 @@ test("recupera solicitação quando a criação do Pix não retornou", () => {
 });
 
 test("recupera plano concluído depois do reload", () => {
-  const recuperacao = criarRecuperacaoCompra({ pagamentoId: "10", planoId: "20", payload: {} });
+  const recuperacao = criarRecuperacaoCompra({
+    pagamentoToken: "token-compra",
+    planoToken: "token-compra",
+    payload: {}
+  });
   assert.equal(recuperacao.estadoPagamento, "COMPLETED");
 });
 
@@ -36,7 +40,7 @@ test("mantém travas do submit, envia diaLongao e não usa preço literal", asyn
 
   assert.match(pagina, /envioEmAndamento\.current \|\| carregando \|\| pagamento/);
   const limpeza = pagina.match(/function limparCompraPersistida\(\) \{([\s\S]*?)\n\}/)?.[1] || "";
-  assert.doesNotMatch(limpeza, /removeItem\(PLANO_ID_KEY\)/);
+  assert.doesNotMatch(limpeza, /removeItem\(PLANO_TOKEN_KEY\)/);
   assert.match(pagina, /ignorarRecuperacaoPlano\.current = true/);
   assert.match(pagina, /ignorarRecuperacaoPlano\.current/);
   assert.match(payload, /diaLongao: formulario\.diaLongao \|\| null/);

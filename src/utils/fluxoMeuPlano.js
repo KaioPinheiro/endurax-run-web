@@ -9,11 +9,11 @@ export function estadoDoResultado(resultado) {
   return "PENDING";
 }
 
-export function criarRecuperacaoCompra({ pagamentoId, planoId, solicitacaoPlanoId, payload }) {
+export function criarRecuperacaoCompra({ pagamentoToken, planoToken, solicitacaoPlanoId, payload }) {
   return {
-    pagamento: pagamentoId ? { pagamentoId } : null,
-    estadoPagamento: planoId ? "COMPLETED" : pagamentoId ? "PENDING" : null,
-    solicitacaoSemPagamento: !pagamentoId && Boolean(solicitacaoPlanoId && payload),
+    pagamento: pagamentoToken ? { acessoToken: pagamentoToken } : null,
+    estadoPagamento: planoToken ? "COMPLETED" : pagamentoToken ? "PENDING" : null,
+    solicitacaoSemPagamento: !pagamentoToken && !planoToken && Boolean(solicitacaoPlanoId && payload),
     payload
   };
 }

@@ -5,7 +5,6 @@ import ResultadoMeuPlano from "../components/plano/ResultadoMeuPlano";
 import { MENSAGENS_LOADING_PLANO } from "../constants/planoTreino";
 import {
   buscarConfigPublica,
-  buscarPagamentoPorSolicitacao,
   buscarPlanoGerado,
   buscarResultadoPagamento,
   criarPagamentoPix,
@@ -26,13 +25,13 @@ import {
 import "./GerarTreinoIA.css";
 import "./PlanoSemanalIA.css";
 
-const PAGAMENTO_ID_KEY = "pagamentoId";
+const PAGAMENTO_TOKEN_KEY = "pagamentoToken";
 const SOLICITACAO_ID_KEY = "solicitacaoPlanoId";
-const PLANO_ID_KEY = "planoId";
+const PLANO_TOKEN_KEY = "planoToken";
 const PAYLOAD_PLANO_KEY = "payloadMeuPlano";
 
 function limparCompraPersistida() {
-  localStorage.removeItem(PAGAMENTO_ID_KEY);
+  localStorage.removeItem(PAGAMENTO_TOKEN_KEY);
   localStorage.removeItem(SOLICITACAO_ID_KEY);
   localStorage.removeItem(PAYLOAD_PLANO_KEY);
 }
@@ -55,8 +54,8 @@ function mensagemDoEstado(estado, mensagem) {
 
 function MeuPlano() {
   const recuperacaoInicial = criarRecuperacaoCompra({
-    pagamentoId: localStorage.getItem(PAGAMENTO_ID_KEY),
-    planoId: localStorage.getItem(PLANO_ID_KEY),
+    pagamentoToken: localStorage.getItem(PAGAMENTO_TOKEN_KEY),
+    planoToken: localStorage.getItem(PLANO_TOKEN_KEY),
     solicitacaoPlanoId: localStorage.getItem(SOLICITACAO_ID_KEY),
     payload: lerPayloadPersistido()
   });
@@ -79,12 +78,12 @@ function MeuPlano() {
   const envioEmAndamento = useRef(false);
   const ignorarRecuperacaoPlano = useRef(false);
 
-  const concluirComPlano = useCallback(async (planoId) => {
-    if (!planoId) {
+  const concluirComPlano = useCallback(async (planoToken) => {
+    if (!planoToken) {
       throw new Error("O pagamento foi concluído, mas o plano ainda não está disponível.");
     }
-    localStorage.setItem(PLANO_ID_KEY, String(planoId));
-    const planoGerado = await buscarPlanoGerado(planoId);
+    localStorage.setItem(PLANO_TOKEN_KEY, planoToken);
+    const planoGerado = await buscarPlanoGerado(planoToken);
     setPlano(planoGerado);
     setVersaoPlano((atual) => atual + 1);
     setSucesso("Meu Plano foi gerado com sucesso!");
@@ -92,21 +91,21 @@ function MeuPlano() {
     setEstadoPagamento(null);
   }, []);
 
-  const consultarPagamento = useCallback(async (pagamentoId) => {
+  const consultarPagamento = useCallback(async (acessoToken) => {
     try {
-      const resultado = await buscarResultadoPagamento(pagamentoId);
+      const resultado = await buscarResultadoPagamento(acessoToken);
       const estado = estadoDoResultado(resultado);
-      setPagamento((atual) => ({ ...atual, ...resultado, pagamentoId }));
+      setPagamento((atual) => ({ ...atual, ...resultado, acessoToken }));
       setPagamentoSincronizado(true);
       setEstadoPagamento(estado);
       setMensagemPagamento(resultado.mensagem || "");
 
       if (resultado.pagamentoStatus === "APPROVED" && resultado.geracaoStatus === "PENDING") {
-        await tentarGeracaoNovamente(pagamentoId);
+        await tentarGeracaoNovamente(acessoToken);
         setEstadoPagamento("PROCESSING");
       } else if (estado === "COMPLETED") {
         try {
-          await concluirComPlano(resultado.planoId);
+          await concluirComPlano(resultado.planoToken);
         } catch (error) {
           setErro(obterMensagemErroIa(error, "Seu plano está pronto, mas não foi possível carregá-lo."));
         }
@@ -117,13 +116,13 @@ function MeuPlano() {
   }, [concluirComPlano]);
 
   useEffect(() => {
-    const planoId = localStorage.getItem(PLANO_ID_KEY);
-    if (!planoId || plano || ignorarRecuperacaoPlano.current) return undefined;
+    const planoToken = localStorage.getItem(PLANO_TOKEN_KEY);
+    if (!planoToken || plano || ignorarRecuperacaoPlano.current) return undefined;
 
     const recuperacao = setTimeout(() => {
-      concluirComPlano(planoId).catch((error) => {
-        const pagamentoId = localStorage.getItem(PAGAMENTO_ID_KEY);
-        if (pagamentoId) setPagamento((atual) => atual || { pagamentoId });
+      concluirComPlano(planoToken).catch((error) => {
+        const pagamentoToken = localStorage.getItem(PAGAMENTO_TOKEN_KEY);
+        if (pagamentoToken) setPagamento((atual) => atual || { acessoToken: pagamentoToken });
         setEstadoPagamento("COMPLETED");
         setErro(obterMensagemErroIa(error, "Seu plano está pronto, mas não foi possível carregá-lo."));
       });
@@ -132,33 +131,33 @@ function MeuPlano() {
   }, [concluirComPlano, plano]);
 
   useEffect(() => {
-    if (!pagamento?.pagamentoId || !["PENDING", "PROCESSING"].includes(estadoPagamento)) {
+    if (!pagamento?.acessoToken || !["PENDING", "PROCESSING"].includes(estadoPagamento)) {
       return undefined;
     }
 
-    const consultaInicial = setTimeout(() => consultarPagamento(pagamento.pagamentoId), 0);
-    const intervalo = setInterval(() => consultarPagamento(pagamento.pagamentoId), 3000);
+    const consultaInicial = setTimeout(() => consultarPagamento(pagamento.acessoToken), 0);
+    const intervalo = setInterval(() => consultarPagamento(pagamento.acessoToken), 3000);
     return () => {
       clearTimeout(consultaInicial);
       clearInterval(intervalo);
     };
-  }, [consultarPagamento, estadoPagamento, pagamento?.pagamentoId]);
+  }, [consultarPagamento, estadoPagamento, pagamento?.acessoToken]);
 
   // Reconciliação com o Mercado Pago: só enquanto o pagamento não foi confirmado, em
   // frequência baixa e sem bloquear o polling. Falhas são ignoradas de propósito — quem
   // garante o início da geração ao detectar aprovação é o backend.
   useEffect(() => {
-    const pagamentoId = pagamento?.pagamentoId;
-    if (!pagamentoId || estadoPagamento !== "PENDING") return undefined;
+    const acessoToken = pagamento?.acessoToken;
+    if (!acessoToken || estadoPagamento !== "PENDING") return undefined;
 
-    const reconciliar = () => reconciliarPagamento(pagamentoId).catch(() => {});
+    const reconciliar = () => reconciliarPagamento(acessoToken).catch(() => {});
     const primeira = setTimeout(reconciliar, 0);
     const intervalo = setInterval(reconciliar, 30000);
     return () => {
       clearTimeout(primeira);
       clearInterval(intervalo);
     };
-  }, [estadoPagamento, pagamento?.pagamentoId]);
+  }, [estadoPagamento, pagamento?.acessoToken]);
 
   useEffect(() => {
     if (!carregando) return undefined;
@@ -188,7 +187,6 @@ function MeuPlano() {
   async function iniciarPagamento(payload) {
     const email = form.email.trim() || localStorage.getItem("email") || "";
     let solicitacaoPlanoId = localStorage.getItem(SOLICITACAO_ID_KEY);
-    const solicitacaoJaExistia = Boolean(solicitacaoPlanoId);
     localStorage.setItem(PAYLOAD_PLANO_KEY, JSON.stringify(payload));
 
     if (!solicitacaoPlanoId) {
@@ -198,26 +196,8 @@ function MeuPlano() {
       setSolicitacaoSemPagamento(true);
     }
 
-    if (solicitacaoJaExistia) {
-      try {
-        const cobrancaExistente = await buscarPagamentoPorSolicitacao(Number(solicitacaoPlanoId));
-        localStorage.setItem(PAGAMENTO_ID_KEY, String(cobrancaExistente.pagamentoId));
-        setPagamento(cobrancaExistente);
-        setPagamentoSincronizado(true);
-        setSolicitacaoSemPagamento(false);
-        const estado = estadoDoResultado(cobrancaExistente);
-        setEstadoPagamento(estado);
-        if (estado === "COMPLETED") {
-          await concluirComPlano(cobrancaExistente.planoId);
-        }
-        return;
-      } catch (error) {
-        if (error?.response?.status !== 404) throw error;
-      }
-    }
-
     const cobranca = await criarPagamentoPix(email, Number(solicitacaoPlanoId));
-    localStorage.setItem(PAGAMENTO_ID_KEY, String(cobranca.pagamentoId));
+    localStorage.setItem(PAGAMENTO_TOKEN_KEY, cobranca.acessoToken);
     setPagamento(cobranca);
     setPagamentoSincronizado(true);
     setSolicitacaoSemPagamento(false);
@@ -268,11 +248,11 @@ function MeuPlano() {
   }
 
   async function tentarNovamente() {
-    if (carregando || !pagamento?.pagamentoId) return;
+    if (carregando || !pagamento?.acessoToken) return;
     setCarregando(true);
     setErro("");
     try {
-      await tentarGeracaoNovamente(pagamento.pagamentoId);
+      await tentarGeracaoNovamente(pagamento.acessoToken);
       setEstadoPagamento("PROCESSING");
     } catch (error) {
       setErro(obterMensagemErroIa(error, "Não foi possível tentar a geração novamente."));
@@ -293,9 +273,9 @@ function MeuPlano() {
     setEstadoPagamento(null);
     setMensagemPagamento("");
     setPagamentoSincronizado(false);
-    localStorage.removeItem(PAGAMENTO_ID_KEY);
+    localStorage.removeItem(PAGAMENTO_TOKEN_KEY);
     localStorage.removeItem(SOLICITACAO_ID_KEY);
-    localStorage.removeItem(PLANO_ID_KEY);
+    localStorage.removeItem(PLANO_TOKEN_KEY);
 
     setCarregando(true);
     try {
@@ -329,11 +309,11 @@ function MeuPlano() {
 
   async function buscarPlanoNovamente() {
     if (carregando) return;
-    const planoId = localStorage.getItem(PLANO_ID_KEY);
+    const planoToken = localStorage.getItem(PLANO_TOKEN_KEY);
     setCarregando(true);
     setErro("");
     try {
-      await concluirComPlano(planoId);
+      await concluirComPlano(planoToken);
     } catch (error) {
       setEstadoPagamento("COMPLETED");
       setErro(obterMensagemErroIa(error, "Seu plano está pronto, mas não foi possível carregá-lo."));

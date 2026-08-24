@@ -93,29 +93,24 @@ export async function criarPagamentoPix(email, solicitacaoPlanoId) {
   return response.data;
 }
 
-export async function buscarResultadoPagamento(pagamentoId) {
-  const response = await api.get(`/api/pagamentos/${pagamentoId}/resultado`);
+export async function buscarResultadoPagamento(acessoToken) {
+  const response = await api.get(`/api/pagamentos/public/${acessoToken}/resultado`);
   return response.data;
 }
 
 // Reconciliação explícita com o Mercado Pago. Fica fora do polling de progresso:
 // uma indisponibilidade do provedor não pode impedir a leitura do estado já persistido.
 // Quando detecta aprovação, quem inicia a geração é o backend, não esta chamada.
-export async function reconciliarPagamento(pagamentoId) {
-  await api.get(`/api/pagamentos/${pagamentoId}/status`);
+export async function reconciliarPagamento(acessoToken) {
+  await api.get(`/api/pagamentos/public/${acessoToken}/status`);
 }
 
-export async function buscarPagamentoPorSolicitacao(solicitacaoPlanoId) {
-  const response = await api.get(`/api/pagamentos/solicitacao/${solicitacaoPlanoId}`);
-  return response.data;
+export async function tentarGeracaoNovamente(acessoToken) {
+  await api.post(`/api/pagamentos/public/${acessoToken}/geracao/tentar-novamente`);
 }
 
-export async function tentarGeracaoNovamente(pagamentoId) {
-  await api.post(`/api/pagamentos/${pagamentoId}/geracao/tentar-novamente`);
-}
-
-export async function buscarPlanoGerado(planoId) {
-  const response = await api.get(`/training-plans/${planoId}`);
+export async function buscarPlanoGerado(planoToken) {
+  const response = await api.get(`/training-plans/public/${planoToken}`);
   const planoPersistido = response.data;
 
   if (typeof planoPersistido?.descricao !== "string") {
