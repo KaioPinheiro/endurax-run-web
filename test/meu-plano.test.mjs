@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { criarRecuperacaoCompra, estadoDoResultado } from "../src/utils/fluxoMeuPlano.js";
+import {
+  criarRecuperacaoCompra,
+  estadoDoResultado,
+  limparFluxoComercialMeuPlano
+} from "../src/utils/fluxoMeuPlano.js";
 
 test("recupera pagamento pendente depois do reload", () => {
   const recuperacao = criarRecuperacaoCompra({ pagamentoToken: "token-pagamento", payload: {} });
@@ -23,6 +27,40 @@ test("recupera plano concluído depois do reload", () => {
   assert.equal(recuperacao.estadoPagamento, "COMPLETED");
 });
 
+test("reinicia somente o estado comercial e preserva outras chaves", () => {
+  const dados = new Map([
+    ["pagamentoToken", "pagamento-antigo"],
+    ["planoToken", "plano-antigo"],
+    ["solicitacaoPlanoId", "7"],
+    ["payloadMeuPlano", "{}"],
+    ["preferenciaVisual", "compacta"],
+    ["email", "cliente@example.com"]
+  ]);
+  const storage = { removeItem: (chave) => dados.delete(chave) };
+
+  limparFluxoComercialMeuPlano(storage);
+
+  assert.equal(dados.has("pagamentoToken"), false);
+  assert.equal(dados.has("planoToken"), false);
+  assert.equal(dados.has("solicitacaoPlanoId"), false);
+  assert.equal(dados.has("payloadMeuPlano"), false);
+  assert.equal(dados.get("preferenciaVisual"), "compacta");
+  assert.equal(dados.get("email"), "cliente@example.com");
+});
+
+test("sem tokens antigos a recuperacao libera um novo formulario", () => {
+  const recuperacao = criarRecuperacaoCompra({
+    pagamentoToken: null,
+    planoToken: null,
+    solicitacaoPlanoId: null,
+    payload: null
+  });
+
+  assert.equal(recuperacao.pagamento, null);
+  assert.equal(recuperacao.estadoPagamento, null);
+  assert.equal(recuperacao.solicitacaoSemPagamento, false);
+});
+
 test("mapeia os estados de pagamento e geração suportados", () => {
   assert.equal(estadoDoResultado({ pagamentoStatus: "PENDING", geracaoStatus: "PENDING" }), "PENDING");
   assert.equal(estadoDoResultado({ pagamentoStatus: "APPROVED", geracaoStatus: "PROCESSING" }), "PROCESSING");
@@ -39,8 +77,12 @@ test("mantém travas do submit, envia diaLongao e não usa preço literal", asyn
   ]);
 
   assert.match(pagina, /envioEmAndamento\.current \|\| carregando \|\| pagamento/);
-  const limpeza = pagina.match(/function limparCompraPersistida\(\) \{([\s\S]*?)\n\}/)?.[1] || "";
-  assert.doesNotMatch(limpeza, /removeItem\(PLANO_TOKEN_KEY\)/);
+  const reinicio = pagina.match(/function iniciarNovoPlano\(\) \{([\s\S]*?)\n  \}/)?.[1] || "";
+  assert.match(reinicio, /limparFluxoComercialMeuPlano\(localStorage\)/);
+  assert.match(reinicio, /setForm\(criarEstadoInicialPlano\(\)\)/);
+  assert.match(reinicio, /setPagamento\(null\)/);
+  assert.match(reinicio, /setEstadoPagamento\(null\)/);
+  assert.doesNotMatch(reinicio, /criarPagamentoPix|criarSolicitacaoPlano|reconciliarPagamento/);
   assert.match(pagina, /ignorarRecuperacaoPlano\.current = true/);
   assert.match(pagina, /ignorarRecuperacaoPlano\.current/);
   assert.match(payload, /diaLongao: formulario\.diaLongao \|\| null/);

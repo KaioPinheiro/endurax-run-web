@@ -1,3 +1,14 @@
+export const CHAVES_FLUXO_MEU_PLANO = {
+  pagamentoToken: "pagamentoToken",
+  planoToken: "planoToken",
+  solicitacaoPlanoId: "solicitacaoPlanoId",
+  payloadMeuPlano: "payloadMeuPlano"
+};
+
+export function limparFluxoComercialMeuPlano(storage) {
+  Object.values(CHAVES_FLUXO_MEU_PLANO).forEach((chave) => storage.removeItem(chave));
+}
+
 export function estadoDoResultado(resultado) {
   if (resultado.pagamentoStatus === "EXPIRED") return "EXPIRED";
   if (["REJECTED", "CANCELLED"].includes(resultado.pagamentoStatus)) return "FAILED";

@@ -9,6 +9,8 @@ test("oferece impressão com todas as semanas e oculta os controles", async () =
   ]);
 
   assert.match(resultado, /onClick=\{\(\) => window\.print\(\)\}/);
+  assert.match(resultado, /onClick=\{onGerarNovamente\}/);
+  assert.match(resultado, /Gerar novo plano/);
   assert.match(resultado, /plano-ia-semanas-impressao/);
   assert.match(resultado, /const distanciaEstimada = bloco\.distancia[\s\S]*\? ""[\s\S]*estimarDistanciaBloco/);
   assert.match(resultado, /distanciaEstimada && <small>/);

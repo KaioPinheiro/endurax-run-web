@@ -14,7 +14,12 @@ import {
   tentarGeracaoNovamente
 } from "../services/api";
 import { obterMensagemErroIa } from "../utils/mensagemErroIa";
-import { criarRecuperacaoCompra, estadoDoResultado } from "../utils/fluxoMeuPlano";
+import {
+  CHAVES_FLUXO_MEU_PLANO,
+  criarRecuperacaoCompra,
+  estadoDoResultado,
+  limparFluxoComercialMeuPlano
+} from "../utils/fluxoMeuPlano";
 import {
   alternarDiaDisponivel,
   criarEstadoInicialPlano,
@@ -25,16 +30,10 @@ import {
 import "./GerarTreinoIA.css";
 import "./PlanoSemanalIA.css";
 
-const PAGAMENTO_TOKEN_KEY = "pagamentoToken";
-const SOLICITACAO_ID_KEY = "solicitacaoPlanoId";
-const PLANO_TOKEN_KEY = "planoToken";
-const PAYLOAD_PLANO_KEY = "payloadMeuPlano";
-
-function limparCompraPersistida() {
-  localStorage.removeItem(PAGAMENTO_TOKEN_KEY);
-  localStorage.removeItem(SOLICITACAO_ID_KEY);
-  localStorage.removeItem(PAYLOAD_PLANO_KEY);
-}
+const PAGAMENTO_TOKEN_KEY = CHAVES_FLUXO_MEU_PLANO.pagamentoToken;
+const SOLICITACAO_ID_KEY = CHAVES_FLUXO_MEU_PLANO.solicitacaoPlanoId;
+const PLANO_TOKEN_KEY = CHAVES_FLUXO_MEU_PLANO.planoToken;
+const PAYLOAD_PLANO_KEY = CHAVES_FLUXO_MEU_PLANO.payloadMeuPlano;
 
 function lerPayloadPersistido() {
   try {
@@ -324,14 +323,21 @@ function MeuPlano() {
 
   function iniciarNovoPlano() {
     ignorarRecuperacaoPlano.current = true;
-    limparCompraPersistida();
+    limparFluxoComercialMeuPlano(localStorage);
     payloadRef.current = null;
+    envioEmAndamento.current = false;
+    setForm(criarEstadoInicialPlano());
     setPlano(null);
     setPagamento(null);
     setEstadoPagamento(null);
+    setMensagemPagamento("");
+    setPagamentoOculto(false);
     setPagamentoSincronizado(false);
     setSolicitacaoSemPagamento(false);
+    setErro("");
+    setCarregando(false);
     setSucesso("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   const fluxoAtivo = carregando || Boolean(pagamento);
