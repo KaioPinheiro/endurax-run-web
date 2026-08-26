@@ -1,15 +1,9 @@
 import {
   DIAS_SEMANA,
   DURACOES_PLANO,
-  EXPERIENCIA_6_MESES_A_1_ANO,
-  EXPERIENCIA_MENOS_6_MESES,
   EXPERIENCIA_SEM_CORRIDA,
   EXPERIENCIAS_INICIANTES,
   EXPERIENCIAS_CORRIDA,
-  OBJETIVOS_PLANO,
-  OBJETIVOS_PLANO_6_MESES_A_1_ANO,
-  OBJETIVOS_PLANO_MENOS_6_MESES,
-  OBJETIVOS_PLANO_SEM_EXPERIENCIA,
   RITMOS_CONFORTAVEIS,
   VOLUMES_SEMANAIS_MARATONA,
   VOLUMES_SEMANAIS
@@ -21,6 +15,7 @@ import {
   mascararTempoObjetivo,
   normalizarIdade,
   objetivoExibePergunta5Km,
+  objetivosDisponiveisPorExperiencia,
   planoIndicaMeiaOuMaratona,
   planoIndicaMaratona,
   validarBloqueiosMaratona
@@ -53,13 +48,7 @@ function FormularioPlanoSemanal({
   onSubmit,
   validarMaratonaEmTempoReal = false
 }) {
-  const objetivosDisponiveis = EXPERIENCIAS_INICIANTES.includes(form.experienciaCorrida)
-    ? OBJETIVOS_PLANO_SEM_EXPERIENCIA
-    : form.experienciaCorrida === EXPERIENCIA_MENOS_6_MESES
-      ? OBJETIVOS_PLANO_MENOS_6_MESES
-    : form.experienciaCorrida === EXPERIENCIA_6_MESES_A_1_ANO
-      ? OBJETIVOS_PLANO_6_MESES_A_1_ANO
-    : OBJETIVOS_PLANO;
+  const objetivosDisponiveis = objetivosDisponiveisPorExperiencia(form.experienciaCorrida);
   const objetivoPerformance = ehObjetivoPerformance(form.objetivo);
   const distanciaPerformance = distanciaObjetivoPerformance(form.objetivo);
   const formatoPerformance = formatoTempoObjetivo(form.objetivo);

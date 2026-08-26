@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { FORM_INICIAL_PLANO, OBJETIVOS_PLANO } from "../src/constants/planoTreino.js";
+import {
+  EXPERIENCIA_PARADO,
+  EXPERIENCIA_SEM_CORRIDA,
+  FORM_INICIAL_PLANO,
+  OBJETIVOS_PLANO
+} from "../src/constants/planoTreino.js";
 import {
   alternarDiaDisponivel,
   estimarDistanciaBloco,
@@ -11,6 +16,7 @@ import {
   normalizarCampoPlano,
   normalizarMaiorDistancia,
   objetivoExibePergunta5Km,
+  objetivosDisponiveisPorExperiencia,
   validarFormularioPlano
 } from "../src/utils/planoTreino.js";
 
@@ -30,6 +36,41 @@ function formularioPerformance() {
     possuiProva: "nao", corre5KmSemCaminhar: "nao", observacoes: ""
   };
 }
+
+test("limita objetivos para quem nunca correu ou está parado", () => {
+  const objetivosIniciais = objetivos.slice(0, 4);
+
+  assert.deepEqual(
+    objetivosDisponiveisPorExperiencia(EXPERIENCIA_SEM_CORRIDA),
+    objetivosIniciais
+  );
+  assert.deepEqual(
+    objetivosDisponiveisPorExperiencia(EXPERIENCIA_PARADO),
+    objetivosIniciais
+  );
+  assert.deepEqual(objetivosDisponiveisPorExperiencia("1 a 3 anos"), objetivos);
+});
+
+test("limpa objetivo incompatível ao mudar para perfil sem corrida", () => {
+  const atualizado = normalizarCampoPlano(formularioPerformance(), {
+    name: "experienciaCorrida",
+    value: EXPERIENCIA_SEM_CORRIDA,
+    type: "select-one"
+  });
+
+  assert.equal(atualizado.objetivo, "");
+  assert.equal(atualizado.tempoAtual, "");
+  assert.equal(atualizado.tempoDesejado, "");
+});
+
+test("bloqueia envio com objetivo incompatível preservado no estado", () => {
+  const formulario = {
+    ...formularioPerformance(),
+    experienciaCorrida: EXPERIENCIA_SEM_CORRIDA
+  };
+
+  assert.match(validarFormularioPlano(formulario), /objetivo compatível/);
+});
 
 test("expõe exatamente os novos objetivos", () => {
   assert.deepEqual(OBJETIVOS_PLANO, objetivos);

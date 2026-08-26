@@ -169,7 +169,7 @@ export function normalizarMaiorDistancia(valor) {
   return String(valor ?? "").replace(/\D/g, "").slice(0, 2);
 }
 
-function objetivosDisponiveisPorExperiencia(experienciaCorrida) {
+export function objetivosDisponiveisPorExperiencia(experienciaCorrida) {
   if (EXPERIENCIAS_INICIANTES.includes(experienciaCorrida)) {
     return OBJETIVOS_PLANO_SEM_EXPERIENCIA;
   }
@@ -219,6 +219,14 @@ export function validarFormularioPlano(formulario) {
     idade > 80
   ) {
     return "Informe uma idade inteira entre 16 e 80 anos.";
+  }
+
+  if (
+    formulario.objetivo &&
+    !objetivosDisponiveisPorExperiencia(formulario.experienciaCorrida)
+      .includes(formulario.objetivo)
+  ) {
+    return "Escolha um objetivo compatível com sua experiência na corrida.";
   }
 
   if (formulario.diasDisponiveis.length === 0) {
