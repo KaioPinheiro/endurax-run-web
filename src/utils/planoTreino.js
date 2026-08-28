@@ -184,6 +184,30 @@ export function normalizarMaiorDistancia(valor) {
   return String(valor ?? "").replace(/\D/g, "").slice(0, 2);
 }
 
+export function normalizarTempo5Km(valor) {
+  return String(valor ?? "").replace(/[^\d:]/g, "").slice(0, 8);
+}
+
+export function validarTempo5Km(valor) {
+  const texto = String(valor ?? "").trim();
+  const partes = texto.split(":");
+  const formatoValido = partes.length === 2
+    ? /^\d{1,2}:[0-5]\d$/.test(texto)
+    : partes.length === 3 && /^\d{1,2}:[0-5]\d:[0-5]\d$/.test(texto);
+  if (!formatoValido) {
+    return { valido: false, acimaDoLimite: false };
+  }
+
+  const numeros = partes.map(Number);
+  const totalSegundos = partes.length === 2
+    ? numeros[0] * 60 + numeros[1]
+    : numeros[0] * 3600 + numeros[1] * 60 + numeros[2];
+  return {
+    valido: totalSegundos > 0 && totalSegundos <= 2 * 3600,
+    acimaDoLimite: totalSegundos > 2 * 3600
+  };
+}
+
 export function objetivosDisponiveisPorExperiencia(experienciaCorrida) {
   if (EXPERIENCIAS_INICIANTES.includes(experienciaCorrida)) {
     return OBJETIVOS_PLANO_SEM_EXPERIENCIA;
@@ -271,6 +295,22 @@ export function validarFormularioPlano(formulario) {
     !formulario.tempo5Km.trim()
   ) {
     return "Informe em quanto tempo você corre 5 km.";
+  }
+
+  if (
+    corre5KmSemCaminharEhAplicavel(
+      formulario.experienciaCorrida,
+      formulario.objetivo
+    ) &&
+    formulario.corre5KmSemCaminhar === "sim"
+  ) {
+    const tempo5Km = validarTempo5Km(formulario.tempo5Km);
+    if (tempo5Km.acimaDoLimite) {
+      return "O tempo dos 5 km deve ser de no máximo 2:00:00.";
+    }
+    if (!tempo5Km.valido) {
+      return "Informe um tempo válido no formato MM:SS ou HH:MM:SS.";
+    }
   }
 
   if (

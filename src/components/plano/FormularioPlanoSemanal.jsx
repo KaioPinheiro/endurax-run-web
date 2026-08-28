@@ -13,6 +13,7 @@ import {
   formatoTempoObjetivo,
   mascararTempoObjetivo,
   normalizarIdade,
+  normalizarTempo5Km,
   corre5KmSemCaminharEhAplicavel,
   objetivosDisponiveisPorExperiencia,
   planoIndicaMeiaOuMaratona,
@@ -55,6 +56,13 @@ function FormularioPlanoSemanal({
     target: {
       name: event.target.name,
       value: mascararTempoObjetivo(event.target.value, form.objetivo),
+      type: "text"
+    }
+  });
+  const alterarTempo5Km = (event) => onAlterar({
+    target: {
+      name: event.target.name,
+      value: normalizarTempo5Km(event.target.value),
       type: "text"
     }
   });
@@ -232,8 +240,10 @@ function FormularioPlanoSemanal({
             <input
               name="tempo5Km"
               value={form.tempo5Km}
-              onChange={onAlterar}
-              placeholder="Ex.: 32 minutos"
+              onChange={alterarTempo5Km}
+              placeholder="Ex.: 29:30 ou 1:05:30"
+              inputMode="text"
+              maxLength={8}
               required
             />
           </label>

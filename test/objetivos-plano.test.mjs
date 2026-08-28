@@ -22,9 +22,11 @@ import {
   normalizarCampoPlano,
   normalizarFormularioPlanoRestaurado,
   normalizarMaiorDistancia,
+  normalizarTempo5Km,
   objetivoExibePergunta5Km,
   objetivosDisponiveisPorExperiencia,
-  validarFormularioPlano
+  validarFormularioPlano,
+  validarTempo5Km
 } from "../src/utils/planoTreino.js";
 
 const objetivos = [
@@ -385,4 +387,40 @@ test("validação rejeita maior distância acima de 99", () => {
     maiorDistanciaCorrida: "100"
   };
   assert.match(validarFormularioPlano(form), /entre 0 e 99 km/);
+});
+
+test("valida tempos de 5 km nos formatos aceitos e até duas horas", () => {
+  for (const valor of [
+    "18:45", "29:30", "59:59", "1:00:00", "1:05:30", "2:00:00"
+  ]) {
+    assert.equal(validarTempo5Km(valor).valido, true, valor);
+  }
+  for (const valor of [
+    "5555555", "12:99", "1:70:00", "2:00:01", "3:00:00", "abc", ""
+  ]) {
+    assert.equal(validarTempo5Km(valor).valido, false, valor);
+  }
+  assert.equal(validarTempo5Km("2:00:01").acimaDoLimite, true);
+});
+
+test("normalização do input limita caracteres e comprimento sem impedir edição", () => {
+  assert.equal(normalizarTempo5Km("29:30"), "29:30");
+  assert.equal(normalizarTempo5Km("1:05:30"), "1:05:30");
+  assert.equal(normalizarTempo5Km("29:ab30"), "29:30");
+  assert.equal(normalizarTempo5Km("123456789012345"), "12345678");
+  assert.equal(normalizarTempo5Km(""), "");
+});
+
+test("submit rejeita tempo de 5 km inválido e acima do limite", () => {
+  const base = {
+    ...formularioPerformance(),
+    experienciaCorrida: EXPERIENCIA_MENOS_6_MESES,
+    objetivo: OBJETIVOS_PLANO[3],
+    corre5KmSemCaminhar: "sim"
+  };
+
+  assert.match(validarFormularioPlano({ ...base, tempo5Km: "12:99" }), /formato MM:SS/);
+  assert.match(validarFormularioPlano({ ...base, tempo5Km: "2:00:01" }), /máximo 2:00:00/);
+  assert.match(validarFormularioPlano({ ...base, tempo5Km: "" }), /Informe em quanto tempo/);
+  assert.equal(validarFormularioPlano({ ...base, tempo5Km: "1:05:30" }), null);
 });
