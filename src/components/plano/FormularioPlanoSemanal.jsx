@@ -77,7 +77,7 @@ function FormularioPlanoSemanal({
     <form className="coach-ia-form plano-ia-form" onSubmit={onSubmit}>
       <div className="coach-ia-form-titulo">
         <div><h2>Configure seu plano</h2></div>
-        <p>Receba um ciclo de corrida personalizado para sua prova-alvo ou objetivo.</p>
+        <p>Receba um ciclo de corrida personalizado para o objetivo que deseja alcançar.</p>
       </div>
 
       <div className="coach-ia-campos plano-ia-campos">
@@ -312,72 +312,21 @@ function FormularioPlanoSemanal({
           </select>
         </label>
 
-        <fieldset className="coach-ia-radio-grupo">
-          <legend>Possui uma prova marcada? *</legend>
-          <div>
-            <label>
-              <input
-                type="radio"
-                name="possuiProva"
-                value="sim"
-                checked={form.possuiProva === "sim"}
-                onChange={onAlterar}
-                required
-              />
-              <span>Sim</span>
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="possuiProva"
-                value="nao"
-                checked={form.possuiProva === "nao"}
-                onChange={onAlterar}
-                required
-              />
-              <span>Não</span>
-            </label>
-          </div>
-        </fieldset>
-
-        {form.possuiProva === "nao" && (
-          <label className="coach-ia-campo">
-            <span>Duração do plano *</span>
-            <select
-              name="duracaoSemanas"
-              value={form.duracaoSemanas}
-              onChange={onAlterar}
-              required
-            >
-              {DURACOES_PLANO.map((duracao) => (
-                <option value={duracao.valor} key={duracao.valor}>
-                  {duracao.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-
-        {form.possuiProva === "sim" && (
-          <>
-            <p className="plano-ia-ajuda coach-ia-largo">
-              A duração será definida automaticamente conforme a data da prova,
-              entre 4 e 6 semanas.
-            </p>
-
-            <label className="coach-ia-campo">
-              <span>Data da prova *</span>
-              <input
-                type="date"
-                name="dataProva"
-                value={form.dataProva}
-                onChange={onAlterar}
-                required
-              />
-            </label>
-
-          </>
-        )}
+        <label className="coach-ia-campo">
+          <span>Duração do plano *</span>
+          <select
+            name="duracaoSemanas"
+            value={form.duracaoSemanas}
+            onChange={onAlterar}
+            required
+          >
+            {DURACOES_PLANO.map((duracao) => (
+              <option value={duracao.valor} key={duracao.valor}>
+                {duracao.label}
+              </option>
+            ))}
+          </select>
+        </label>
 
         <label className="coach-ia-lesao">
           <input

@@ -233,10 +233,6 @@ export function validarFormularioPlano(formulario) {
     return "Selecione pelo menos um dia disponível para treinar.";
   }
 
-  if (!["sim", "nao"].includes(formulario.possuiProva)) {
-    return "Informe se possui uma prova marcada.";
-  }
-
   if (
     objetivoExibePergunta5Km(formulario.objetivo) &&
     formulario.experienciaCorrida !== EXPERIENCIA_SEM_CORRIDA &&
@@ -304,7 +300,6 @@ export function validarFormularioMeuPlano(formulario) {
   }
 
   if (
-    formulario.possuiProva !== "sim" &&
     !["4", "5", "6"].includes(String(formulario.duracaoSemanas))
   ) {
     return "Escolha uma duração de 4, 5 ou 6 semanas.";
@@ -351,8 +346,7 @@ export function planoIndicaMeiaOuMaratona(formulario) {
   const objetivo = formulario.objetivo;
   const texto = textoNormalizado([
     objetivo,
-    formulario.distanciaAlvo,
-    formulario.distanciaProva
+    formulario.distanciaAlvo
   ].filter(Boolean).join(" "));
 
   return texto.includes("meia maratona") ||
@@ -362,11 +356,9 @@ export function planoIndicaMeiaOuMaratona(formulario) {
 }
 
 export function montarPayloadMeuPlano(formulario) {
-  const possuiProva = formulario.possuiProva === "sim";
   const objetivo = formulario.objetivo;
   const objetivoPerformance = ehObjetivoPerformance(objetivo);
   const distanciaAlvo = inferirDistanciaAlvo(formulario);
-  const distanciaProva = inferirDistanciaProva(formulario, distanciaAlvo);
   const observacoes = montarObservacoesComLongao(formulario);
 
   return {
@@ -397,14 +389,14 @@ export function montarPayloadMeuPlano(formulario) {
     distanciaAlvo,
     diasDisponiveis: formulario.diasDisponiveis,
     diaLongao: formulario.diaLongao || null,
-    possuiProva,
-    dataProva: possuiProva ? formulario.dataProva : null,
-    distanciaProva: possuiProva ? distanciaProva : null,
+    possuiProva: false,
+    dataProva: null,
+    distanciaProva: null,
     objetivoProva: null,
-    importanciaProva: possuiProva ? inferirImportanciaProva(formulario) : null,
+    importanciaProva: null,
     possuiLesao: formulario.possuiLesao,
     observacoes,
-    duracaoSemanas: possuiProva ? null : Number(formulario.duracaoSemanas)
+    duracaoSemanas: Number(formulario.duracaoSemanas)
   };
 }
 
@@ -415,16 +407,6 @@ function inferirDistanciaAlvo(formulario) {
 
   if (formulario.distanciaAlvo) {
     return formulario.distanciaAlvo;
-  }
-
-  if (formulario.possuiProva === "sim") {
-    if (formulario.distanciaProva === "Outra" && formulario.outraDistanciaProva.trim()) {
-      return formulario.outraDistanciaProva.trim();
-    }
-
-    if (formulario.distanciaProva) {
-      return formulario.distanciaProva;
-    }
   }
 
   const objetivo = formulario.objetivo;
@@ -452,11 +434,8 @@ function inferirDistanciaAlvo(formulario) {
 function ehPlanoMaratona(formulario) {
   const objetivo = formulario.objetivo;
   const distanciaAlvo = inferirDistanciaAlvo(formulario);
-  const distanciaProva = inferirDistanciaProva(formulario, distanciaAlvo);
-
   return campoIndicaMaratona(objetivo) ||
-    campoIndicaMaratona(distanciaAlvo) ||
-    campoIndicaMaratona(distanciaProva);
+    campoIndicaMaratona(distanciaAlvo);
 }
 
 function campoIndicaMaratona(valor) {
@@ -490,22 +469,6 @@ function volumeMaratonaPermitido(valor) {
   return VOLUMES_SEMANAIS_MARATONA.some((volume) =>
     texto === textoNormalizado(volume).replace(/\s+/g, "")
   );
-}
-
-function inferirDistanciaProva(formulario, distanciaAlvo) {
-  if (formulario.distanciaProva === "Outra" && formulario.outraDistanciaProva.trim()) {
-    return formulario.outraDistanciaProva.trim();
-  }
-
-  if (formulario.distanciaProva) {
-    return formulario.distanciaProva;
-  }
-
-  return distanciaAlvo || "Não informada";
-}
-
-function inferirImportanciaProva(formulario) {
-  return formulario.importanciaProva || "Prova importante";
 }
 
 function montarObservacoesComLongao(formulario) {

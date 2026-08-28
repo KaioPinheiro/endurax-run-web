@@ -11,8 +11,8 @@ const treinosSemana = [
 const beneficios = [
   "Plano de corrida de 4 a 6 semanas",
   "Treinos apenas nos dias escolhidos",
-  "Plano para prova",
-  "Plano para objetivo pessoal",
+  "Plano para seu objetivo",
+  "Ciclo ajustado ao seu nível",
   "Organização simples",
   "Funciona no celular e computador",
 ];
@@ -127,7 +127,7 @@ function LandingPage() {
             <h2 id="para-quem-title">Não importa onde você está.<br /><em>O importante é para onde você quer correr.</em></h2>
           </div>
           <div className="objetivos-grid">
-            <article><span>01</span><div><h3>Tenho uma prova marcada.</h3><p>Organize as próximas semanas com um destino e uma data em mente.</p></div><IconeSeta /></article>
+            <article><span>01</span><div><h3>Quero evoluir em uma distância.</h3><p>Receba um ciclo estruturado para avançar no seu objetivo.</p></div><IconeSeta /></article>
             <article><span>02</span><div><h3>Quero evoluir na corrida.</h3><p>Transforme consistência em progresso com um ciclo bem definido.</p></div><IconeSeta /></article>
           </div>
         </section>

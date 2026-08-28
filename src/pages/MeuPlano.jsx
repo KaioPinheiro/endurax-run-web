@@ -347,7 +347,7 @@ function MeuPlano() {
       <header className="coach-ia-hero">
         <span>MEU PLANO</span>
         <h1>Meu Plano</h1>
-        <p>Receba um ciclo de corrida personalizado para sua prova-alvo ou para o objetivo que deseja alcançar.</p>
+        <p>Receba um ciclo de corrida personalizado para o objetivo que deseja alcançar.</p>
       </header>
 
       {!pagamento && !plano && !solicitacaoSemPagamento && (

@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import {
   EXPERIENCIA_PARADO,
   EXPERIENCIA_SEM_CORRIDA,
+  DURACOES_PLANO,
   FORM_INICIAL_PLANO,
   OBJETIVOS_PLANO
 } from "../src/constants/planoTreino.js";
@@ -70,6 +72,51 @@ test("bloqueia envio com objetivo incompatível preservado no estado", () => {
   };
 
   assert.match(validarFormularioPlano(formulario), /objetivo compatível/);
+});
+
+test("formulário V1 não exibe prova e oferece 4, 5 e 6 semanas", () => {
+  const componente = readFileSync(
+    new URL("../src/components/plano/FormularioPlanoSemanal.jsx", import.meta.url),
+    "utf8"
+  );
+
+  assert.doesNotMatch(componente, /Possui uma prova marcada/);
+  assert.doesNotMatch(componente, /Data da prova/);
+  assert.match(componente, /DURACOES_PLANO\.map/);
+  assert.deepEqual(DURACOES_PLANO.map(({ valor }) => valor), ["4", "5", "6"]);
+  assert.deepEqual(FORM_INICIAL_PLANO.possuiProva, "nao");
+});
+
+test("payload V1 neutraliza dados residuais de prova e preserva duração", () => {
+  for (const duracao of ["4", "5", "6"]) {
+    const payload = montarPayloadMeuPlano({
+      ...formularioPerformance(),
+      possuiProva: "sim",
+      dataProva: "2030-10-20",
+      distanciaProva: "42 km",
+      objetivoProva: "Completar a prova",
+      importanciaProva: "Prova principal da temporada",
+      duracaoSemanas: duracao
+    });
+
+    assert.equal(payload.possuiProva, false);
+    assert.equal(payload.dataProva, null);
+    assert.equal(payload.distanciaProva, null);
+    assert.equal(payload.objetivoProva, null);
+    assert.equal(payload.importanciaProva, null);
+    assert.equal(payload.duracaoSemanas, Number(duracao));
+  }
+});
+
+test("landing não promete planejamento para prova marcada", () => {
+  const landing = readFileSync(
+    new URL("../src/pages/LandingPage.jsx", import.meta.url),
+    "utf8"
+  );
+
+  assert.doesNotMatch(landing, /Plano para prova|Tenho uma prova marcada|data em mente/);
+  assert.match(landing, /Plano para seu objetivo/);
+  assert.match(landing, /Quero evoluir em uma distância/);
 });
 
 test("expõe exatamente os novos objetivos", () => {

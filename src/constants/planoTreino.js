@@ -20,7 +20,7 @@ export const FORM_INICIAL_PLANO = {
   diaLongao: "",
   possuiLesao: false,
   descricaoLesao: "",
-  possuiProva: "",
+  possuiProva: "nao",
   dataProva: "",
   distanciaProva: "",
   outraDistanciaProva: "",
