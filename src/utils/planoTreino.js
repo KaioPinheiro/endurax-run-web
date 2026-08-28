@@ -1,7 +1,7 @@
 ﻿import {
   EXPERIENCIA_6_MESES_A_1_ANO,
   EXPERIENCIA_MENOS_6_MESES,
-  EXPERIENCIA_SEM_CORRIDA,
+  EXPERIENCIAS_PERGUNTA_5_KM,
   EXPERIENCIAS_INICIANTES,
   FORM_INICIAL_PLANO,
   OBJETIVOS_PLANO,
@@ -102,21 +102,11 @@ export function normalizarCampoPlano(formulario, campo) {
       ? { objetivo: "", tempoAtual: "", tempoDesejado: "" }
       : {}),
     ...(name === "experienciaCorrida" &&
-      valorNormalizado === EXPERIENCIA_SEM_CORRIDA
-      ? { corre5KmSemCaminhar: "nao", tempo5Km: "" }
-      : {}),
-    ...(name === "experienciaCorrida" &&
       EXPERIENCIAS_INICIANTES.includes(valorNormalizado)
       ? { volumeSemanalAtual: "" }
       : {}),
     ...(name === "objetivo" && !ehObjetivoPerformance(valorNormalizado)
       ? { tempoAtual: "", tempoDesejado: "" }
-      : {}),
-    ...(name === "objetivo" && (
-      !objetivoExibePergunta5Km(valorNormalizado) ||
-      !objetivoExibePergunta5Km(formulario.objetivo)
-    )
-      ? { corre5KmSemCaminhar: "", tempo5Km: "" }
       : {}),
     ...(name === "corre5KmSemCaminhar" && valorNormalizado !== "sim"
       ? { tempo5Km: "" }
@@ -133,20 +123,27 @@ export function normalizarCampoPlano(formulario, campo) {
       : {})
   };
 
+  const formularioComCapacidadeNormalizada = corre5KmSemCaminharEhAplicavel(
+    proximoFormulario.experienciaCorrida,
+    proximoFormulario.objetivo
+  )
+    ? proximoFormulario
+    : { ...proximoFormulario, corre5KmSemCaminhar: "", tempo5Km: "" };
+
   if (
-    ehPlanoMaratona(proximoFormulario) &&
-    proximoFormulario.volumeSemanalAtual &&
-    !volumeMaratonaPermitido(proximoFormulario.volumeSemanalAtual)
+    ehPlanoMaratona(formularioComCapacidadeNormalizada) &&
+    formularioComCapacidadeNormalizada.volumeSemanalAtual &&
+    !volumeMaratonaPermitido(formularioComCapacidadeNormalizada.volumeSemanalAtual)
   ) {
     return {
-      ...proximoFormulario,
+      ...formularioComCapacidadeNormalizada,
       volumeSemanalAtual: ""
     };
   }
 
-  return planoIndicaMeiaOuMaratona(proximoFormulario)
-    ? proximoFormulario
-    : { ...proximoFormulario, maiorDistanciaCorrida: "" };
+  return planoIndicaMeiaOuMaratona(formularioComCapacidadeNormalizada)
+    ? formularioComCapacidadeNormalizada
+    : { ...formularioComCapacidadeNormalizada, maiorDistanciaCorrida: "" };
 }
 
 export function normalizarIdade(valor) {
@@ -170,11 +167,17 @@ export function normalizarFormularioPlanoRestaurado(formulario) {
     return formulario;
   }
 
-  return normalizarCampoPlano(formulario, {
+  const normalizado = normalizarCampoPlano(formulario, {
     name: "experienciaCorrida",
     value: formulario.experienciaCorrida || "",
     type: "select-one"
   });
+  return corre5KmSemCaminharEhAplicavel(
+    normalizado.experienciaCorrida,
+    normalizado.objetivo
+  )
+    ? normalizado
+    : { ...normalizado, corre5KmSemCaminhar: null, tempo5Km: null };
 }
 
 export function normalizarMaiorDistancia(valor) {
@@ -250,16 +253,20 @@ export function validarFormularioPlano(formulario) {
   }
 
   if (
-    objetivoExibePergunta5Km(formulario.objetivo) &&
-    formulario.experienciaCorrida !== EXPERIENCIA_SEM_CORRIDA &&
+    corre5KmSemCaminharEhAplicavel(
+      formulario.experienciaCorrida,
+      formulario.objetivo
+    ) &&
     !["sim", "nao"].includes(formulario.corre5KmSemCaminhar)
   ) {
     return "Informe se você já corre 5 km direto sem caminhar.";
   }
 
   if (
-    objetivoExibePergunta5Km(formulario.objetivo) &&
-    formulario.experienciaCorrida !== EXPERIENCIA_SEM_CORRIDA &&
+    corre5KmSemCaminharEhAplicavel(
+      formulario.experienciaCorrida,
+      formulario.objetivo
+    ) &&
     formulario.corre5KmSemCaminhar === "sim" &&
     !formulario.tempo5Km.trim()
   ) {
@@ -383,14 +390,18 @@ export function montarPayloadMeuPlano(formulario) {
     tempoAtual: objetivoPerformance ? formulario.tempoAtual.trim() : null,
     tempoDesejado: objetivoPerformance ? formulario.tempoDesejado.trim() : null,
     corre5KmSemCaminhar:
-      objetivoExibePergunta5Km(formulario.objetivo) &&
-      formulario.experienciaCorrida !== EXPERIENCIA_SEM_CORRIDA &&
+      corre5KmSemCaminharEhAplicavel(
+        formulario.experienciaCorrida,
+        formulario.objetivo
+      ) &&
       ["sim", "nao"].includes(formulario.corre5KmSemCaminhar)
       ? formulario.corre5KmSemCaminhar === "sim"
       : null,
     tempo5Km:
-      objetivoExibePergunta5Km(formulario.objetivo) &&
-      formulario.experienciaCorrida !== EXPERIENCIA_SEM_CORRIDA &&
+      corre5KmSemCaminharEhAplicavel(
+        formulario.experienciaCorrida,
+        formulario.objetivo
+      ) &&
       formulario.corre5KmSemCaminhar === "sim"
       ? formulario.tempo5Km.trim()
       : null,
@@ -524,6 +535,11 @@ export function objetivoExibePergunta5Km(objetivo) {
     "Emagrecer",
     "Primeiros 5 km"
   ].includes(objetivo);
+}
+
+export function corre5KmSemCaminharEhAplicavel(experienciaCorrida, objetivo) {
+  return EXPERIENCIAS_PERGUNTA_5_KM.includes(experienciaCorrida) &&
+    objetivoExibePergunta5Km(objetivo);
 }
 
 export function distanciaObjetivoPerformance(objetivo) {

@@ -5,6 +5,7 @@ import {
   EXPERIENCIA_PARADO,
   EXPERIENCIA_SEM_CORRIDA,
   EXPERIENCIA_MENOS_6_MESES,
+  EXPERIENCIA_6_MESES_A_1_ANO,
   DURACOES_PLANO,
   FORM_INICIAL_PLANO,
   OBJETIVOS_PLANO,
@@ -12,6 +13,7 @@ import {
 } from "../src/constants/planoTreino.js";
 import {
   alternarDiaDisponivel,
+  corre5KmSemCaminharEhAplicavel,
   estimarDistanciaBloco,
   extrairDistanciaExplicitaBloco,
   extrairDuracaoExplicitaBloco,
@@ -289,6 +291,60 @@ test("pergunta sobre 5 km aparece somente nos quatro objetivos permitidos", () =
   for (const objetivo of OBJETIVOS_PLANO) {
     assert.equal(objetivoExibePergunta5Km(objetivo), permitidos.includes(objetivo));
   }
+});
+
+test("pergunta sobre 5 km exige tambÃ©m uma experiÃªncia aplicÃ¡vel", () => {
+  assert.equal(corre5KmSemCaminharEhAplicavel(
+    EXPERIENCIA_PARADO, OBJETIVOS_PLANO[0]), true);
+  assert.equal(corre5KmSemCaminharEhAplicavel(
+    EXPERIENCIA_MENOS_6_MESES, OBJETIVOS_PLANO[3]), true);
+  assert.equal(corre5KmSemCaminharEhAplicavel(
+    EXPERIENCIA_6_MESES_A_1_ANO, OBJETIVOS_PLANO[1]), true);
+  assert.equal(corre5KmSemCaminharEhAplicavel(
+    "1 a 3 anos", OBJETIVOS_PLANO[2]), false);
+  assert.equal(corre5KmSemCaminharEhAplicavel(
+    "Mais de 3 anos", OBJETIVOS_PLANO[3]), false);
+  assert.equal(corre5KmSemCaminharEhAplicavel(
+    EXPERIENCIA_MENOS_6_MESES, OBJETIVOS_PLANO[4]), false);
+  assert.equal(corre5KmSemCaminharEhAplicavel(
+    EXPERIENCIA_6_MESES_A_1_ANO, OBJETIVOS_PLANO[7]), false);
+});
+
+test("mudanÃ§a para experiÃªncia fora do escopo limpa resposta e tempo de 5 km", () => {
+  const atualizado = normalizarCampoPlano({
+    ...formularioPerformance(),
+    experienciaCorrida: EXPERIENCIA_MENOS_6_MESES,
+    objetivo: "Primeiros 5 km",
+    corre5KmSemCaminhar: "sim",
+    tempo5Km: "29:00"
+  }, {
+    name: "experienciaCorrida", value: "1 a 3 anos", type: "select-one"
+  });
+
+  assert.equal(atualizado.corre5KmSemCaminhar, "");
+  assert.equal(atualizado.tempo5Km, "");
+});
+
+test("payload e estado restaurado neutralizam resposta de 5 km fora do escopo", () => {
+  const formulario = {
+    ...formularioPerformance(),
+    experienciaCorrida: "Mais de 3 anos",
+    objetivo: "Emagrecer",
+    corre5KmSemCaminhar: "sim",
+    tempo5Km: "24:00"
+  };
+
+  const payload = montarPayloadMeuPlano(formulario);
+  assert.equal(payload.corre5KmSemCaminhar, null);
+  assert.equal(payload.tempo5Km, null);
+
+  const restaurado = normalizarFormularioPlanoRestaurado({
+    ...payload,
+    corre5KmSemCaminhar: false,
+    tempo5Km: "24:00"
+  });
+  assert.equal(restaurado.corre5KmSemCaminhar, null);
+  assert.equal(restaurado.tempo5Km, null);
 });
 
 test("troca de objetivo limpa resposta de 5 km e remove valor residual do payload", () => {

@@ -1,7 +1,6 @@
 import {
   DIAS_SEMANA,
   DURACOES_PLANO,
-  EXPERIENCIA_SEM_CORRIDA,
   EXPERIENCIAS_INICIANTES,
   EXPERIENCIAS_CORRIDA,
   RITMOS_CONFORTAVEIS,
@@ -14,7 +13,7 @@ import {
   formatoTempoObjetivo,
   mascararTempoObjetivo,
   normalizarIdade,
-  objetivoExibePergunta5Km,
+  corre5KmSemCaminharEhAplicavel,
   objetivosDisponiveisPorExperiencia,
   planoIndicaMeiaOuMaratona,
   planoIndicaMaratona,
@@ -64,8 +63,10 @@ function FormularioPlanoSemanal({
     : null;
   const planoMaratona = planoIndicaMaratona(form);
   const planoMeiaOuMaratona = planoIndicaMeiaOuMaratona(form);
-  const nuncaCorreu = form.experienciaCorrida === EXPERIENCIA_SEM_CORRIDA;
-  const exibirPergunta5Km = objetivoExibePergunta5Km(form.objetivo);
+  const exibirPergunta5Km = corre5KmSemCaminharEhAplicavel(
+    form.experienciaCorrida,
+    form.objetivo
+  );
   const ocultarVolumeSemanal = EXPERIENCIAS_INICIANTES.includes(form.experienciaCorrida);
   const volumesDisponiveis = planoMaratona
     ? VOLUMES_SEMANAIS_MARATONA
@@ -195,7 +196,7 @@ function FormularioPlanoSemanal({
           </select>
         </label>
 
-        {!nuncaCorreu && exibirPergunta5Km && (
+        {exibirPergunta5Km && (
           <fieldset className="coach-ia-radio-grupo">
             <legend>Você já corre 5 km direto sem caminhar? *</legend>
             <div>
@@ -225,7 +226,7 @@ function FormularioPlanoSemanal({
           </fieldset>
         )}
 
-        {!nuncaCorreu && exibirPergunta5Km && form.corre5KmSemCaminhar === "sim" && (
+        {exibirPergunta5Km && form.corre5KmSemCaminhar === "sim" && (
           <label className="coach-ia-campo">
             <span>Em quanto tempo? *</span>
             <input
