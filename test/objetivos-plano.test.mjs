@@ -4,9 +4,11 @@ import test from "node:test";
 import {
   EXPERIENCIA_PARADO,
   EXPERIENCIA_SEM_CORRIDA,
+  EXPERIENCIA_MENOS_6_MESES,
   DURACOES_PLANO,
   FORM_INICIAL_PLANO,
-  OBJETIVOS_PLANO
+  OBJETIVOS_PLANO,
+  OBJETIVOS_PLANO_MENOS_6_MESES
 } from "../src/constants/planoTreino.js";
 import {
   alternarDiaDisponivel,
@@ -16,6 +18,7 @@ import {
   montarPayloadMeuPlano,
   mascararTempoObjetivo,
   normalizarCampoPlano,
+  normalizarFormularioPlanoRestaurado,
   normalizarMaiorDistancia,
   objetivoExibePergunta5Km,
   objetivosDisponiveisPorExperiencia,
@@ -51,6 +54,77 @@ test("limita objetivos para quem nunca correu ou está parado", () => {
     objetivosIniciais
   );
   assert.deepEqual(objetivosDisponiveisPorExperiencia("1 a 3 anos"), objetivos);
+});
+
+test("menos de 6 meses mantém somente objetivos de até 10 km", () => {
+  const permitidos = [
+    "Começar a correr",
+    "Melhorar condicionamento",
+    "Emagrecer",
+    "Primeiros 5 km",
+    "Primeiros 10 km",
+    "Melhorar tempo nos 5 km",
+    "Melhorar tempo nos 10 km"
+  ];
+
+  assert.deepEqual(OBJETIVOS_PLANO_MENOS_6_MESES, permitidos);
+  assert.deepEqual(
+    objetivosDisponiveisPorExperiencia(EXPERIENCIA_MENOS_6_MESES),
+    permitidos
+  );
+  assert.equal(permitidos.some((objetivo) => objetivo.includes("Meia Maratona")), false);
+  assert.equal(permitidos.some((objetivo) => objetivo.includes("Maratona")), false);
+  assert.deepEqual(objetivosDisponiveisPorExperiencia("1 a 3 anos"), objetivos);
+});
+
+test("menos de 6 meses limpa objetivo avançado e campos dependentes", () => {
+  const atualizado = normalizarCampoPlano({
+    ...formularioPerformance(),
+    objetivo: "Melhorar tempo na Meia Maratona",
+    tempoAtual: "1:40:00",
+    tempoDesejado: "1:35:00",
+    maiorDistanciaCorrida: "18"
+  }, {
+    name: "experienciaCorrida",
+    value: EXPERIENCIA_MENOS_6_MESES,
+    type: "select-one"
+  });
+
+  assert.equal(atualizado.objetivo, "");
+  assert.equal(atualizado.tempoAtual, "");
+  assert.equal(atualizado.tempoDesejado, "");
+  assert.equal(atualizado.maiorDistanciaCorrida, "");
+});
+
+test("estado restaurado incompatível é normalizado e não passa na validação", () => {
+  const restaurado = normalizarFormularioPlanoRestaurado({
+    ...formularioPerformance(),
+    experienciaCorrida: EXPERIENCIA_MENOS_6_MESES,
+    objetivo: "Primeira Maratona",
+    maiorDistanciaCorrida: "20"
+  });
+
+  assert.equal(restaurado.objetivo, "");
+  assert.equal(restaurado.maiorDistanciaCorrida, "");
+  assert.notEqual(validarFormularioPlano(restaurado), null);
+});
+
+test("submissão bloqueia combinação manipulada antes de montar o payload", () => {
+  const formulario = {
+    ...formularioPerformance(),
+    experienciaCorrida: EXPERIENCIA_MENOS_6_MESES,
+    objetivo: "Primeira Meia Maratona"
+  };
+  assert.match(validarFormularioPlano(formulario), /objetivo compatível/);
+
+  const pagina = readFileSync(
+    new URL("../src/pages/MeuPlano.jsx", import.meta.url),
+    "utf8"
+  );
+  assert.ok(
+    pagina.indexOf("validarFormularioMeuPlano(form)") <
+      pagina.indexOf("montarPayloadMeuPlano(form)")
+  );
 });
 
 test("limpa objetivo incompatível ao mudar para perfil sem corrida", () => {

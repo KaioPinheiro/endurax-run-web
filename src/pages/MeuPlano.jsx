@@ -25,6 +25,7 @@ import {
   criarEstadoInicialPlano,
   montarPayloadMeuPlano,
   normalizarCampoPlano,
+  normalizarFormularioPlanoRestaurado,
   validarFormularioMeuPlano
 } from "../utils/planoTreino";
 import "./GerarTreinoIA.css";
@@ -37,7 +38,14 @@ const PAYLOAD_PLANO_KEY = CHAVES_FLUXO_MEU_PLANO.payloadMeuPlano;
 
 function lerPayloadPersistido() {
   try {
-    return JSON.parse(localStorage.getItem(PAYLOAD_PLANO_KEY)) || null;
+    const payload = JSON.parse(localStorage.getItem(PAYLOAD_PLANO_KEY)) || null;
+    const normalizado = normalizarFormularioPlanoRestaurado(payload);
+    if (payload?.objetivo && !normalizado?.objetivo) {
+      localStorage.removeItem(PAYLOAD_PLANO_KEY);
+      localStorage.removeItem(SOLICITACAO_ID_KEY);
+      return null;
+    }
+    return normalizado;
   } catch {
     return null;
   }

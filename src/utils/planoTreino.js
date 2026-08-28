@@ -165,6 +165,18 @@ export function normalizarIdade(valor) {
   return apenasNumeros;
 }
 
+export function normalizarFormularioPlanoRestaurado(formulario) {
+  if (!formulario || typeof formulario !== "object") {
+    return formulario;
+  }
+
+  return normalizarCampoPlano(formulario, {
+    name: "experienciaCorrida",
+    value: formulario.experienciaCorrida || "",
+    type: "select-one"
+  });
+}
+
 export function normalizarMaiorDistancia(valor) {
   return String(valor ?? "").replace(/\D/g, "").slice(0, 2);
 }
@@ -219,6 +231,10 @@ export function validarFormularioPlano(formulario) {
     idade > 80
   ) {
     return "Informe uma idade inteira entre 16 e 80 anos.";
+  }
+
+  if (!formulario.objetivo) {
+    return "Escolha um objetivo compatível com sua experiência na corrida.";
   }
 
   if (

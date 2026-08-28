@@ -61,6 +61,17 @@ test("sem tokens antigos a recuperacao libera um novo formulario", () => {
   assert.equal(recuperacao.solicitacaoSemPagamento, false);
 });
 
+test("recuperação local descarta payload incompatível antes de reutilizá-lo", async () => {
+  const pagina = await readFile(new URL("../src/pages/MeuPlano.jsx", import.meta.url), "utf8");
+  const leitura = pagina.match(/function lerPayloadPersistido\(\) \{([\s\S]*?)\n\}/)?.[1] || "";
+
+  assert.match(leitura, /normalizarFormularioPlanoRestaurado/);
+  assert.match(leitura, /!normalizado\?\.objetivo/);
+  assert.match(leitura, /removeItem\(PAYLOAD_PLANO_KEY\)/);
+  assert.match(leitura, /removeItem\(SOLICITACAO_ID_KEY\)/);
+  assert.match(leitura, /return null/);
+});
+
 test("mapeia os estados de pagamento e geração suportados", () => {
   assert.equal(estadoDoResultado({ pagamentoStatus: "PENDING", geracaoStatus: "PENDING" }), "PENDING");
   assert.equal(estadoDoResultado({ pagamentoStatus: "APPROVED", geracaoStatus: "PROCESSING" }), "PROCESSING");

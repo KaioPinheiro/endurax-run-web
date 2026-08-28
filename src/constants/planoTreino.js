@@ -72,7 +72,15 @@ export const OBJETIVOS_PLANO_SEM_EXPERIENCIA = OBJETIVOS_PLANO.slice(
   0,
   OBJETIVOS_PLANO.indexOf("Primeiros 5 km") + 1
 );
-export const OBJETIVOS_PLANO_MENOS_6_MESES = OBJETIVOS_PLANO;
+export const OBJETIVOS_PLANO_MENOS_6_MESES = OBJETIVOS_PLANO.filter((objetivo) => [
+  "Começar a correr",
+  "Melhorar condicionamento",
+  "Emagrecer",
+  "Primeiros 5 km",
+  "Primeiros 10 km",
+  "Melhorar tempo nos 5 km",
+  "Melhorar tempo nos 10 km"
+].includes(objetivo));
 export const OBJETIVOS_PLANO_6_MESES_A_1_ANO = OBJETIVOS_PLANO;
 
 export const VOLUME_SEMANAL_MARATONA = "40-60 km";
