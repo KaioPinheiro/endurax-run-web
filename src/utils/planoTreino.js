@@ -184,8 +184,21 @@ export function normalizarMaiorDistancia(valor) {
   return String(valor ?? "").replace(/\D/g, "").slice(0, 2);
 }
 
-export function normalizarTempo5Km(valor) {
-  return String(valor ?? "").replace(/[^\d:]/g, "").slice(0, 8);
+export function normalizarTempo5Km(valor, preservaFormatoParcial = false) {
+  const texto = String(valor ?? "");
+
+  if (preservaFormatoParcial) {
+    return texto.replace(/[^\d:]/g, "").slice(0, 7);
+  }
+
+  const digitos = texto.replace(/\D/g, "").slice(0, 5);
+  if (digitos.length <= 2) {
+    return digitos;
+  }
+  if (digitos.length <= 4) {
+    return `${digitos.slice(0, 2)}:${digitos.slice(2)}`;
+  }
+  return `${digitos.slice(0, -4)}:${digitos.slice(-4, -2)}:${digitos.slice(-2)}`;
 }
 
 export function validarTempo5Km(valor) {

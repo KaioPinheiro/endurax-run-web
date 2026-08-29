@@ -404,11 +404,28 @@ test("valida tempos de 5 km nos formatos aceitos e até duas horas", () => {
 });
 
 test("normalização do input limita caracteres e comprimento sem impedir edição", () => {
+  assert.equal(normalizarTempo5Km("2930"), "29:30");
+  assert.equal(normalizarTempo5Km("5930"), "59:30");
+  assert.equal(normalizarTempo5Km("10000"), "1:00:00");
+  assert.equal(normalizarTempo5Km("10530"), "1:05:30");
+  assert.equal(normalizarTempo5Km("12000"), "1:20:00");
+  assert.equal(normalizarTempo5Km("20000"), "2:00:00");
   assert.equal(normalizarTempo5Km("29:30"), "29:30");
   assert.equal(normalizarTempo5Km("1:05:30"), "1:05:30");
   assert.equal(normalizarTempo5Km("29:ab30"), "29:30");
-  assert.equal(normalizarTempo5Km("123456789012345"), "12345678");
+  assert.equal(normalizarTempo5Km("123456789012345"), "1:23:45");
   assert.equal(normalizarTempo5Km(""), "");
+});
+
+test("permite entrada parcial e Backspace no tempo de 5 km", () => {
+  assert.equal(normalizarTempo5Km("2"), "2");
+  assert.equal(normalizarTempo5Km("29"), "29");
+  assert.equal(normalizarTempo5Km("293"), "29:3");
+  assert.equal(normalizarTempo5Km("29:3", true), "29:3");
+  assert.equal(normalizarTempo5Km("29:", true), "29:");
+  assert.equal(normalizarTempo5Km("29", true), "29");
+  assert.equal(normalizarTempo5Km("2", true), "2");
+  assert.equal(normalizarTempo5Km("", true), "");
 });
 
 test("submit rejeita tempo de 5 km inválido e acima do limite", () => {

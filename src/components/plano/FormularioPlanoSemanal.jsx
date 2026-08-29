@@ -59,13 +59,16 @@ function FormularioPlanoSemanal({
       type: "text"
     }
   });
-  const alterarTempo5Km = (event) => onAlterar({
-    target: {
-      name: event.target.name,
-      value: normalizarTempo5Km(event.target.value),
-      type: "text"
-    }
-  });
+  const alterarTempo5Km = (event) => {
+    const removendo = event.nativeEvent?.inputType?.startsWith("delete");
+    onAlterar({
+      target: {
+        name: event.target.name,
+        value: normalizarTempo5Km(event.target.value, removendo),
+        type: "text"
+      }
+    });
+  };
   const erroTempoReal = validarMaratonaEmTempoReal
     ? validarBloqueiosMaratona(form)
     : null;
@@ -241,9 +244,9 @@ function FormularioPlanoSemanal({
               name="tempo5Km"
               value={form.tempo5Km}
               onChange={alterarTempo5Km}
-              placeholder="Ex.: 29:30 ou 1:05:30"
-              inputMode="text"
-              maxLength={8}
+              placeholder="Digite seu tempo nos 5 km"
+              inputMode="numeric"
+              maxLength={7}
               required
             />
           </label>
