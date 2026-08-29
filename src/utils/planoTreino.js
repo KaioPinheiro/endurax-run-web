@@ -185,7 +185,17 @@ export function normalizarMaiorDistancia(valor) {
 }
 
 export function normalizarTempo5Km(valor) {
-  return String(valor ?? "").replace(/[^\d:]/g, "").slice(0, 7);
+  let quantidadeDigitos = 0;
+  return [...String(valor ?? "").replace(/[^\d:]/g, "")]
+    .filter((caractere) => {
+      if (caractere === ":") {
+        return true;
+      }
+      quantidadeDigitos += 1;
+      return quantidadeDigitos <= 5;
+    })
+    .join("")
+    .slice(0, 7);
 }
 
 export function completarTempo5Km(valor) {

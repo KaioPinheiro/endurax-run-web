@@ -410,7 +410,10 @@ test("normalização do input limita caracteres e comprimento sem impedir ediç�
   assert.equal(normalizarTempo5Km("29:30"), "29:30");
   assert.equal(normalizarTempo5Km("1:05:30"), "1:05:30");
   assert.equal(normalizarTempo5Km("29:ab30"), "29:30");
-  assert.equal(normalizarTempo5Km("123456789012345"), "1234567");
+  assert.equal(normalizarTempo5Km("12345"), "12345");
+  assert.equal(normalizarTempo5Km("123456"), "12345");
+  assert.equal(normalizarTempo5Km("55555555"), "55555");
+  assert.equal(normalizarTempo5Km("123456789012345"), "12345");
   assert.equal(normalizarTempo5Km(""), "");
 });
 
