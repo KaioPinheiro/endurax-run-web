@@ -184,21 +184,29 @@ export function normalizarMaiorDistancia(valor) {
   return String(valor ?? "").replace(/\D/g, "").slice(0, 2);
 }
 
-export function normalizarTempo5Km(valor, preservaFormatoParcial = false) {
-  const texto = String(valor ?? "");
+export function normalizarTempo5Km(valor) {
+  return String(valor ?? "").replace(/[^\d:]/g, "").slice(0, 7);
+}
 
-  if (preservaFormatoParcial) {
-    return texto.replace(/[^\d:]/g, "").slice(0, 7);
+export function completarTempo5Km(valor) {
+  const texto = normalizarTempo5Km(valor);
+  if (!texto || texto.includes(":")) {
+    return texto;
   }
 
-  const digitos = texto.replace(/\D/g, "").slice(0, 5);
-  if (digitos.length <= 2) {
-    return digitos;
+  if (texto.length <= 2) {
+    return `${texto.padStart(2, "0")}:00`;
   }
-  if (digitos.length <= 4) {
-    return `${digitos.slice(0, 2)}:${digitos.slice(2)}`;
+  if (texto.length === 3) {
+    return `${texto[0]}:${texto.slice(1)}:00`;
   }
-  return `${digitos.slice(0, -4)}:${digitos.slice(-4, -2)}:${digitos.slice(-2)}`;
+  if (texto.length === 4) {
+    return `${texto.slice(0, 2)}:${texto.slice(2)}`;
+  }
+  if (texto.length === 5) {
+    return `${texto[0]}:${texto.slice(1, 3)}:${texto.slice(3)}`;
+  }
+  return texto;
 }
 
 export function validarTempo5Km(valor) {

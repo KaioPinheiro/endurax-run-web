@@ -8,6 +8,7 @@ import {
   VOLUMES_SEMANAIS
 } from "../../constants/planoTreino";
 import {
+  completarTempo5Km,
   distanciaObjetivoPerformance,
   ehObjetivoPerformance,
   formatoTempoObjetivo,
@@ -59,12 +60,18 @@ function FormularioPlanoSemanal({
       type: "text"
     }
   });
-  const alterarTempo5Km = (event) => {
-    const removendo = event.nativeEvent?.inputType?.startsWith("delete");
+  const alterarTempo5Km = (event) => onAlterar({
+    target: {
+      name: event.target.name,
+      value: normalizarTempo5Km(event.target.value),
+      type: "text"
+    }
+  });
+  const completarTempo5KmAoSair = (event) => {
     onAlterar({
       target: {
         name: event.target.name,
-        value: normalizarTempo5Km(event.target.value, removendo),
+        value: completarTempo5Km(event.target.value),
         type: "text"
       }
     });
@@ -244,6 +251,7 @@ function FormularioPlanoSemanal({
               name="tempo5Km"
               value={form.tempo5Km}
               onChange={alterarTempo5Km}
+              onBlur={completarTempo5KmAoSair}
               placeholder="Digite seu tempo nos 5 km"
               inputMode="numeric"
               maxLength={7}
