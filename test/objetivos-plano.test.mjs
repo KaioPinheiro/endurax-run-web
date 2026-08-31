@@ -58,12 +58,11 @@ test("limita objetivos para quem nunca correu ou está parado", () => {
     objetivosDisponiveisPorExperiencia(EXPERIENCIA_PARADO),
     objetivosIniciais
   );
-  assert.deepEqual(objetivosDisponiveisPorExperiencia("1 a 3 anos"), objetivos);
+  assert.deepEqual(objetivosDisponiveisPorExperiencia("1 a 3 anos"), objetivos.slice(1));
 });
 
 test("menos de 6 meses mantém somente objetivos de até 10 km", () => {
   const permitidos = [
-    "Começar a correr",
     "Melhorar condicionamento",
     "Emagrecer",
     "Primeiros 5 km",
@@ -79,7 +78,61 @@ test("menos de 6 meses mantém somente objetivos de até 10 km", () => {
   );
   assert.equal(permitidos.some((objetivo) => objetivo.includes("Meia Maratona")), false);
   assert.equal(permitidos.some((objetivo) => objetivo.includes("Maratona")), false);
-  assert.deepEqual(objetivosDisponiveisPorExperiencia("1 a 3 anos"), objetivos);
+  assert.deepEqual(objetivosDisponiveisPorExperiencia("1 a 3 anos"), objetivos.slice(1));
+});
+
+test("Começar a correr fica disponível somente para quem nunca correu ou está parado", () => {
+  for (const experiencia of [EXPERIENCIA_SEM_CORRIDA, EXPERIENCIA_PARADO]) {
+    assert.equal(
+      objetivosDisponiveisPorExperiencia(experiencia).includes("Começar a correr"),
+      true,
+      experiencia
+    );
+  }
+  for (const experiencia of [
+    EXPERIENCIA_MENOS_6_MESES,
+    EXPERIENCIA_6_MESES_A_1_ANO,
+    "1 a 3 anos",
+    "Mais de 3 anos"
+  ]) {
+    assert.equal(
+      objetivosDisponiveisPorExperiencia(experiencia).includes("Começar a correr"),
+      false,
+      experiencia
+    );
+  }
+});
+
+test("mudança de experiência limpa Começar a correr sem apagar dados não relacionados", () => {
+  const atualizado = normalizarCampoPlano({
+    ...formularioPerformance(),
+    experienciaCorrida: EXPERIENCIA_PARADO,
+    objetivo: "Começar a correr",
+    observacoes: "Prefiro treinar pela manhã"
+  }, {
+    name: "experienciaCorrida",
+    value: EXPERIENCIA_MENOS_6_MESES,
+    type: "select-one"
+  });
+
+  assert.equal(atualizado.objetivo, "");
+  assert.equal(atualizado.tempoAtual, "");
+  assert.equal(atualizado.tempoDesejado, "");
+  assert.equal(atualizado.observacoes, "Prefiro treinar pela manhã");
+});
+
+test("estado antigo incompatível não restaura Começar a correr como objetivo válido", () => {
+  const restaurado = normalizarFormularioPlanoRestaurado({
+    ...formularioPerformance(),
+    experienciaCorrida: EXPERIENCIA_MENOS_6_MESES,
+    objetivo: "Começar a correr",
+    observacoes: "Dado preservado"
+  });
+
+  assert.equal(restaurado.objetivo, "");
+  assert.equal(restaurado.observacoes, "Dado preservado");
+  assert.match(validarFormularioPlano(restaurado), /objetivo compatível/);
+  assert.equal(montarPayloadMeuPlano(restaurado).objetivo, "");
 });
 
 test("menos de 6 meses limpa objetivo avançado e campos dependentes", () => {

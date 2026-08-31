@@ -4,7 +4,6 @@
   EXPERIENCIAS_PERGUNTA_5_KM,
   EXPERIENCIAS_INICIANTES,
   FORM_INICIAL_PLANO,
-  OBJETIVOS_PLANO,
   OBJETIVOS_PLANO_6_MESES_A_1_ANO,
   OBJETIVOS_PLANO_MENOS_6_MESES,
   OBJETIVOS_PLANO_SEM_EXPERIENCIA,
@@ -252,7 +251,7 @@ export function objetivosDisponiveisPorExperiencia(experienciaCorrida) {
     return OBJETIVOS_PLANO_6_MESES_A_1_ANO;
   }
 
-  return OBJETIVOS_PLANO;
+  return OBJETIVOS_PLANO_6_MESES_A_1_ANO;
 }
 
 export function limparCamposProva() {
