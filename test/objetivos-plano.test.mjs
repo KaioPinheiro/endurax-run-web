@@ -387,7 +387,9 @@ test("pergunta sobre 5 km exige tambÃ©m uma experiÃªncia aplicÃ¡vel", () =
   assert.equal(corre5KmSemCaminharEhAplicavel(
     EXPERIENCIA_MENOS_6_MESES, OBJETIVOS_PLANO[3]), true);
   assert.equal(corre5KmSemCaminharEhAplicavel(
-    EXPERIENCIA_6_MESES_A_1_ANO, OBJETIVOS_PLANO[1]), true);
+    EXPERIENCIA_6_MESES_A_1_ANO, OBJETIVOS_PLANO[1]), false);
+  assert.equal(corre5KmSemCaminharEhAplicavel(
+    EXPERIENCIA_SEM_CORRIDA, OBJETIVOS_PLANO[1]), false);
   assert.equal(corre5KmSemCaminharEhAplicavel(
     "1 a 3 anos", OBJETIVOS_PLANO[2]), false);
   assert.equal(corre5KmSemCaminharEhAplicavel(
@@ -406,7 +408,7 @@ test("mudanÃ§a para experiÃªncia fora do escopo limpa resposta e tempo de 5 
     corre5KmSemCaminhar: "sim",
     tempo5Km: "29:00"
   }, {
-    name: "experienciaCorrida", value: "1 a 3 anos", type: "select-one"
+    name: "experienciaCorrida", value: EXPERIENCIA_6_MESES_A_1_ANO, type: "select-one"
   });
 
   assert.equal(atualizado.corre5KmSemCaminhar, "");
