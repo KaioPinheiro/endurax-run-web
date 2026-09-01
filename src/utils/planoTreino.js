@@ -183,7 +183,7 @@ export function normalizarMaiorDistancia(valor) {
   return String(valor ?? "").replace(/\D/g, "").slice(0, 2);
 }
 
-export function normalizarTempo5Km(valor) {
+export function normalizarEntradaTempo(valor) {
   let quantidadeDigitos = 0;
   return [...String(valor ?? "").replace(/[^\d:]/g, "")]
     .filter((caractere) => {
@@ -197,8 +197,8 @@ export function normalizarTempo5Km(valor) {
     .slice(0, 7);
 }
 
-export function completarTempo5Km(valor) {
-  const texto = normalizarTempo5Km(valor);
+export function completarEntradaTempo(valor) {
+  const texto = normalizarEntradaTempo(valor);
   if (!texto || texto.includes(":")) {
     return texto;
   }
@@ -217,6 +217,9 @@ export function completarTempo5Km(valor) {
   }
   return texto;
 }
+
+export const normalizarTempo5Km = normalizarEntradaTempo;
+export const completarTempo5Km = completarEntradaTempo;
 
 export function validarTempo5Km(valor) {
   const texto = String(valor ?? "").trim();
@@ -623,21 +626,6 @@ export function distanciaObjetivoPerformance(objetivo) {
 
 export function formatoTempoObjetivo(objetivo) {
   return distanciaObjetivoPerformance(objetivo) === "Maratona" ? "H:MM:SS" : "MM:SS";
-}
-
-export function mascararTempoObjetivo(valor, objetivo) {
-  const maratona = formatoTempoObjetivo(objetivo) === "H:MM:SS";
-  const limite = maratona ? 5 : 4;
-  const digitos = String(valor ?? "").replace(/\D/g, "").slice(0, limite);
-
-  if (maratona) {
-    if (digitos.length <= 1) return digitos;
-    if (digitos.length <= 3) return `${digitos.slice(0, 1)}:${digitos.slice(1)}`;
-    return `${digitos.slice(0, 1)}:${digitos.slice(1, 3)}:${digitos.slice(3)}`;
-  }
-
-  if (digitos.length <= 2) return digitos;
-  return `${digitos.slice(0, 2)}:${digitos.slice(2)}`;
 }
 
 function tempoEmSegundos(valor, objetivo) {

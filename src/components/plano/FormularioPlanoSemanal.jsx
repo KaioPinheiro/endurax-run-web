@@ -8,11 +8,12 @@ import {
   VOLUMES_SEMANAIS
 } from "../../constants/planoTreino";
 import {
+  completarEntradaTempo,
   completarTempo5Km,
   distanciaObjetivoPerformance,
   ehObjetivoPerformance,
   formatoTempoObjetivo,
-  mascararTempoObjetivo,
+  normalizarEntradaTempo,
   normalizarIdade,
   normalizarTempo5Km,
   corre5KmSemCaminharEhAplicavel,
@@ -56,7 +57,14 @@ function FormularioPlanoSemanal({
   const alterarTempoPerformance = (event) => onAlterar({
     target: {
       name: event.target.name,
-      value: mascararTempoObjetivo(event.target.value, form.objetivo),
+      value: normalizarEntradaTempo(event.target.value),
+      type: "text"
+    }
+  });
+  const completarTempoPerformanceAoSair = (event) => onAlterar({
+    target: {
+      name: event.target.name,
+      value: completarEntradaTempo(event.target.value),
       type: "text"
     }
   });
@@ -186,17 +194,19 @@ function FormularioPlanoSemanal({
                 name="tempoAtual"
                 value={form.tempoAtual}
                 onChange={alterarTempoPerformance}
+                onBlur={completarTempoPerformanceAoSair}
                 placeholder={formatoPerformance}
                 inputMode="numeric"
-                maxLength={formatoPerformance.length}
+                maxLength={7}
                 required
               />
             </label>
             <label className="coach-ia-campo">
               <span>Tempo desejado *</span>
               <input name="tempoDesejado" value={form.tempoDesejado}
-                onChange={alterarTempoPerformance} placeholder={formatoPerformance}
-                inputMode="numeric" maxLength={formatoPerformance.length} required />
+                onChange={alterarTempoPerformance} onBlur={completarTempoPerformanceAoSair}
+                placeholder={formatoPerformance}
+                inputMode="numeric" maxLength={7} required />
             </label>
           </>
         )}

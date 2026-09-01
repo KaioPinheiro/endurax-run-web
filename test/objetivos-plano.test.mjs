@@ -13,14 +13,15 @@ import {
 } from "../src/constants/planoTreino.js";
 import {
   alternarDiaDisponivel,
+  completarEntradaTempo,
   completarTempo5Km,
   corre5KmSemCaminharEhAplicavel,
   estimarDistanciaBloco,
   extrairDistanciaExplicitaBloco,
   extrairDuracaoExplicitaBloco,
   montarPayloadMeuPlano,
-  mascararTempoObjetivo,
   normalizarCampoPlano,
+  normalizarEntradaTempo,
   normalizarFormularioPlanoRestaurado,
   normalizarMaiorDistancia,
   normalizarTempo5Km,
@@ -324,20 +325,51 @@ test("payload envia tempos estruturados para performance", () => {
   assert.equal(payload.tempoDesejado, "29:30");
 });
 
-test("aplica máscara MM:SS durante digitação, edição e backspace", () => {
-  const objetivo = "Melhorar tempo nos 5 km";
-  assert.equal(mascararTempoObjetivo("4230", objetivo), "42:30");
-  assert.equal(mascararTempoObjetivo("2959", objetivo), "29:59");
-  assert.equal(mascararTempoObjetivo("42:3", objetivo), "42:3");
-  assert.equal(mascararTempoObjetivo("4a2b30", objetivo), "42:30");
+test("tempos de performance não recebem máscara agressiva durante a digitação", () => {
+  assert.equal(normalizarEntradaTempo("5"), "5");
+  assert.equal(normalizarEntradaTempo("44"), "44");
+  assert.equal(normalizarEntradaTempo("105"), "105");
+  assert.equal(normalizarEntradaTempo("4230"), "4230");
+  assert.equal(normalizarEntradaTempo("10530"), "10530");
+  assert.equal(normalizarEntradaTempo("123456"), "12345");
+  assert.equal(normalizarEntradaTempo(""), "");
 });
 
-test("aplica máscara H:MM:SS para Maratona", () => {
-  const objetivo = "Melhorar tempo na Maratona";
-  assert.equal(mascararTempoObjetivo("31530", objetivo), "3:15:30");
-  assert.equal(mascararTempoObjetivo("25959", objetivo), "2:59:59");
-  assert.equal(mascararTempoObjetivo("3:15:3", objetivo), "3:15:3");
-  assert.equal(mascararTempoObjetivo("3153099", objetivo), "3:15:30");
+test("tempos de performance são completados somente no blur", () => {
+  assert.equal(completarEntradaTempo("5"), "05:00");
+  assert.equal(completarEntradaTempo("44"), "44:00");
+  assert.equal(completarEntradaTempo("40"), "40:00");
+  assert.equal(completarEntradaTempo("4230"), "42:30");
+  assert.equal(completarEntradaTempo("100"), "1:00:00");
+  assert.equal(completarEntradaTempo("105"), "1:05:00");
+  assert.equal(completarEntradaTempo("10530"), "1:05:30");
+  assert.equal(completarEntradaTempo("44:00"), "44:00");
+  assert.equal(completarEntradaTempo("1:05:30"), "1:05:30");
+});
+
+test("Backspace, colagem e conteúdo parcial permanecem editáveis", () => {
+  assert.equal(normalizarEntradaTempo("44:0"), "44:0");
+  assert.equal(normalizarEntradaTempo("44:"), "44:");
+  assert.equal(normalizarEntradaTempo("44"), "44");
+  assert.equal(normalizarEntradaTempo("4"), "4");
+  assert.equal(normalizarEntradaTempo(""), "");
+  assert.equal(normalizarEntradaTempo("4a2b30"), "4230");
+  assert.equal(normalizarEntradaTempo("42:30"), "42:30");
+});
+
+test("5 km e 10 km compartilham normalização e enviam tempos normalizados", () => {
+  for (const objetivo of ["Melhorar tempo nos 5 km", "Melhorar tempo nos 10 km"]) {
+    const formulario = {
+      ...formularioPerformance(),
+      objetivo,
+      tempoAtual: completarEntradaTempo("44"),
+      tempoDesejado: completarEntradaTempo("40")
+    };
+    assert.equal(validarFormularioPlano(formulario), null, objetivo);
+    const payload = montarPayloadMeuPlano(formulario);
+    assert.equal(payload.tempoAtual, "44:00", objetivo);
+    assert.equal(payload.tempoDesejado, "40:00", objetivo);
+  }
 });
 
 test("pergunta sobre 5 km aparece somente nos quatro objetivos permitidos", () => {
