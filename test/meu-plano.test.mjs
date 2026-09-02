@@ -96,7 +96,7 @@ test("mantém travas do submit, envia diaLongao e não usa preço literal", asyn
   assert.doesNotMatch(reinicio, /criarPagamentoPix|criarSolicitacaoPlano|reconciliarPagamento/);
   assert.match(pagina, /ignorarRecuperacaoPlano\.current = true/);
   assert.match(pagina, /ignorarRecuperacaoPlano\.current/);
-  assert.match(payload, /diaLongao: formulario\.diaLongao \|\| null/);
+  assert.match(payload, /diaLongao: diaLongaoEhAplicavel\(formulario\.experienciaCorrida\)/);
   assert.doesNotMatch(pix, /R\$ 12,90/);
   assert.match(pix, /pagamento\?\.valor/);
 });

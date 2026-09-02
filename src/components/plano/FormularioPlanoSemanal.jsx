@@ -10,6 +10,7 @@ import {
 import {
   completarEntradaTempo,
   completarTempo5Km,
+  diaLongaoEhAplicavel,
   distanciaObjetivoPerformance,
   ehObjetivoPerformance,
   formatoTempoObjetivo,
@@ -94,6 +95,7 @@ function FormularioPlanoSemanal({
     form.objetivo
   );
   const ocultarVolumeSemanal = EXPERIENCIAS_INICIANTES.includes(form.experienciaCorrida);
+  const exibirDiaLongao = diaLongaoEhAplicavel(form.experienciaCorrida);
   const volumesDisponiveis = planoMaratona
     ? VOLUMES_SEMANAIS_MARATONA
     : VOLUMES_SEMANAIS;
@@ -324,7 +326,7 @@ function FormularioPlanoSemanal({
           </div>
         </fieldset>
 
-        <label className="coach-ia-campo">
+        {exibirDiaLongao && <label className="coach-ia-campo">
           <span>Dia do longão (treino mais longo) *</span>
           <select
             name="diaLongao"
@@ -342,7 +344,7 @@ function FormularioPlanoSemanal({
                 </option>
               ))}
           </select>
-        </label>
+        </label>}
 
         <label className="coach-ia-campo">
           <span>Duração do plano *</span>

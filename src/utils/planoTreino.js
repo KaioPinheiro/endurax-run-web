@@ -102,7 +102,7 @@ export function normalizarCampoPlano(formulario, campo) {
       : {}),
     ...(name === "experienciaCorrida" &&
       EXPERIENCIAS_INICIANTES.includes(valorNormalizado)
-      ? { volumeSemanalAtual: "" }
+      ? { volumeSemanalAtual: "", diaLongao: "" }
       : {}),
     ...(name === "objetivo" && !ehObjetivoPerformance(valorNormalizado)
       ? { tempoAtual: "", tempoDesejado: "" }
@@ -257,6 +257,10 @@ export function objetivosDisponiveisPorExperiencia(experienciaCorrida) {
   return OBJETIVOS_PLANO_6_MESES_A_1_ANO;
 }
 
+export function diaLongaoEhAplicavel(experienciaCorrida) {
+  return !EXPERIENCIAS_INICIANTES.includes(experienciaCorrida);
+}
+
 export function limparCamposProva() {
   return {
     dataProva: "",
@@ -363,8 +367,9 @@ export function validarFormularioPlano(formulario) {
   }
 
   if (
-    !formulario.diaLongao ||
-    !formulario.diasDisponiveis.includes(formulario.diaLongao)
+    diaLongaoEhAplicavel(formulario.experienciaCorrida) &&
+    (!formulario.diaLongao ||
+      !formulario.diasDisponiveis.includes(formulario.diaLongao))
   ) {
     return "Escolha o dia do longão entre os dias disponíveis para treinar.";
   }
@@ -488,7 +493,9 @@ export function montarPayloadMeuPlano(formulario) {
     ritmoConfortavel: formulario.ritmoConfortavel,
     distanciaAlvo,
     diasDisponiveis: formulario.diasDisponiveis,
-    diaLongao: formulario.diaLongao || null,
+    diaLongao: diaLongaoEhAplicavel(formulario.experienciaCorrida)
+      ? formulario.diaLongao || null
+      : null,
     possuiProva: false,
     dataProva: null,
     distanciaProva: null,

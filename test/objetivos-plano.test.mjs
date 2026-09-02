@@ -16,6 +16,7 @@ import {
   completarEntradaTempo,
   completarTempo5Km,
   corre5KmSemCaminharEhAplicavel,
+  diaLongaoEhAplicavel,
   estimarDistanciaBloco,
   extrairDistanciaExplicitaBloco,
   extrairDuracaoExplicitaBloco,
@@ -276,6 +277,60 @@ test("exige longão em um dos dias disponíveis", () => {
     /dia do longão entre os dias disponíveis/
   );
   assert.equal(validarFormularioPlano(formulario), null);
+});
+
+test("dia do longão não se aplica somente a quem nunca correu ou está parado", () => {
+  assert.equal(diaLongaoEhAplicavel(EXPERIENCIA_SEM_CORRIDA), false);
+  assert.equal(diaLongaoEhAplicavel(EXPERIENCIA_PARADO), false);
+  assert.equal(diaLongaoEhAplicavel(EXPERIENCIA_MENOS_6_MESES), true);
+
+  const formularioMenosDeSeisMeses = {
+    ...formularioPerformance(),
+    experienciaCorrida: EXPERIENCIA_MENOS_6_MESES,
+    objetivo: "Primeiros 5 km",
+    tempoAtual: "",
+    tempoDesejado: "",
+    corre5KmSemCaminhar: "nao",
+    diaLongao: ""
+  };
+  assert.match(
+    validarFormularioPlano(formularioMenosDeSeisMeses),
+    /dia do longão entre os dias disponíveis/
+  );
+});
+
+test("perfis iniciantes não exigem dia do longão e enviam null", () => {
+  for (const experienciaCorrida of [EXPERIENCIA_SEM_CORRIDA, EXPERIENCIA_PARADO]) {
+    const formulario = {
+      ...formularioPerformance(),
+      experienciaCorrida,
+      objetivo: "Primeiros 5 km",
+      tempoAtual: "",
+      tempoDesejado: "",
+      corre5KmSemCaminhar: experienciaCorrida === EXPERIENCIA_PARADO ? "nao" : "",
+      diaLongao: "segunda-feira"
+    };
+    assert.equal(validarFormularioPlano({ ...formulario, diaLongao: "" }), null);
+    assert.equal(montarPayloadMeuPlano(formulario).diaLongao, null);
+  }
+});
+
+test("troca para perfil iniciante e restauração antiga limpam dia do longão", () => {
+  for (const experienciaCorrida of [EXPERIENCIA_SEM_CORRIDA, EXPERIENCIA_PARADO]) {
+    const formulario = {
+      ...formularioPerformance(),
+      diaLongao: "segunda-feira"
+    };
+    const atualizado = normalizarCampoPlano(formulario, {
+      name: "experienciaCorrida", value: experienciaCorrida, type: "select-one"
+    });
+    const restaurado = normalizarFormularioPlanoRestaurado({
+      ...formulario,
+      experienciaCorrida
+    });
+    assert.equal(atualizado.diaLongao, "", experienciaCorrida);
+    assert.equal(restaurado.diaLongao, "", experienciaCorrida);
+  }
 });
 
 test("extrai a duração explícita dos blocos sem confundir pace", () => {
