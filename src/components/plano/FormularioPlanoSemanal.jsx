@@ -4,8 +4,7 @@ import {
   EXPERIENCIAS_INICIANTES,
   EXPERIENCIAS_CORRIDA,
   RITMOS_CONFORTAVEIS,
-  VOLUMES_SEMANAIS_MARATONA,
-  VOLUMES_SEMANAIS
+  VOLUMES_SEMANAIS_MARATONA
 } from "../../constants/planoTreino";
 import {
   completarEntradaTempo,
@@ -21,7 +20,8 @@ import {
   objetivosDisponiveisPorExperiencia,
   planoIndicaMeiaOuMaratona,
   planoIndicaMaratona,
-  validarBloqueiosMaratona
+  validarBloqueiosMaratona,
+  volumesDisponiveisPorObjetivo
 } from "../../utils/planoTreino";
 
 function OpcoesSelect({ opcoes }) {
@@ -98,7 +98,7 @@ function FormularioPlanoSemanal({
   const exibirDiaLongao = diaLongaoEhAplicavel(form.experienciaCorrida);
   const volumesDisponiveis = planoMaratona
     ? VOLUMES_SEMANAIS_MARATONA
-    : VOLUMES_SEMANAIS;
+    : volumesDisponiveisPorObjetivo(form.objetivo);
   const erroVisivel = erroTempoReal || erro;
   const submitBloqueado = carregando || Boolean(erroTempoReal);
 

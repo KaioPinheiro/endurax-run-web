@@ -7,6 +7,7 @@
   OBJETIVOS_PLANO_6_MESES_A_1_ANO,
   OBJETIVOS_PLANO_MENOS_6_MESES,
   OBJETIVOS_PLANO_SEM_EXPERIENCIA,
+  VOLUMES_SEMANAIS,
   VOLUMES_SEMANAIS_MARATONA
 } from "../constants/planoTreino.js";
 
@@ -125,12 +126,18 @@ export function normalizarCampoPlano(formulario, campo) {
       : {})
   };
 
+  const formularioComVolumeNormalizado =
+    proximoFormulario.volumeSemanalAtual &&
+    !volumesDisponiveisPorObjetivo(proximoFormulario.objetivo)
+      .includes(proximoFormulario.volumeSemanalAtual)
+      ? { ...proximoFormulario, volumeSemanalAtual: "" }
+      : proximoFormulario;
   const formularioComCapacidadeNormalizada = corre5KmSemCaminharEhAplicavel(
-    proximoFormulario.experienciaCorrida,
-    proximoFormulario.objetivo
+    formularioComVolumeNormalizado.experienciaCorrida,
+    formularioComVolumeNormalizado.objetivo
   )
-    ? proximoFormulario
-    : { ...proximoFormulario, corre5KmSemCaminhar: "", tempo5Km: "" };
+    ? formularioComVolumeNormalizado
+    : { ...formularioComVolumeNormalizado, corre5KmSemCaminhar: "", tempo5Km: "" };
 
   if (
     ehPlanoMaratona(formularioComCapacidadeNormalizada) &&
@@ -264,6 +271,13 @@ export function diaLongaoEhAplicavel(experienciaCorrida) {
   const experiencia = String(experienciaCorrida ?? "").trim();
   return !EXPERIENCIAS_INICIANTES.includes(experiencia) &&
     experiencia !== "Estou parado";
+}
+
+export function volumesDisponiveisPorObjetivo(objetivo) {
+  if (objetivo !== "Primeiros 10 km") {
+    return VOLUMES_SEMANAIS;
+  }
+  return VOLUMES_SEMANAIS.slice(1, 4);
 }
 
 export function limparCamposProva() {

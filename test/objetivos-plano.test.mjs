@@ -9,7 +9,8 @@ import {
   DURACOES_PLANO,
   FORM_INICIAL_PLANO,
   OBJETIVOS_PLANO,
-  OBJETIVOS_PLANO_MENOS_6_MESES
+  OBJETIVOS_PLANO_MENOS_6_MESES,
+  VOLUMES_SEMANAIS
 } from "../src/constants/planoTreino.js";
 import {
   alternarDiaDisponivel,
@@ -29,7 +30,8 @@ import {
   objetivoExibePergunta5Km,
   objetivosDisponiveisPorExperiencia,
   validarFormularioPlano,
-  validarTempo5Km
+  validarTempo5Km,
+  volumesDisponiveisPorObjetivo
 } from "../src/utils/planoTreino.js";
 
 const objetivos = [
@@ -239,6 +241,42 @@ test("payload V1 neutraliza dados residuais de prova e preserva duração", () =
     assert.equal(payload.objetivoProva, null);
     assert.equal(payload.importanciaProva, null);
     assert.equal(payload.duracaoSemanas, Number(duracao));
+  }
+});
+
+test("Primeiros 10 km oferece somente volumes existentes abaixo de 40 km", () => {
+  const volumes = volumesDisponiveisPorObjetivo("Primeiros 10 km");
+
+  assert.deepEqual(volumes, ["Menos de 10 km", "10-20 km", "20-40 km"]);
+  assert.equal(volumes.includes("Não sei informar"), false);
+  assert.equal(volumes.includes("40-60 km"), false);
+  assert.equal(volumes.includes("60-80 km"), false);
+  assert.equal(volumes.includes("80+ km"), false);
+});
+
+test("troca e restauração de Primeiros 10 km limpam volume incompatível", () => {
+  const formulario = {
+    ...formularioPerformance(),
+    objetivo: "Melhorar condicionamento",
+    volumeSemanalAtual: "60-80 km"
+  };
+  const atualizado = normalizarCampoPlano(formulario, {
+    name: "objetivo", value: "Primeiros 10 km", type: "select-one"
+  });
+  const restaurado = normalizarFormularioPlanoRestaurado({
+    ...formulario,
+    objetivo: "Primeiros 10 km"
+  });
+
+  assert.equal(atualizado.volumeSemanalAtual, "");
+  assert.equal(restaurado.volumeSemanalAtual, "");
+});
+
+test("demais objetivos mantêm as opções gerais de volume", () => {
+  for (const objetivo of [
+    "Melhorar condicionamento", "Primeiros 5 km", "Melhorar tempo nos 10 km"
+  ]) {
+    assert.deepEqual(volumesDisponiveisPorObjetivo(objetivo), VOLUMES_SEMANAIS);
   }
 });
 
