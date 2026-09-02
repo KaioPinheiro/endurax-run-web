@@ -284,21 +284,23 @@ export function diaLongaoEhAplicavel(experienciaCorrida) {
 }
 
 export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
+  let volumesDisponiveis = VOLUMES_SEMANAIS;
+
   if (objetivo === "Melhorar tempo nos 5 km") {
-    return VOLUMES_SEMANAIS.slice(1, 3);
+    volumesDisponiveis = VOLUMES_SEMANAIS.slice(1, 3);
   }
 
   if (objetivo === "Melhorar tempo nos 10 km") {
-    return experienciaCorrida === EXPERIENCIA_MENOS_6_MESES
-      ? VOLUMES_SEMANAIS.slice(2, 3)
-      : VOLUMES_SEMANAIS.slice(2, 4);
+    volumesDisponiveis = VOLUMES_SEMANAIS.slice(2, 4);
   }
 
   if (objetivo === "Primeiros 10 km") {
-    return VOLUMES_SEMANAIS.slice(1, 4);
+    volumesDisponiveis = VOLUMES_SEMANAIS.slice(1, 4);
   }
 
-  return VOLUMES_SEMANAIS;
+  return experienciaCorrida === EXPERIENCIA_MENOS_6_MESES
+    ? volumesDisponiveis.filter((volume) => VOLUMES_SEMANAIS.slice(0, 3).includes(volume))
+    : volumesDisponiveis;
 }
 
 export function limparCamposProva() {

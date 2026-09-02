@@ -313,6 +313,46 @@ test("Menos de 6 meses com Melhorar tempo nos 10 km permite somente 10-20 km", (
   );
 });
 
+test("Menos de 6 meses remove volumes a partir de 20 km sem ampliar regras do objetivo", () => {
+  assert.deepEqual(
+    volumesDisponiveisPorObjetivo("Melhorar condicionamento", EXPERIENCIA_MENOS_6_MESES),
+    ["Não sei informar", "Menos de 10 km", "10-20 km"]
+  );
+  assert.deepEqual(
+    volumesDisponiveisPorObjetivo("Primeiros 10 km", EXPERIENCIA_MENOS_6_MESES),
+    ["Menos de 10 km", "10-20 km"]
+  );
+  assert.deepEqual(
+    volumesDisponiveisPorObjetivo("Melhorar tempo nos 5 km", EXPERIENCIA_MENOS_6_MESES),
+    ["Menos de 10 km", "10-20 km"]
+  );
+  assert.deepEqual(
+    volumesDisponiveisPorObjetivo("Melhorar condicionamento", "1 a 3 anos"),
+    VOLUMES_SEMANAIS
+  );
+});
+
+test("troca para Menos de 6 meses limpa volume geral incompatível", () => {
+  const formulario = {
+    ...formularioPerformance(),
+    experienciaCorrida: "1 a 3 anos",
+    objetivo: "Melhorar condicionamento",
+    volumeSemanalAtual: "20-40 km"
+  };
+  const atualizado = normalizarCampoPlano(formulario, {
+    name: "experienciaCorrida",
+    value: EXPERIENCIA_MENOS_6_MESES,
+    type: "select-one"
+  });
+  const restaurado = normalizarFormularioPlanoRestaurado({
+    ...formulario,
+    experienciaCorrida: EXPERIENCIA_MENOS_6_MESES
+  });
+
+  assert.equal(atualizado.volumeSemanalAtual, "");
+  assert.equal(restaurado.volumeSemanalAtual, "");
+});
+
 test("combinação de Menos de 6 meses e 10 km limpa volume 20-40 km", () => {
   const formulario = {
     ...formularioPerformance(),
