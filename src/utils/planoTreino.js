@@ -129,7 +129,10 @@ export function normalizarCampoPlano(formulario, campo) {
 
   const formularioComVolumeNormalizado =
     proximoFormulario.volumeSemanalAtual &&
-    !volumesDisponiveisPorObjetivo(proximoFormulario.objetivo)
+    !volumesDisponiveisPorObjetivo(
+      proximoFormulario.objetivo,
+      proximoFormulario.experienciaCorrida
+    )
       .includes(proximoFormulario.volumeSemanalAtual)
       ? { ...proximoFormulario, volumeSemanalAtual: "" }
       : proximoFormulario;
@@ -280,13 +283,15 @@ export function diaLongaoEhAplicavel(experienciaCorrida) {
     experiencia !== "Estou parado";
 }
 
-export function volumesDisponiveisPorObjetivo(objetivo) {
+export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
   if (objetivo === "Melhorar tempo nos 5 km") {
     return VOLUMES_SEMANAIS.slice(1, 3);
   }
 
   if (objetivo === "Melhorar tempo nos 10 km") {
-    return VOLUMES_SEMANAIS.slice(2, 4);
+    return experienciaCorrida === EXPERIENCIA_MENOS_6_MESES
+      ? VOLUMES_SEMANAIS.slice(2, 3)
+      : VOLUMES_SEMANAIS.slice(2, 4);
   }
 
   if (objetivo === "Primeiros 10 km") {

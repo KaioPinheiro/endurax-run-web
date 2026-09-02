@@ -99,7 +99,7 @@ function FormularioPlanoSemanal({
   const exibirDiaLongao = diaLongaoEhAplicavel(form.experienciaCorrida);
   const volumesDisponiveis = planoMaratona
     ? VOLUMES_SEMANAIS_MARATONA
-    : volumesDisponiveisPorObjetivo(form.objetivo);
+    : volumesDisponiveisPorObjetivo(form.objetivo, form.experienciaCorrida);
   const erroVisivel = erroTempoReal || erro;
   const submitBloqueado = carregando || Boolean(erroTempoReal);
 
