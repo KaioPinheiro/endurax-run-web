@@ -278,6 +278,10 @@ export function volumesDisponiveisPorObjetivo(objetivo) {
     return VOLUMES_SEMANAIS.slice(1, 3);
   }
 
+  if (objetivo === "Melhorar tempo nos 10 km") {
+    return VOLUMES_SEMANAIS.slice(2, 4);
+  }
+
   if (objetivo === "Primeiros 10 km") {
     return VOLUMES_SEMANAIS.slice(1, 4);
   }

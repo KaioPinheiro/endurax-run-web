@@ -265,6 +265,35 @@ test("Melhorar tempo nos 5 km oferece somente volumes abaixo de 20 km", () => {
   assert.equal(volumes.includes("80+ km"), false);
 });
 
+test("Melhorar tempo nos 10 km oferece somente volumes entre 10 e 40 km", () => {
+  const volumes = volumesDisponiveisPorObjetivo("Melhorar tempo nos 10 km");
+
+  assert.deepEqual(volumes, ["10-20 km", "20-40 km"]);
+  assert.equal(volumes.includes("Não sei informar"), false);
+  assert.equal(volumes.includes("Menos de 10 km"), false);
+  assert.equal(volumes.includes("40-60 km"), false);
+  assert.equal(volumes.includes("60-80 km"), false);
+  assert.equal(volumes.includes("80+ km"), false);
+});
+
+test("troca e restauração de Melhorar tempo nos 10 km limpam volume incompatível", () => {
+  const formulario = {
+    ...formularioPerformance(),
+    objetivo: "Melhorar condicionamento",
+    volumeSemanalAtual: "Menos de 10 km"
+  };
+  const atualizado = normalizarCampoPlano(formulario, {
+    name: "objetivo", value: "Melhorar tempo nos 10 km", type: "select-one"
+  });
+  const restaurado = normalizarFormularioPlanoRestaurado({
+    ...formulario,
+    objetivo: "Melhorar tempo nos 10 km"
+  });
+
+  assert.equal(atualizado.volumeSemanalAtual, "");
+  assert.equal(restaurado.volumeSemanalAtual, "");
+});
+
 test("troca e restauração de Melhorar tempo nos 5 km limpam volume incompatível", () => {
   const formulario = {
     ...formularioPerformance(),
@@ -303,7 +332,7 @@ test("troca e restauração de Primeiros 10 km limpam volume incompatível", () 
 
 test("demais objetivos mantêm as opções gerais de volume", () => {
   for (const objetivo of [
-    "Melhorar condicionamento", "Primeiros 5 km", "Melhorar tempo nos 10 km"
+    "Melhorar condicionamento", "Primeiros 5 km", "Melhorar tempo na Meia Maratona"
   ]) {
     assert.deepEqual(volumesDisponiveisPorObjetivo(objetivo), VOLUMES_SEMANAIS);
   }
