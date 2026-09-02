@@ -274,10 +274,15 @@ export function diaLongaoEhAplicavel(experienciaCorrida) {
 }
 
 export function volumesDisponiveisPorObjetivo(objetivo) {
-  if (objetivo !== "Primeiros 10 km") {
-    return VOLUMES_SEMANAIS;
+  if (objetivo === "Melhorar tempo nos 5 km") {
+    return VOLUMES_SEMANAIS.slice(1, 3);
   }
-  return VOLUMES_SEMANAIS.slice(1, 4);
+
+  if (objetivo === "Primeiros 10 km") {
+    return VOLUMES_SEMANAIS.slice(1, 4);
+  }
+
+  return VOLUMES_SEMANAIS;
 }
 
 export function limparCamposProva() {
