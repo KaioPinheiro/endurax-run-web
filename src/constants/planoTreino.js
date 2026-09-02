@@ -86,6 +86,13 @@ export const OBJETIVOS_PLANO_MENOS_6_MESES = OBJETIVOS_PLANO.filter((objetivo) =
   "Melhorar tempo nos 10 km"
 ].includes(objetivo));
 export const OBJETIVOS_PLANO_6_MESES_A_1_ANO = OBJETIVOS_PLANO.filter(
+  (objetivo) => ![
+    "Começar a correr",
+    "Primeira Maratona",
+    "Melhorar tempo na Maratona"
+  ].includes(objetivo)
+);
+export const OBJETIVOS_PLANO_COM_EXPERIENCIA = OBJETIVOS_PLANO.filter(
   (objetivo) => objetivo !== "Começar a correr"
 );
 

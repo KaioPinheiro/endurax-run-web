@@ -6,6 +6,7 @@
   EXPERIENCIAS_INICIANTES,
   FORM_INICIAL_PLANO,
   OBJETIVOS_PLANO_6_MESES_A_1_ANO,
+  OBJETIVOS_PLANO_COM_EXPERIENCIA,
   OBJETIVOS_PLANO_MENOS_6_MESES,
   OBJETIVOS_PLANO_SEM_EXPERIENCIA,
   VOLUMES_SEMANAIS,
@@ -268,7 +269,7 @@ export function objetivosDisponiveisPorExperiencia(experienciaCorrida) {
     return OBJETIVOS_PLANO_6_MESES_A_1_ANO;
   }
 
-  return OBJETIVOS_PLANO_6_MESES_A_1_ANO;
+  return OBJETIVOS_PLANO_COM_EXPERIENCIA;
 }
 
 export function rotuloObjetivoPorExperiencia(objetivo, experienciaCorrida) {
@@ -298,8 +299,12 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
     volumesDisponiveis = VOLUMES_SEMANAIS.slice(1, 4);
   }
 
-  return experienciaCorrida === EXPERIENCIA_MENOS_6_MESES
-    ? volumesDisponiveis.filter((volume) => VOLUMES_SEMANAIS.slice(0, 3).includes(volume))
+  if (experienciaCorrida === EXPERIENCIA_MENOS_6_MESES) {
+    return volumesDisponiveis.filter((volume) => VOLUMES_SEMANAIS.slice(0, 3).includes(volume));
+  }
+
+  return experienciaCorrida === EXPERIENCIA_6_MESES_A_1_ANO
+    ? volumesDisponiveis.filter((volume) => VOLUMES_SEMANAIS.slice(0, 4).includes(volume))
     : volumesDisponiveis;
 }
 

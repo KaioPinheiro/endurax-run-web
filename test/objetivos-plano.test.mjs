@@ -86,6 +86,54 @@ test("menos de 6 meses mantém somente objetivos de até 10 km", () => {
   assert.deepEqual(objetivosDisponiveisPorExperiencia("1 a 3 anos"), objetivos.slice(1));
 });
 
+test("6 meses a 1 ano exclui somente os objetivos de maratona", () => {
+  const permitidos = objetivosDisponiveisPorExperiencia(EXPERIENCIA_6_MESES_A_1_ANO);
+
+  assert.equal(permitidos.includes("Primeira Maratona"), false);
+  assert.equal(permitidos.includes("Melhorar tempo na Maratona"), false);
+  assert.deepEqual(
+    permitidos,
+    objetivos.filter((objetivo) => ![
+      "Começar a correr",
+      "Primeira Maratona",
+      "Melhorar tempo na Maratona"
+    ].includes(objetivo))
+  );
+
+  const maisExperiente = objetivosDisponiveisPorExperiencia("1 a 3 anos");
+  assert.equal(maisExperiente.includes("Primeira Maratona"), true);
+  assert.equal(maisExperiente.includes("Melhorar tempo na Maratona"), true);
+  assert.deepEqual(maisExperiente, objetivos.slice(1));
+});
+
+test("troca e restauração limpam maratona incompatível para 6 meses a 1 ano", () => {
+  for (const objetivo of ["Primeira Maratona", "Melhorar tempo na Maratona"]) {
+    const formulario = {
+      ...formularioPerformance(),
+      experienciaCorrida: "1 a 3 anos",
+      objetivo,
+      tempoAtual: "4:00:00",
+      tempoDesejado: "3:50:00"
+    };
+    const atualizado = normalizarCampoPlano(formulario, {
+      name: "experienciaCorrida",
+      value: EXPERIENCIA_6_MESES_A_1_ANO,
+      type: "select-one"
+    });
+    const restaurado = normalizarFormularioPlanoRestaurado({
+      ...formulario,
+      experienciaCorrida: EXPERIENCIA_6_MESES_A_1_ANO
+    });
+
+    assert.equal(atualizado.objetivo, "", objetivo);
+    assert.equal(atualizado.tempoAtual, "", objetivo);
+    assert.equal(atualizado.tempoDesejado, "", objetivo);
+    assert.equal(restaurado.objetivo, "", objetivo);
+    assert.equal(restaurado.tempoAtual, "", objetivo);
+    assert.equal(restaurado.tempoDesejado, "", objetivo);
+  }
+});
+
 test("Começar a correr fica disponível somente para quem nunca correu ou está parado", () => {
   for (const experiencia of [EXPERIENCIA_SEM_CORRIDA, EXPERIENCIA_PARADO]) {
     assert.equal(
@@ -347,6 +395,52 @@ test("troca para Menos de 6 meses limpa volume geral incompatível", () => {
   const restaurado = normalizarFormularioPlanoRestaurado({
     ...formulario,
     experienciaCorrida: EXPERIENCIA_MENOS_6_MESES
+  });
+
+  assert.equal(atualizado.volumeSemanalAtual, "");
+  assert.equal(restaurado.volumeSemanalAtual, "");
+});
+
+test("6 meses a 1 ano remove volumes a partir de 40 km sem ampliar regras do objetivo", () => {
+  assert.deepEqual(
+    volumesDisponiveisPorObjetivo(
+      "Melhorar condicionamento",
+      EXPERIENCIA_6_MESES_A_1_ANO
+    ),
+    ["Não sei informar", "Menos de 10 km", "10-20 km", "20-40 km"]
+  );
+  assert.deepEqual(
+    volumesDisponiveisPorObjetivo("Primeiros 10 km", EXPERIENCIA_6_MESES_A_1_ANO),
+    ["Menos de 10 km", "10-20 km", "20-40 km"]
+  );
+  assert.deepEqual(
+    volumesDisponiveisPorObjetivo(
+      "Melhorar tempo nos 10 km",
+      EXPERIENCIA_6_MESES_A_1_ANO
+    ),
+    ["10-20 km", "20-40 km"]
+  );
+  assert.deepEqual(
+    volumesDisponiveisPorObjetivo("Melhorar condicionamento", "1 a 3 anos"),
+    VOLUMES_SEMANAIS
+  );
+});
+
+test("troca para 6 meses a 1 ano limpa volume geral incompatível", () => {
+  const formulario = {
+    ...formularioPerformance(),
+    experienciaCorrida: "1 a 3 anos",
+    objetivo: "Melhorar condicionamento",
+    volumeSemanalAtual: "40-60 km"
+  };
+  const atualizado = normalizarCampoPlano(formulario, {
+    name: "experienciaCorrida",
+    value: EXPERIENCIA_6_MESES_A_1_ANO,
+    type: "select-one"
+  });
+  const restaurado = normalizarFormularioPlanoRestaurado({
+    ...formulario,
+    experienciaCorrida: EXPERIENCIA_6_MESES_A_1_ANO
   });
 
   assert.equal(atualizado.volumeSemanalAtual, "");
