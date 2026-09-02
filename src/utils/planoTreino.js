@@ -1,6 +1,7 @@
 ﻿import {
   EXPERIENCIA_6_MESES_A_1_ANO,
   EXPERIENCIA_MENOS_6_MESES,
+  EXPERIENCIA_PARADO,
   EXPERIENCIAS_PERGUNTA_5_KM,
   EXPERIENCIAS_INICIANTES,
   FORM_INICIAL_PLANO,
@@ -265,6 +266,12 @@ export function objetivosDisponiveisPorExperiencia(experienciaCorrida) {
   }
 
   return OBJETIVOS_PLANO_6_MESES_A_1_ANO;
+}
+
+export function rotuloObjetivoPorExperiencia(objetivo, experienciaCorrida) {
+  return objetivo === "Começar a correr" && experienciaCorrida === EXPERIENCIA_PARADO
+    ? "Voltar a correr"
+    : objetivo;
 }
 
 export function diaLongaoEhAplicavel(experienciaCorrida) {

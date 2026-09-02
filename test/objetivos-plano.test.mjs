@@ -29,6 +29,7 @@ import {
   normalizarTempo5Km,
   objetivoExibePergunta5Km,
   objetivosDisponiveisPorExperiencia,
+  rotuloObjetivoPorExperiencia,
   validarFormularioPlano,
   validarTempo5Km,
   volumesDisponiveisPorObjetivo
@@ -105,6 +106,28 @@ test("Começar a correr fica disponível somente para quem nunca correu ou está
       experiencia
     );
   }
+});
+
+test("rótulo de Começar a correr muda somente para quem está parado", () => {
+  assert.equal(
+    rotuloObjetivoPorExperiencia("Começar a correr", EXPERIENCIA_SEM_CORRIDA),
+    "Começar a correr"
+  );
+  assert.equal(
+    rotuloObjetivoPorExperiencia("Começar a correr", EXPERIENCIA_PARADO),
+    "Voltar a correr"
+  );
+  assert.equal(
+    rotuloObjetivoPorExperiencia("Melhorar condicionamento", EXPERIENCIA_PARADO),
+    "Melhorar condicionamento"
+  );
+
+  const payload = montarPayloadMeuPlano({
+    ...FORM_INICIAL_PLANO,
+    experienciaCorrida: EXPERIENCIA_PARADO,
+    objetivo: "Começar a correr"
+  });
+  assert.equal(payload.objetivo, "Começar a correr");
 });
 
 test("mudança de experiência limpa Começar a correr sem apagar dados não relacionados", () => {

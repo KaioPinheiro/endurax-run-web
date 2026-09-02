@@ -18,16 +18,17 @@ import {
   normalizarTempo5Km,
   corre5KmSemCaminharEhAplicavel,
   objetivosDisponiveisPorExperiencia,
+  rotuloObjetivoPorExperiencia,
   planoIndicaMeiaOuMaratona,
   planoIndicaMaratona,
   validarBloqueiosMaratona,
   volumesDisponiveisPorObjetivo
 } from "../../utils/planoTreino";
 
-function OpcoesSelect({ opcoes }) {
+function OpcoesSelect({ opcoes, rotulo = (opcao) => opcao }) {
   return opcoes.map((opcao) => (
     <option value={opcao} key={opcao}>
-      {opcao}
+      {rotulo(opcao)}
     </option>
   ));
 }
@@ -184,7 +185,13 @@ function FormularioPlanoSemanal({
           <span>Objetivo *</span>
           <select name="objetivo" value={form.objetivo} onChange={onAlterar} required>
             <PlaceholderSelect>Selecione</PlaceholderSelect>
-            <OpcoesSelect opcoes={objetivosDisponiveis} />
+            <OpcoesSelect
+              opcoes={objetivosDisponiveis}
+              rotulo={(objetivo) => rotuloObjetivoPorExperiencia(
+                objetivo,
+                form.experienciaCorrida
+              )}
+            />
           </select>
         </label>
 
