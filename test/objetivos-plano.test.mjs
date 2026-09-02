@@ -282,6 +282,9 @@ test("exige longão em um dos dias disponíveis", () => {
 test("dia do longão não se aplica somente a quem nunca correu ou está parado", () => {
   assert.equal(diaLongaoEhAplicavel(EXPERIENCIA_SEM_CORRIDA), false);
   assert.equal(diaLongaoEhAplicavel(EXPERIENCIA_PARADO), false);
+  assert.equal(diaLongaoEhAplicavel("Estou parado(a)"), false);
+  assert.equal(diaLongaoEhAplicavel(" Estou parado(a) "), false);
+  assert.equal(diaLongaoEhAplicavel("Estou parado"), false);
   assert.equal(diaLongaoEhAplicavel(EXPERIENCIA_MENOS_6_MESES), true);
 
   const formularioMenosDeSeisMeses = {

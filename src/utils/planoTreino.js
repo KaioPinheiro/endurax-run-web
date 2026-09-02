@@ -102,7 +102,10 @@ export function normalizarCampoPlano(formulario, campo) {
       : {}),
     ...(name === "experienciaCorrida" &&
       EXPERIENCIAS_INICIANTES.includes(valorNormalizado)
-      ? { volumeSemanalAtual: "", diaLongao: "" }
+      ? { volumeSemanalAtual: "" }
+      : {}),
+    ...(name === "experienciaCorrida" && !diaLongaoEhAplicavel(valorNormalizado)
+      ? { diaLongao: "" }
       : {}),
     ...(name === "objetivo" && !ehObjetivoPerformance(valorNormalizado)
       ? { tempoAtual: "", tempoDesejado: "" }
@@ -258,7 +261,9 @@ export function objetivosDisponiveisPorExperiencia(experienciaCorrida) {
 }
 
 export function diaLongaoEhAplicavel(experienciaCorrida) {
-  return !EXPERIENCIAS_INICIANTES.includes(experienciaCorrida);
+  const experiencia = String(experienciaCorrida ?? "").trim();
+  return !EXPERIENCIAS_INICIANTES.includes(experiencia) &&
+    experiencia !== "Estou parado";
 }
 
 export function limparCamposProva() {
