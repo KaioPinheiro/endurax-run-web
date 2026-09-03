@@ -586,8 +586,42 @@ test("expõe exatamente os novos objetivos", () => {
 
 test("performance exige tempos válidos e melhora", () => {
   assert.match(validarFormularioPlano({ ...formularioPerformance(), tempoAtual: "" }), /tempos válidos/);
-  assert.match(validarFormularioPlano({ ...formularioPerformance(), tempoDesejado: "31:20" }), /deve ser melhor/);
+  assert.match(validarFormularioPlano({ ...formularioPerformance(), tempoDesejado: "31:20" }), /deve ser menor/);
   assert.equal(validarFormularioPlano(formularioPerformance()), null);
+});
+
+test("quatro objetivos de performance exigem tempo desejado menor que o atual", () => {
+  const cenarios = [
+    ["Melhorar tempo nos 5 km", "44:00", "48:00", "40:00"],
+    ["Melhorar tempo nos 10 km", "44:00", "48:00", "40:00"],
+    ["Melhorar tempo na Meia Maratona", "1:45:00", "1:50:00", "1:40:00"],
+    ["Melhorar tempo na Maratona", "3:30:00", "3:45:00", "3:20:00"]
+  ];
+
+  for (const [objetivo, atual, maisLento, maisRapido] of cenarios) {
+    const formulario = {
+      ...formularioPerformance(),
+      objetivo,
+      maiorDistanciaCorrida: "10",
+      tempoAtual: atual
+    };
+
+    assert.equal(
+      validarFormularioPlano({ ...formulario, tempoDesejado: maisLento }),
+      "O tempo desejado deve ser menor que o tempo atual.",
+      objetivo
+    );
+    assert.equal(
+      validarFormularioPlano({ ...formulario, tempoDesejado: atual }),
+      "O tempo desejado deve ser menor que o tempo atual.",
+      objetivo
+    );
+    assert.equal(
+      validarFormularioPlano({ ...formulario, tempoDesejado: maisRapido }),
+      null,
+      objetivo
+    );
+  }
 });
 
 test("exige longão em um dos dias disponíveis", () => {

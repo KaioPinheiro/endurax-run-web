@@ -429,7 +429,7 @@ export function validarFormularioPlano(formulario) {
       return `Informe tempos válidos no formato ${formatoTempoObjetivo(formulario.objetivo)}.`;
     }
     if (desejado >= atual) {
-      return "O tempo desejado deve ser melhor que o tempo atual.";
+      return "O tempo desejado deve ser menor que o tempo atual.";
     }
   }
 
@@ -679,7 +679,9 @@ export function distanciaObjetivoPerformance(objetivo) {
 }
 
 export function formatoTempoObjetivo(objetivo) {
-  return distanciaObjetivoPerformance(objetivo) === "Maratona" ? "H:MM:SS" : "MM:SS";
+  return ["Meia Maratona", "Maratona"].includes(distanciaObjetivoPerformance(objetivo))
+    ? "H:MM:SS"
+    : "MM:SS";
 }
 
 function tempoEmSegundos(valor, objetivo) {
