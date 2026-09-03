@@ -378,7 +378,7 @@ test("Menos de 6 meses remove volumes a partir de 20 km sem ampliar regras do ob
     ["Menos de 10 km", "10-20 km"]
   );
   assert.deepEqual(
-    volumesDisponiveisPorObjetivo("Melhorar condicionamento", "1 a 3 anos"),
+    volumesDisponiveisPorObjetivo("Melhorar condicionamento", "Mais de 3 anos"),
     VOLUMES_SEMANAIS
   );
 });
@@ -424,7 +424,7 @@ test("6 meses a 1 ano remove volumes a partir de 40 km sem ampliar regras do obj
     ["10-20 km", "20-40 km"]
   );
   assert.deepEqual(
-    volumesDisponiveisPorObjetivo("Melhorar condicionamento", "1 a 3 anos"),
+    volumesDisponiveisPorObjetivo("Melhorar condicionamento", "Mais de 3 anos"),
     VOLUMES_SEMANAIS
   );
 });
@@ -460,7 +460,43 @@ test("troca e restauração para 6 meses a 1 ano limpam Não sei informar", () =
   assert.equal(atualizado.volumeSemanalAtual, "");
   assert.equal(restaurado.volumeSemanalAtual, "");
   assert.equal(
-    volumesDisponiveisPorObjetivo("Melhorar condicionamento", "1 a 3 anos")
+    volumesDisponiveisPorObjetivo("Melhorar condicionamento", "Mais de 3 anos")
+      .includes("Não sei informar"),
+    true
+  );
+});
+
+test("1 a 3 anos nunca oferece Não sei informar", () => {
+  for (const objetivo of objetivosDisponiveisPorExperiencia("1 a 3 anos")) {
+    assert.equal(
+      volumesDisponiveisPorObjetivo(objetivo, "1 a 3 anos").includes("Não sei informar"),
+      false,
+      objetivo
+    );
+  }
+});
+
+test("troca e restauração para 1 a 3 anos limpam Não sei informar", () => {
+  const formulario = {
+    ...formularioPerformance(),
+    experienciaCorrida: "Mais de 3 anos",
+    objetivo: "Melhorar condicionamento",
+    volumeSemanalAtual: "Não sei informar"
+  };
+  const atualizado = normalizarCampoPlano(formulario, {
+    name: "experienciaCorrida",
+    value: "1 a 3 anos",
+    type: "select-one"
+  });
+  const restaurado = normalizarFormularioPlanoRestaurado({
+    ...formulario,
+    experienciaCorrida: "1 a 3 anos"
+  });
+
+  assert.equal(atualizado.volumeSemanalAtual, "");
+  assert.equal(restaurado.volumeSemanalAtual, "");
+  assert.equal(
+    volumesDisponiveisPorObjetivo("Melhorar condicionamento", "Mais de 3 anos")
       .includes("Não sei informar"),
     true
   );

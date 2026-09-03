@@ -303,8 +303,12 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
     return volumesDisponiveis.filter((volume) => VOLUMES_SEMANAIS.slice(0, 3).includes(volume));
   }
 
-  return experienciaCorrida === EXPERIENCIA_6_MESES_A_1_ANO
-    ? volumesDisponiveis.filter((volume) => VOLUMES_SEMANAIS.slice(1, 4).includes(volume))
+  if (experienciaCorrida === EXPERIENCIA_6_MESES_A_1_ANO) {
+    return volumesDisponiveis.filter((volume) => VOLUMES_SEMANAIS.slice(1, 4).includes(volume));
+  }
+
+  return experienciaCorrida === "1 a 3 anos"
+    ? volumesDisponiveis.filter((volume) => volume !== "Não sei informar")
     : volumesDisponiveis;
 }
 
