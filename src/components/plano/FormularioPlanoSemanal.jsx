@@ -12,6 +12,7 @@ import {
   diaLongaoEhAplicavel,
   distanciaObjetivoPerformance,
   ehObjetivoPerformance,
+  filtrarVolumesPorExperiencia,
   formatoTempoObjetivo,
   normalizarEntradaTempo,
   normalizarIdade,
@@ -98,9 +99,13 @@ function FormularioPlanoSemanal({
   );
   const ocultarVolumeSemanal = EXPERIENCIAS_INICIANTES.includes(form.experienciaCorrida);
   const exibirDiaLongao = diaLongaoEhAplicavel(form.experienciaCorrida);
-  const volumesDisponiveis = planoMaratona
+  const volumesDisponiveisBase = planoMaratona
     ? VOLUMES_SEMANAIS_MARATONA
     : volumesDisponiveisPorObjetivo(form.objetivo, form.experienciaCorrida);
+  const volumesDisponiveis = filtrarVolumesPorExperiencia(
+    volumesDisponiveisBase,
+    form.experienciaCorrida
+  );
   const erroTempoDesejado = validarComparacaoTemposPerformance(form) ||
     (erro === "O tempo desejado deve ser menor que o tempo atual." ? erro : null);
   const erroVisivel = erroTempoReal || (erroTempoDesejado ? null : erro);

@@ -299,17 +299,21 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
     volumesDisponiveis = VOLUMES_SEMANAIS.slice(1, 4);
   }
 
+  return filtrarVolumesPorExperiencia(volumesDisponiveis, experienciaCorrida);
+}
+
+export function filtrarVolumesPorExperiencia(volumes, experienciaCorrida) {
   if (experienciaCorrida === EXPERIENCIA_MENOS_6_MESES) {
-    return volumesDisponiveis.filter((volume) => VOLUMES_SEMANAIS.slice(0, 3).includes(volume));
+    return volumes.filter((volume) => VOLUMES_SEMANAIS.slice(0, 3).includes(volume));
   }
 
   if (experienciaCorrida === EXPERIENCIA_6_MESES_A_1_ANO) {
-    return volumesDisponiveis.filter((volume) => VOLUMES_SEMANAIS.slice(1, 4).includes(volume));
+    return volumes.filter((volume) => VOLUMES_SEMANAIS.slice(1, 4).includes(volume));
   }
 
   return experienciaCorrida === "1 a 3 anos"
-    ? volumesDisponiveis.filter((volume) => volume !== "Não sei informar")
-    : volumesDisponiveis;
+    ? volumes.filter((volume) => volume !== "Não sei informar")
+    : volumes;
 }
 
 export function limparCamposProva() {

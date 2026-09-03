@@ -476,6 +476,48 @@ test("1 a 3 anos nunca oferece Não sei informar", () => {
   }
 });
 
+test("formulário não renderiza Não sei informar nos objetivos de 1 a 3 anos", async () => {
+  const { createServer } = await import("vite");
+  const servidor = await createServer({
+    appType: "custom",
+    logLevel: "silent",
+    server: { middlewareMode: true }
+  });
+  try {
+    const { default: FormularioPlanoSemanal } = await servidor.ssrLoadModule(
+      "/src/components/plano/FormularioPlanoSemanal.jsx"
+    );
+    const propriedades = {
+      erro: "",
+      sucesso: "",
+      carregando: false,
+      mensagemLoading: "",
+      onAlterar: () => {},
+      onAlternarDia: () => {},
+      onSubmit: () => {}
+    };
+    for (const objetivo of [
+      "Melhorar condicionamento",
+      "Emagrecer",
+      "Primeira Meia Maratona",
+      "Melhorar tempo na Meia Maratona"
+    ]) {
+      const html = renderToStaticMarkup(React.createElement(FormularioPlanoSemanal, {
+        ...propriedades,
+        form: {
+          ...formularioPerformance(),
+          experienciaCorrida: "1 a 3 anos",
+          objetivo,
+          maiorDistanciaCorrida: "10"
+        }
+      }));
+      assert.doesNotMatch(html, /<option value="Não sei informar">/, objetivo);
+    }
+  } finally {
+    await servidor.close();
+  }
+});
+
 test("troca e restauração para 1 a 3 anos limpam Não sei informar", () => {
   const formulario = {
     ...formularioPerformance(),
