@@ -407,7 +407,7 @@ test("6 meses a 1 ano remove volumes a partir de 40 km sem ampliar regras do obj
       "Melhorar condicionamento",
       EXPERIENCIA_6_MESES_A_1_ANO
     ),
-    ["Não sei informar", "Menos de 10 km", "10-20 km", "20-40 km"]
+    ["Menos de 10 km", "10-20 km", "20-40 km"]
   );
   assert.deepEqual(
     volumesDisponiveisPorObjetivo("Primeiros 10 km", EXPERIENCIA_6_MESES_A_1_ANO),
@@ -423,6 +423,43 @@ test("6 meses a 1 ano remove volumes a partir de 40 km sem ampliar regras do obj
   assert.deepEqual(
     volumesDisponiveisPorObjetivo("Melhorar condicionamento", "1 a 3 anos"),
     VOLUMES_SEMANAIS
+  );
+});
+
+test("6 meses a 1 ano nunca oferece Não sei informar", () => {
+  for (const objetivo of objetivosDisponiveisPorExperiencia(EXPERIENCIA_6_MESES_A_1_ANO)) {
+    assert.equal(
+      volumesDisponiveisPorObjetivo(objetivo, EXPERIENCIA_6_MESES_A_1_ANO)
+        .includes("Não sei informar"),
+      false,
+      objetivo
+    );
+  }
+});
+
+test("troca e restauração para 6 meses a 1 ano limpam Não sei informar", () => {
+  const formulario = {
+    ...formularioPerformance(),
+    experienciaCorrida: "1 a 3 anos",
+    objetivo: "Melhorar condicionamento",
+    volumeSemanalAtual: "Não sei informar"
+  };
+  const atualizado = normalizarCampoPlano(formulario, {
+    name: "experienciaCorrida",
+    value: EXPERIENCIA_6_MESES_A_1_ANO,
+    type: "select-one"
+  });
+  const restaurado = normalizarFormularioPlanoRestaurado({
+    ...formulario,
+    experienciaCorrida: EXPERIENCIA_6_MESES_A_1_ANO
+  });
+
+  assert.equal(atualizado.volumeSemanalAtual, "");
+  assert.equal(restaurado.volumeSemanalAtual, "");
+  assert.equal(
+    volumesDisponiveisPorObjetivo("Melhorar condicionamento", "1 a 3 anos")
+      .includes("Não sei informar"),
+    true
   );
 });
 

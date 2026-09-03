@@ -304,7 +304,7 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
   }
 
   return experienciaCorrida === EXPERIENCIA_6_MESES_A_1_ANO
-    ? volumesDisponiveis.filter((volume) => VOLUMES_SEMANAIS.slice(0, 4).includes(volume))
+    ? volumesDisponiveis.filter((volume) => VOLUMES_SEMANAIS.slice(1, 4).includes(volume))
     : volumesDisponiveis;
 }
 
