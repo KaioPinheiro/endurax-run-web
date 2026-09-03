@@ -100,7 +100,10 @@ function FormularioPlanoSemanal({
   const volumesDisponiveis = planoMaratona
     ? VOLUMES_SEMANAIS_MARATONA
     : volumesDisponiveisPorObjetivo(form.objetivo, form.experienciaCorrida);
-  const erroVisivel = erroTempoReal || erro;
+  const erroTempoDesejado = erro === "O tempo desejado deve ser menor que o tempo atual."
+    ? erro
+    : null;
+  const erroVisivel = erroTempoReal || (erroTempoDesejado ? null : erro);
   const submitBloqueado = carregando || Boolean(erroTempoReal);
 
   return (
@@ -216,6 +219,9 @@ function FormularioPlanoSemanal({
                 onChange={alterarTempoPerformance} onBlur={completarTempoPerformanceAoSair}
                 placeholder={formatoPerformance}
                 inputMode="numeric" maxLength={7} required />
+              {erroTempoDesejado && (
+                <small className="coach-ia-erro" role="alert">{erroTempoDesejado}</small>
+              )}
             </label>
           </>
         )}

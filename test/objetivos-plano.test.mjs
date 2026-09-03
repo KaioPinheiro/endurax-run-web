@@ -624,6 +624,32 @@ test("quatro objetivos de performance exigem tempo desejado menor que o atual", 
   }
 });
 
+test("erro de comparação dos tempos é exibido junto ao tempo desejado", () => {
+  const formulario = formularioPerformance();
+
+  assert.equal(
+    validarFormularioPlano({ ...formulario, tempoAtual: "45:00", tempoDesejado: "46:00" }),
+    "O tempo desejado deve ser menor que o tempo atual."
+  );
+  assert.equal(
+    validarFormularioPlano({ ...formulario, tempoAtual: "45:00", tempoDesejado: "45:00" }),
+    "O tempo desejado deve ser menor que o tempo atual."
+  );
+  assert.equal(
+    validarFormularioPlano({ ...formulario, tempoAtual: "45:00", tempoDesejado: "44:00" }),
+    null
+  );
+
+  const formularioFonte = readFileSync(
+    new URL("../src/components/plano/FormularioPlanoSemanal.jsx", import.meta.url),
+    "utf8"
+  );
+  assert.match(
+    formularioFonte,
+    /erroTempoDesejado[\s\S]*name="tempoDesejado"[\s\S]*role="alert">\{erroTempoDesejado\}/
+  );
+});
+
 test("exige longão em um dos dias disponíveis", () => {
   const formulario = formularioPerformance();
 
