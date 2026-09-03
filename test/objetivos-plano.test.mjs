@@ -66,7 +66,7 @@ test("limita objetivos para quem nunca correu ou está parado", () => {
     objetivosDisponiveisPorExperiencia(EXPERIENCIA_PARADO),
     objetivosIniciais
   );
-  assert.deepEqual(objetivosDisponiveisPorExperiencia("1 a 3 anos"), objetivos.slice(1));
+  assert.deepEqual(objetivosDisponiveisPorExperiencia("Mais de 3 anos"), objetivos.slice(1));
 });
 
 test("menos de 6 meses mantém somente objetivos de até 10 km", () => {
@@ -86,7 +86,7 @@ test("menos de 6 meses mantém somente objetivos de até 10 km", () => {
   );
   assert.equal(permitidos.some((objetivo) => objetivo.includes("Meia Maratona")), false);
   assert.equal(permitidos.some((objetivo) => objetivo.includes("Maratona")), false);
-  assert.deepEqual(objetivosDisponiveisPorExperiencia("1 a 3 anos"), objetivos.slice(1));
+  assert.deepEqual(objetivosDisponiveisPorExperiencia("Mais de 3 anos"), objetivos.slice(1));
 });
 
 test("6 meses a 1 ano exclui somente os objetivos de maratona", () => {
@@ -103,7 +103,7 @@ test("6 meses a 1 ano exclui somente os objetivos de maratona", () => {
     ].includes(objetivo))
   );
 
-  const maisExperiente = objetivosDisponiveisPorExperiencia("1 a 3 anos");
+  const maisExperiente = objetivosDisponiveisPorExperiencia("Mais de 3 anos");
   assert.equal(maisExperiente.includes("Primeira Maratona"), true);
   assert.equal(maisExperiente.includes("Melhorar tempo na Maratona"), true);
   assert.deepEqual(maisExperiente, objetivos.slice(1));
@@ -134,6 +134,44 @@ test("troca e restauração limpam maratona incompatível para 6 meses a 1 ano",
     assert.equal(restaurado.objetivo, "", objetivo);
     assert.equal(restaurado.tempoAtual, "", objetivo);
     assert.equal(restaurado.tempoDesejado, "", objetivo);
+  }
+});
+
+test("1 a 3 anos exclui somente Primeiros 5 km da lista anteriormente permitida", () => {
+  const permitidos = objetivosDisponiveisPorExperiencia("1 a 3 anos");
+
+  assert.equal(permitidos.includes("Primeiros 5 km"), false);
+  assert.deepEqual(
+    permitidos,
+    objetivos.slice(1).filter((objetivo) => objetivo !== "Primeiros 5 km")
+  );
+  assert.deepEqual(objetivosDisponiveisPorExperiencia("Mais de 3 anos"), objetivos.slice(1));
+});
+
+test("troca e restauração limpam Primeiros 5 km para 1 a 3 anos", () => {
+  const formulario = {
+    ...formularioPerformance(),
+    experienciaCorrida: "6 meses a 1 ano",
+    objetivo: "Primeiros 5 km",
+    corre5KmSemCaminhar: "sim",
+    tempo5Km: "29:30"
+  };
+  const atualizado = normalizarCampoPlano(formulario, {
+    name: "experienciaCorrida",
+    value: "1 a 3 anos",
+    type: "select-one"
+  });
+  const restaurado = normalizarFormularioPlanoRestaurado({
+    ...formulario,
+    experienciaCorrida: "1 a 3 anos"
+  });
+
+  for (const normalizado of [atualizado, restaurado]) {
+    assert.equal(normalizado.objetivo, "");
+    assert.equal(normalizado.tempoAtual, "");
+    assert.equal(normalizado.tempoDesejado, "");
+    assert.ok(["", null].includes(normalizado.corre5KmSemCaminhar));
+    assert.ok(["", null].includes(normalizado.tempo5Km));
   }
 });
 

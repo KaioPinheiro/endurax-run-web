@@ -5,6 +5,7 @@
   EXPERIENCIAS_PERGUNTA_5_KM,
   EXPERIENCIAS_INICIANTES,
   FORM_INICIAL_PLANO,
+  OBJETIVOS_PLANO_1_A_3_ANOS,
   OBJETIVOS_PLANO_6_MESES_A_1_ANO,
   OBJETIVOS_PLANO_COM_EXPERIENCIA,
   OBJETIVOS_PLANO_MENOS_6_MESES,
@@ -267,6 +268,10 @@ export function objetivosDisponiveisPorExperiencia(experienciaCorrida) {
 
   if (experienciaCorrida === EXPERIENCIA_6_MESES_A_1_ANO) {
     return OBJETIVOS_PLANO_6_MESES_A_1_ANO;
+  }
+
+  if (experienciaCorrida === "1 a 3 anos") {
+    return OBJETIVOS_PLANO_1_A_3_ANOS;
   }
 
   return OBJETIVOS_PLANO_COM_EXPERIENCIA;
