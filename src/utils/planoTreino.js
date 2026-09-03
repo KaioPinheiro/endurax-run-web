@@ -292,6 +292,7 @@ export function diaLongaoEhAplicavel(experienciaCorrida) {
 }
 
 export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
+  const experiencia = String(experienciaCorrida ?? "").trim();
   let volumesDisponiveis = VOLUMES_SEMANAIS;
 
   if (objetivo === "Melhorar tempo nos 5 km") {
@@ -306,7 +307,15 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
     volumesDisponiveis = VOLUMES_SEMANAIS.slice(1, 4);
   }
 
-  return filtrarVolumesPorExperiencia(volumesDisponiveis, experienciaCorrida);
+  if (
+    experiencia === "1 a 3 anos" &&
+    ["Melhorar condicionamento", "Emagrecer"].includes(objetivo)
+  ) {
+    volumesDisponiveis = volumesDisponiveis.filter((volume) =>
+      VOLUMES_SEMANAIS.slice(0, 3).includes(volume));
+  }
+
+  return filtrarVolumesPorExperiencia(volumesDisponiveis, experiencia);
 }
 
 export function filtrarVolumesPorExperiencia(volumes, experienciaCorrida) {
