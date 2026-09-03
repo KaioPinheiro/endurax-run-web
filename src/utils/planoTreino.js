@@ -315,6 +315,11 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
       VOLUMES_SEMANAIS.slice(0, 3).includes(volume));
   }
 
+  if (experiencia === "1 a 3 anos" && objetivo === "Primeira Meia Maratona") {
+    volumesDisponiveis = volumesDisponiveis.filter((volume) =>
+      VOLUMES_SEMANAIS.slice(0, 4).includes(volume));
+  }
+
   return filtrarVolumesPorExperiencia(volumesDisponiveis, experiencia);
 }
 

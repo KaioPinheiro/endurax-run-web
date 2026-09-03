@@ -628,7 +628,7 @@ test("1 a 3 anos limita condicionamento e emagrecimento a volumes abaixo de 20 k
   }
 
   assert.deepEqual(
-    volumesDisponiveisPorObjetivo("Primeira Meia Maratona", "1 a 3 anos"),
+    volumesDisponiveisPorObjetivo("Melhorar tempo na Meia Maratona", "1 a 3 anos"),
     VOLUMES_SEMANAIS.slice(1)
   );
 });
@@ -654,6 +654,38 @@ test("troca e restauração limpam volume incompatível nas duas combinações",
     assert.equal(atualizado.volumeSemanalAtual, "", objetivo);
     assert.equal(restaurado.volumeSemanalAtual, "", objetivo);
   }
+});
+
+test("1 a 3 anos com Primeira Meia limita volume até 20-40 km", () => {
+  assert.deepEqual(
+    volumesDisponiveisPorObjetivo("Primeira Meia Maratona", "1 a 3 anos"),
+    ["Menos de 10 km", "10-20 km", "20-40 km"]
+  );
+  assert.deepEqual(
+    volumesDisponiveisPorObjetivo("Primeira Meia Maratona", "Mais de 3 anos"),
+    VOLUMES_SEMANAIS
+  );
+});
+
+test("troca e restauração limpam volume incompatível da Primeira Meia", () => {
+  const formulario = {
+    ...formularioPerformance(),
+    objetivo: "Melhorar tempo na Meia Maratona",
+    maiorDistanciaCorrida: "10",
+    volumeSemanalAtual: "40-60 km"
+  };
+  const atualizado = normalizarCampoPlano(formulario, {
+    name: "objetivo",
+    value: "Primeira Meia Maratona",
+    type: "select-one"
+  });
+  const restaurado = normalizarFormularioPlanoRestaurado({
+    ...formulario,
+    objetivo: "Primeira Meia Maratona"
+  });
+
+  assert.equal(atualizado.volumeSemanalAtual, "");
+  assert.equal(restaurado.volumeSemanalAtual, "");
 });
 
 test("troca para 6 meses a 1 ano limpa volume geral incompatível", () => {
