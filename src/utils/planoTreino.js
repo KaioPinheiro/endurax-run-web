@@ -258,19 +258,21 @@ export function validarTempo5Km(valor) {
 }
 
 export function objetivosDisponiveisPorExperiencia(experienciaCorrida) {
-  if (EXPERIENCIAS_INICIANTES.includes(experienciaCorrida)) {
+  const experiencia = String(experienciaCorrida ?? "").trim();
+
+  if (EXPERIENCIAS_INICIANTES.includes(experiencia)) {
     return OBJETIVOS_PLANO_SEM_EXPERIENCIA;
   }
 
-  if (experienciaCorrida === EXPERIENCIA_MENOS_6_MESES) {
+  if (experiencia === EXPERIENCIA_MENOS_6_MESES) {
     return OBJETIVOS_PLANO_MENOS_6_MESES;
   }
 
-  if (experienciaCorrida === EXPERIENCIA_6_MESES_A_1_ANO) {
+  if (experiencia === EXPERIENCIA_6_MESES_A_1_ANO) {
     return OBJETIVOS_PLANO_6_MESES_A_1_ANO;
   }
 
-  if (experienciaCorrida === "1 a 3 anos") {
+  if (experiencia === "1 a 3 anos") {
     return OBJETIVOS_PLANO_1_A_3_ANOS;
   }
 

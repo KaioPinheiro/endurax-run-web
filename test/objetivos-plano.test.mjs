@@ -175,6 +175,39 @@ test("troca e restauração limpam Primeiros 5 km para 1 a 3 anos", () => {
   }
 });
 
+test("formulário de 1 a 3 anos não renderiza a opção Primeiros 5 km", async () => {
+  const { createServer } = await import("vite");
+  const servidor = await createServer({
+    appType: "custom",
+    logLevel: "silent",
+    server: { middlewareMode: true }
+  });
+  try {
+    const { default: FormularioPlanoSemanal } = await servidor.ssrLoadModule(
+      "/src/components/plano/FormularioPlanoSemanal.jsx"
+    );
+    const html = renderToStaticMarkup(React.createElement(FormularioPlanoSemanal, {
+      form: {
+        ...formularioPerformance(),
+        experienciaCorrida: "1 a 3 anos ",
+        objetivo: ""
+      },
+      erro: "",
+      sucesso: "",
+      carregando: false,
+      mensagemLoading: "",
+      onAlterar: () => {},
+      onAlternarDia: () => {},
+      onSubmit: () => {}
+    }));
+
+    assert.doesNotMatch(html, /<option value="Primeiros 5 km">/);
+    assert.match(html, /<option value="Primeiros 10 km">Primeiros 10 km<\/option>/);
+  } finally {
+    await servidor.close();
+  }
+});
+
 test("Começar a correr fica disponível somente para quem nunca correu ou está parado", () => {
   for (const experiencia of [EXPERIENCIA_SEM_CORRIDA, EXPERIENCIA_PARADO]) {
     assert.equal(
