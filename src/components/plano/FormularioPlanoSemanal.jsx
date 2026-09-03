@@ -21,6 +21,7 @@ import {
   rotuloObjetivoPorExperiencia,
   planoIndicaMeiaOuMaratona,
   planoIndicaMaratona,
+  validarComparacaoTemposPerformance,
   validarBloqueiosMaratona,
   volumesDisponiveisPorObjetivo
 } from "../../utils/planoTreino";
@@ -100,9 +101,8 @@ function FormularioPlanoSemanal({
   const volumesDisponiveis = planoMaratona
     ? VOLUMES_SEMANAIS_MARATONA
     : volumesDisponiveisPorObjetivo(form.objetivo, form.experienciaCorrida);
-  const erroTempoDesejado = erro === "O tempo desejado deve ser menor que o tempo atual."
-    ? erro
-    : null;
+  const erroTempoDesejado = validarComparacaoTemposPerformance(form) ||
+    (erro === "O tempo desejado deve ser menor que o tempo atual." ? erro : null);
   const erroVisivel = erroTempoReal || (erroTempoDesejado ? null : erro);
   const submitBloqueado = carregando || Boolean(erroTempoReal);
 

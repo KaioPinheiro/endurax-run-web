@@ -428,9 +428,8 @@ export function validarFormularioPlano(formulario) {
     if (atual === null || desejado === null) {
       return `Informe tempos válidos no formato ${formatoTempoObjetivo(formulario.objetivo)}.`;
     }
-    if (desejado >= atual) {
-      return "O tempo desejado deve ser menor que o tempo atual.";
-    }
+    const erroComparacao = validarComparacaoTemposPerformance(formulario);
+    if (erroComparacao) return erroComparacao;
   }
 
   return null;
@@ -682,6 +681,16 @@ export function formatoTempoObjetivo(objetivo) {
   return ["Meia Maratona", "Maratona"].includes(distanciaObjetivoPerformance(objetivo))
     ? "H:MM:SS"
     : "MM:SS";
+}
+
+export function validarComparacaoTemposPerformance(formulario) {
+  if (!ehObjetivoPerformance(formulario.objetivo)) return null;
+
+  const atual = tempoEmSegundos(formulario.tempoAtual, formulario.objetivo);
+  const desejado = tempoEmSegundos(formulario.tempoDesejado, formulario.objetivo);
+  return atual !== null && desejado !== null && desejado >= atual
+    ? "O tempo desejado deve ser menor que o tempo atual."
+    : null;
 }
 
 function tempoEmSegundos(valor, objetivo) {

@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import {
   EXPERIENCIA_PARADO,
   EXPERIENCIA_SEM_CORRIDA,
@@ -31,6 +33,7 @@ import {
   objetivosDisponiveisPorExperiencia,
   rotuloObjetivoPorExperiencia,
   validarFormularioPlano,
+  validarComparacaoTemposPerformance,
   validarTempo5Km,
   volumesDisponiveisPorObjetivo
 } from "../src/utils/planoTreino.js";
@@ -624,7 +627,7 @@ test("quatro objetivos de performance exigem tempo desejado menor que o atual", 
   }
 });
 
-test("erro de comparação dos tempos é exibido junto ao tempo desejado", () => {
+test("erro de comparação dos tempos é exibido junto ao tempo desejado", async () => {
   const formulario = formularioPerformance();
 
   assert.equal(
@@ -640,14 +643,51 @@ test("erro de comparação dos tempos é exibido junto ao tempo desejado", () =>
     null
   );
 
-  const formularioFonte = readFileSync(
-    new URL("../src/components/plano/FormularioPlanoSemanal.jsx", import.meta.url),
-    "utf8"
+  assert.equal(
+    validarComparacaoTemposPerformance({
+      ...formulario,
+      tempoAtual: "45:00",
+      tempoDesejado: "47:00"
+    }),
+    "O tempo desejado deve ser menor que o tempo atual."
   );
-  assert.match(
-    formularioFonte,
-    /erroTempoDesejado[\s\S]*name="tempoDesejado"[\s\S]*role="alert">\{erroTempoDesejado\}/
-  );
+
+  const { createServer } = await import("vite");
+  const servidor = await createServer({
+    appType: "custom",
+    logLevel: "silent",
+    server: { middlewareMode: true }
+  });
+  try {
+    const { default: FormularioPlanoSemanal } = await servidor.ssrLoadModule(
+      "/src/components/plano/FormularioPlanoSemanal.jsx"
+    );
+    const propriedades = {
+      erro: "",
+      sucesso: "",
+      carregando: false,
+      mensagemLoading: "",
+      onAlterar: () => {},
+      onAlternarDia: () => {},
+      onSubmit: () => {}
+    };
+    const invalido = renderToStaticMarkup(React.createElement(FormularioPlanoSemanal, {
+      ...propriedades,
+      form: { ...formulario, tempoAtual: "45:00", tempoDesejado: "47:00" }
+    }));
+    const valido = renderToStaticMarkup(React.createElement(FormularioPlanoSemanal, {
+      ...propriedades,
+      form: { ...formulario, tempoAtual: "45:00", tempoDesejado: "44:00" }
+    }));
+
+    assert.match(
+      invalido,
+      /name="tempoDesejado"[\s\S]*role="alert">O tempo desejado deve ser menor que o tempo atual\./
+    );
+    assert.doesNotMatch(valido, /O tempo desejado deve ser menor que o tempo atual\./);
+  } finally {
+    await servidor.close();
+  }
 });
 
 test("exige longão em um dos dias disponíveis", () => {
