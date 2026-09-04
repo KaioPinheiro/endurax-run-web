@@ -98,6 +98,9 @@ export const OBJETIVOS_PLANO_COM_EXPERIENCIA = OBJETIVOS_PLANO.filter(
 export const OBJETIVOS_PLANO_1_A_3_ANOS = OBJETIVOS_PLANO_COM_EXPERIENCIA.filter(
   (objetivo) => objetivo !== "Primeiros 5 km"
 );
+export const OBJETIVOS_PLANO_MAIS_3_ANOS = OBJETIVOS_PLANO_COM_EXPERIENCIA.filter(
+  (objetivo) => !["Primeiros 5 km", "Primeiros 10 km"].includes(objetivo)
+);
 
 export const VOLUME_SEMANAL_MARATONA = "40-60 km";
 export const VOLUMES_SEMANAIS_MARATONA = [

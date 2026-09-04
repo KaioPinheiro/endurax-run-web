@@ -8,6 +8,7 @@
   OBJETIVOS_PLANO_1_A_3_ANOS,
   OBJETIVOS_PLANO_6_MESES_A_1_ANO,
   OBJETIVOS_PLANO_COM_EXPERIENCIA,
+  OBJETIVOS_PLANO_MAIS_3_ANOS,
   OBJETIVOS_PLANO_MENOS_6_MESES,
   OBJETIVOS_PLANO_SEM_EXPERIENCIA,
   VOLUMES_SEMANAIS,
@@ -274,6 +275,10 @@ export function objetivosDisponiveisPorExperiencia(experienciaCorrida) {
 
   if (experiencia === "1 a 3 anos") {
     return OBJETIVOS_PLANO_1_A_3_ANOS;
+  }
+
+  if (experiencia === "Mais de 3 anos") {
+    return OBJETIVOS_PLANO_MAIS_3_ANOS;
   }
 
   return OBJETIVOS_PLANO_COM_EXPERIENCIA;

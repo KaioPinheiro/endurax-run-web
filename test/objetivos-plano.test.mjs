@@ -66,7 +66,11 @@ test("limita objetivos para quem nunca correu ou está parado", () => {
     objetivosDisponiveisPorExperiencia(EXPERIENCIA_PARADO),
     objetivosIniciais
   );
-  assert.deepEqual(objetivosDisponiveisPorExperiencia("Mais de 3 anos"), objetivos.slice(1));
+  assert.deepEqual(
+    objetivosDisponiveisPorExperiencia("Mais de 3 anos"),
+    objetivos.slice(1).filter((objetivo) =>
+      !["Primeiros 5 km", "Primeiros 10 km"].includes(objetivo))
+  );
 });
 
 test("menos de 6 meses mantém somente objetivos de até 10 km", () => {
@@ -86,7 +90,11 @@ test("menos de 6 meses mantém somente objetivos de até 10 km", () => {
   );
   assert.equal(permitidos.some((objetivo) => objetivo.includes("Meia Maratona")), false);
   assert.equal(permitidos.some((objetivo) => objetivo.includes("Maratona")), false);
-  assert.deepEqual(objetivosDisponiveisPorExperiencia("Mais de 3 anos"), objetivos.slice(1));
+  assert.deepEqual(
+    objetivosDisponiveisPorExperiencia("Mais de 3 anos"),
+    objetivos.slice(1).filter((objetivo) =>
+      !["Primeiros 5 km", "Primeiros 10 km"].includes(objetivo))
+  );
 });
 
 test("6 meses a 1 ano exclui somente os objetivos de maratona", () => {
@@ -106,7 +114,11 @@ test("6 meses a 1 ano exclui somente os objetivos de maratona", () => {
   const maisExperiente = objetivosDisponiveisPorExperiencia("Mais de 3 anos");
   assert.equal(maisExperiente.includes("Primeira Maratona"), true);
   assert.equal(maisExperiente.includes("Melhorar tempo na Maratona"), true);
-  assert.deepEqual(maisExperiente, objetivos.slice(1));
+  assert.deepEqual(
+    maisExperiente,
+    objetivos.slice(1).filter((objetivo) =>
+      !["Primeiros 5 km", "Primeiros 10 km"].includes(objetivo))
+  );
 });
 
 test("troca e restauração limpam maratona incompatível para 6 meses a 1 ano", () => {
@@ -145,7 +157,11 @@ test("1 a 3 anos exclui somente Primeiros 5 km da lista anteriormente permitida"
     permitidos,
     objetivos.slice(1).filter((objetivo) => objetivo !== "Primeiros 5 km")
   );
-  assert.deepEqual(objetivosDisponiveisPorExperiencia("Mais de 3 anos"), objetivos.slice(1));
+  assert.deepEqual(
+    objetivosDisponiveisPorExperiencia("Mais de 3 anos"),
+    objetivos.slice(1).filter((objetivo) =>
+      !["Primeiros 5 km", "Primeiros 10 km"].includes(objetivo))
+  );
 });
 
 test("troca e restauração limpam Primeiros 5 km para 1 a 3 anos", () => {
@@ -203,6 +219,85 @@ test("formulário de 1 a 3 anos não renderiza a opção Primeiros 5 km", async 
 
     assert.doesNotMatch(html, /<option value="Primeiros 5 km">/);
     assert.match(html, /<option value="Primeiros 10 km">Primeiros 10 km<\/option>/);
+  } finally {
+    await servidor.close();
+  }
+});
+
+test("Mais de 3 anos exclui somente os objetivos iniciais de 5 km e 10 km", () => {
+  const permitidos = objetivosDisponiveisPorExperiencia("  Mais de 3 anos  ");
+
+  assert.equal(permitidos.includes("Primeiros 5 km"), false);
+  assert.equal(permitidos.includes("Primeiros 10 km"), false);
+  assert.deepEqual(
+    permitidos,
+    objetivos.slice(1).filter((objetivo) =>
+      !["Primeiros 5 km", "Primeiros 10 km"].includes(objetivo))
+  );
+});
+
+test("troca e restauração limpam objetivos iniciais incompatíveis para Mais de 3 anos", () => {
+  for (const objetivo of ["Primeiros 5 km", "Primeiros 10 km"]) {
+    const formulario = {
+      ...formularioPerformance(),
+      experienciaCorrida: "6 meses a 1 ano",
+      objetivo,
+      tempoAtual: "45:00",
+      tempoDesejado: "40:00",
+      maiorDistanciaCorrida: "10",
+      corre5KmSemCaminhar: "sim",
+      tempo5Km: "29:30"
+    };
+    const atualizado = normalizarCampoPlano(formulario, {
+      name: "experienciaCorrida",
+      value: " Mais de 3 anos ",
+      type: "select-one"
+    });
+    const restaurado = normalizarFormularioPlanoRestaurado({
+      ...formulario,
+      experienciaCorrida: " Mais de 3 anos "
+    });
+
+    for (const normalizado of [atualizado, restaurado]) {
+      assert.equal(normalizado.objetivo, "", objetivo);
+      assert.equal(normalizado.tempoAtual, "", objetivo);
+      assert.equal(normalizado.tempoDesejado, "", objetivo);
+      assert.equal(normalizado.maiorDistanciaCorrida, "", objetivo);
+      assert.ok(["", null].includes(normalizado.corre5KmSemCaminhar), objetivo);
+      assert.ok(["", null].includes(normalizado.tempo5Km), objetivo);
+    }
+  }
+});
+
+test("formulário de Mais de 3 anos não renderiza Primeiros 5 km nem Primeiros 10 km", async () => {
+  const { createServer } = await import("vite");
+  const servidor = await createServer({
+    appType: "custom",
+    logLevel: "silent",
+    server: { middlewareMode: true }
+  });
+  try {
+    const { default: FormularioPlanoSemanal } = await servidor.ssrLoadModule(
+      "/src/components/plano/FormularioPlanoSemanal.jsx"
+    );
+    const html = renderToStaticMarkup(React.createElement(FormularioPlanoSemanal, {
+      form: {
+        ...formularioPerformance(),
+        experienciaCorrida: " Mais de 3 anos ",
+        objetivo: ""
+      },
+      erro: "",
+      sucesso: "",
+      carregando: false,
+      mensagemLoading: "",
+      onAlterar: () => {},
+      onAlternarDia: () => {},
+      onSubmit: () => {}
+    }));
+
+    assert.doesNotMatch(html, /<option value="Primeiros 5 km">/);
+    assert.doesNotMatch(html, /<option value="Primeiros 10 km">/);
+    assert.match(html, /<option value="Primeira Meia Maratona">/);
   } finally {
     await servidor.close();
   }
