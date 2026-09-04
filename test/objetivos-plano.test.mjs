@@ -544,7 +544,7 @@ test("Menos de 6 meses remove volumes a partir de 20 km sem ampliar regras do ob
     ["Menos de 10 km", "10-20 km"]
   );
   assert.deepEqual(
-    volumesDisponiveisPorObjetivo("Primeira Meia Maratona", "Mais de 3 anos"),
+    volumesDisponiveisPorObjetivo("Melhorar tempo na Maratona", "Mais de 3 anos"),
     VOLUMES_SEMANAIS
   );
 });
@@ -590,7 +590,7 @@ test("6 meses a 1 ano remove volumes a partir de 40 km sem ampliar regras do obj
     ["10-20 km", "20-40 km"]
   );
   assert.deepEqual(
-    volumesDisponiveisPorObjetivo("Primeira Meia Maratona", "Mais de 3 anos"),
+    volumesDisponiveisPorObjetivo("Melhorar tempo na Maratona", "Mais de 3 anos"),
     VOLUMES_SEMANAIS
   );
 });
@@ -626,7 +626,7 @@ test("troca e restauração para 6 meses a 1 ano limpam Não sei informar", () =
   assert.equal(atualizado.volumeSemanalAtual, "");
   assert.equal(restaurado.volumeSemanalAtual, "");
   assert.equal(
-    volumesDisponiveisPorObjetivo("Primeira Meia Maratona", "Mais de 3 anos")
+    volumesDisponiveisPorObjetivo("Melhorar tempo na Maratona", "Mais de 3 anos")
       .includes("Não sei informar"),
     true
   );
@@ -704,7 +704,7 @@ test("troca e restauração para 1 a 3 anos limpam Não sei informar", () => {
   assert.equal(atualizado.volumeSemanalAtual, "");
   assert.equal(restaurado.volumeSemanalAtual, "");
   assert.equal(
-    volumesDisponiveisPorObjetivo("Primeira Meia Maratona", "Mais de 3 anos")
+    volumesDisponiveisPorObjetivo("Melhorar tempo na Maratona", "Mais de 3 anos")
       .includes("Não sei informar"),
     true
   );
@@ -760,7 +760,7 @@ test("Mais de 3 anos limita condicionamento e emagrecimento a volumes abaixo de 
     );
   }
   assert.deepEqual(
-    volumesDisponiveisPorObjetivo("Primeira Meia Maratona", "Mais de 3 anos"),
+    volumesDisponiveisPorObjetivo("Melhorar tempo na Maratona", "Mais de 3 anos"),
     VOLUMES_SEMANAIS
   );
 });
@@ -797,6 +797,42 @@ test("1 a 3 anos com Primeira Meia limita volume até 20-40 km", () => {
   );
   assert.deepEqual(
     volumesDisponiveisPorObjetivo("Primeira Meia Maratona", "Mais de 3 anos"),
+    ["10-20 km", "20-40 km"]
+  );
+});
+
+test("Mais de 3 anos com Primeira Meia permite somente entre 10 e 40 km", () => {
+  const volumes = volumesDisponiveisPorObjetivo(
+    "Primeira Meia Maratona",
+    " Mais de 3 anos "
+  );
+
+  assert.deepEqual(volumes, ["10-20 km", "20-40 km"]);
+  assert.equal(volumes.length, 2);
+});
+
+test("troca e restauração limpam volume incompatível da Primeira Meia para Mais de 3 anos", () => {
+  const formulario = {
+    ...formularioPerformance(),
+    experienciaCorrida: "Mais de 3 anos",
+    objetivo: "Melhorar tempo na Meia Maratona",
+    maiorDistanciaCorrida: "10",
+    volumeSemanalAtual: "40-60 km"
+  };
+  const atualizado = normalizarCampoPlano(formulario, {
+    name: "objetivo",
+    value: "Primeira Meia Maratona",
+    type: "select-one"
+  });
+  const restaurado = normalizarFormularioPlanoRestaurado({
+    ...formulario,
+    objetivo: "Primeira Meia Maratona"
+  });
+
+  assert.equal(atualizado.volumeSemanalAtual, "");
+  assert.equal(restaurado.volumeSemanalAtual, "");
+  assert.deepEqual(
+    volumesDisponiveisPorObjetivo("Melhorar tempo na Meia Maratona", "Mais de 3 anos"),
     VOLUMES_SEMANAIS
   );
 });
