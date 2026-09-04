@@ -628,7 +628,7 @@ test("1 a 3 anos limita condicionamento e emagrecimento a volumes abaixo de 20 k
   }
 
   assert.deepEqual(
-    volumesDisponiveisPorObjetivo("Melhorar tempo na Meia Maratona", "1 a 3 anos"),
+    volumesDisponiveisPorObjetivo("Melhorar tempo na Maratona", "1 a 3 anos"),
     VOLUMES_SEMANAIS.slice(1)
   );
 });
@@ -665,6 +665,38 @@ test("1 a 3 anos com Primeira Meia limita volume até 20-40 km", () => {
     volumesDisponiveisPorObjetivo("Primeira Meia Maratona", "Mais de 3 anos"),
     VOLUMES_SEMANAIS
   );
+});
+
+test("1 a 3 anos com melhoria na Meia limita volume até 20-40 km", () => {
+  assert.deepEqual(
+    volumesDisponiveisPorObjetivo("Melhorar tempo na Meia Maratona", "1 a 3 anos"),
+    ["Menos de 10 km", "10-20 km", "20-40 km"]
+  );
+  assert.deepEqual(
+    volumesDisponiveisPorObjetivo("Melhorar tempo na Meia Maratona", "Mais de 3 anos"),
+    VOLUMES_SEMANAIS
+  );
+});
+
+test("troca e restauração limpam volume incompatível da melhoria na Meia", () => {
+  const formulario = {
+    ...formularioPerformance(),
+    objetivo: "Melhorar tempo nos 10 km",
+    maiorDistanciaCorrida: "10",
+    volumeSemanalAtual: "40-60 km"
+  };
+  const atualizado = normalizarCampoPlano(formulario, {
+    name: "objetivo",
+    value: "Melhorar tempo na Meia Maratona",
+    type: "select-one"
+  });
+  const restaurado = normalizarFormularioPlanoRestaurado({
+    ...formulario,
+    objetivo: "Melhorar tempo na Meia Maratona"
+  });
+
+  assert.equal(atualizado.volumeSemanalAtual, "");
+  assert.equal(restaurado.volumeSemanalAtual, "");
 });
 
 test("Primeira Maratona permite somente 40-60 km", () => {
@@ -926,7 +958,12 @@ test("quatro objetivos de performance exigem tempo desejado menor que o atual", 
 });
 
 test("erro de comparação dos tempos é exibido junto ao tempo desejado", async () => {
-  const formulario = formularioPerformance();
+  const formulario = {
+    ...formularioPerformance(),
+    objetivo: "Melhorar tempo na Meia Maratona",
+    maiorDistanciaCorrida: "10",
+    volumeSemanalAtual: "20-40 km"
+  };
 
   assert.equal(
     validarFormularioPlano({ ...formulario, tempoAtual: "45:00", tempoDesejado: "46:00" }),
@@ -983,6 +1020,15 @@ test("erro de comparação dos tempos é exibido junto ao tempo desejado", async
       /name="tempoDesejado"[\s\S]*role="alert">O tempo desejado deve ser menor que o tempo atual\./
     );
     assert.doesNotMatch(valido, /O tempo desejado deve ser menor que o tempo atual\./);
+    const selectVolume = invalido.match(
+      /<select name="volumeSemanalAtual"[\s\S]*?<\/select>/
+    )?.[0];
+    assert.ok(selectVolume);
+    assert.match(selectVolume, /<option value="20-40 km"[^>]*>20-40 km<\/option>/);
+    assert.doesNotMatch(selectVolume, /<option value="Não sei informar">/);
+    assert.doesNotMatch(selectVolume, /<option value="40-60 km">/);
+    assert.doesNotMatch(selectVolume, /<option value="60-80 km">/);
+    assert.doesNotMatch(selectVolume, /<option value="80\+ km">/);
   } finally {
     await servidor.close();
   }

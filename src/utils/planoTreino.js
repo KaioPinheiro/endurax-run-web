@@ -319,7 +319,10 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
       VOLUMES_SEMANAIS.slice(0, 3).includes(volume));
   }
 
-  if (experiencia === "1 a 3 anos" && objetivo === "Primeira Meia Maratona") {
+  if (
+    experiencia === "1 a 3 anos" &&
+    ["Primeira Meia Maratona", "Melhorar tempo na Meia Maratona"].includes(objetivo)
+  ) {
     volumesDisponiveis = volumesDisponiveis.filter((volume) =>
       VOLUMES_SEMANAIS.slice(0, 4).includes(volume));
   }
@@ -728,13 +731,16 @@ export function validarComparacaoTemposPerformance(formulario) {
 
 function tempoEmSegundos(valor, objetivo) {
   const partes = String(valor ?? "").trim().split(":");
-  const esperaHoras = formatoTempoObjetivo(objetivo) === "H:MM:SS";
-  if ((esperaHoras && partes.length !== 3) || (!esperaHoras && partes.length !== 2)) return null;
+  const distancia = distanciaObjetivoPerformance(objetivo);
+  const formatoValido = partes.length === 2
+    ? distancia !== "Maratona"
+    : partes.length === 3 && ["Meia Maratona", "Maratona"].includes(distancia);
+  if (!formatoValido) return null;
   if (!partes.every((parte) => /^\d+$/.test(parte))) return null;
   const numeros = partes.map(Number);
   if (numeros.some((numero) => numero < 0) || numeros.slice(1).some((numero) => numero > 59)) return null;
   if (numeros[0] <= 0) return null;
-  return esperaHoras
+  return partes.length === 3
     ? numeros[0] * 3600 + numeros[1] * 60 + numeros[2]
     : numeros[0] * 60 + numeros[1];
 }
