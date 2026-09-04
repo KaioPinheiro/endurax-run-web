@@ -832,20 +832,23 @@ test("troca e restauração limpam volume incompatível da Primeira Meia para Ma
   assert.equal(atualizado.volumeSemanalAtual, "");
   assert.equal(restaurado.volumeSemanalAtual, "");
   assert.deepEqual(
-    volumesDisponiveisPorObjetivo("Melhorar tempo na Meia Maratona", "Mais de 3 anos"),
+    volumesDisponiveisPorObjetivo("Melhorar tempo na Maratona", "Mais de 3 anos"),
     VOLUMES_SEMANAIS
   );
 });
 
-test("1 a 3 anos com melhoria na Meia limita volume até 20-40 km", () => {
-  assert.deepEqual(
-    volumesDisponiveisPorObjetivo("Melhorar tempo na Meia Maratona", "1 a 3 anos"),
-    ["Menos de 10 km", "10-20 km", "20-40 km"]
-  );
-  assert.deepEqual(
-    volumesDisponiveisPorObjetivo("Melhorar tempo na Meia Maratona", "Mais de 3 anos"),
-    VOLUMES_SEMANAIS
-  );
+test("melhoria na Meia permite somente volumes entre 10 e 40 km", () => {
+  for (const experiencia of [
+    EXPERIENCIA_6_MESES_A_1_ANO,
+    "1 a 3 anos",
+    "Mais de 3 anos"
+  ]) {
+    assert.deepEqual(
+      volumesDisponiveisPorObjetivo("Melhorar tempo na Meia Maratona", experiencia),
+      ["10-20 km", "20-40 km"],
+      experiencia
+    );
+  }
 });
 
 test("troca e restauração limpam volume incompatível da melhoria na Meia", () => {
@@ -1064,7 +1067,7 @@ test("troca e restauração de Primeiros 10 km limpam volume incompatível", () 
 
 test("demais objetivos mantêm as opções gerais de volume", () => {
   for (const objetivo of [
-    "Melhorar condicionamento", "Primeiros 5 km", "Melhorar tempo na Meia Maratona"
+    "Melhorar condicionamento", "Primeiros 5 km", "Primeira Meia Maratona"
   ]) {
     assert.deepEqual(volumesDisponiveisPorObjetivo(objetivo), VOLUMES_SEMANAIS);
   }

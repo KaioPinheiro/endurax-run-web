@@ -308,6 +308,10 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
     volumesDisponiveis = VOLUMES_SEMANAIS.slice(2, 4);
   }
 
+  if (objetivo === "Melhorar tempo na Meia Maratona") {
+    volumesDisponiveis = VOLUMES_SEMANAIS.slice(2, 4);
+  }
+
   if (objetivo === "Primeiros 10 km") {
     volumesDisponiveis = VOLUMES_SEMANAIS.slice(1, 4);
   }
