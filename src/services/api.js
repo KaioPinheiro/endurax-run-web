@@ -93,6 +93,10 @@ export async function criarPagamentoPix(email, solicitacaoPlanoId) {
   return response.data;
 }
 
+export async function cancelarPagamentoPix(acessoToken) {
+  await api.post(`/api/pagamentos/public/${acessoToken}/cancelar`);
+}
+
 export async function buscarResultadoPagamento(acessoToken) {
   const response = await api.get(`/api/pagamentos/public/${acessoToken}/resultado`);
   return response.data;

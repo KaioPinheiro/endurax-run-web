@@ -7,6 +7,7 @@ import {
   buscarConfigPublica,
   buscarPlanoGerado,
   buscarResultadoPagamento,
+  cancelarPagamentoPix,
   criarPagamentoPix,
   criarSolicitacaoPlano,
   gerarPlanoComIA,
@@ -35,6 +36,7 @@ const PAGAMENTO_TOKEN_KEY = CHAVES_FLUXO_MEU_PLANO.pagamentoToken;
 const SOLICITACAO_ID_KEY = CHAVES_FLUXO_MEU_PLANO.solicitacaoPlanoId;
 const PLANO_TOKEN_KEY = CHAVES_FLUXO_MEU_PLANO.planoToken;
 const PAYLOAD_PLANO_KEY = CHAVES_FLUXO_MEU_PLANO.payloadMeuPlano;
+const FORMULARIO_PLANO_KEY = CHAVES_FLUXO_MEU_PLANO.formularioMeuPlano;
 
 function lerPayloadPersistido() {
   try {
@@ -46,6 +48,15 @@ function lerPayloadPersistido() {
       return null;
     }
     return normalizado;
+  } catch {
+    return null;
+  }
+}
+
+function lerFormularioPersistido() {
+  try {
+    const formulario = JSON.parse(localStorage.getItem(FORMULARIO_PLANO_KEY)) || null;
+    return formulario ? normalizarFormularioPlanoRestaurado(formulario) : null;
   } catch {
     return null;
   }
@@ -76,7 +87,6 @@ function MeuPlano() {
   const [pagamento, setPagamento] = useState(recuperacaoInicial.pagamento);
   const [estadoPagamento, setEstadoPagamento] = useState(recuperacaoInicial.estadoPagamento);
   const [mensagemPagamento, setMensagemPagamento] = useState("");
-  const [pagamentoOculto, setPagamentoOculto] = useState(false);
   const [pagamentoSincronizado, setPagamentoSincronizado] = useState(false);
   const [solicitacaoSemPagamento, setSolicitacaoSemPagamento] = useState(
     recuperacaoInicial.solicitacaoSemPagamento
@@ -208,7 +218,6 @@ function MeuPlano() {
     setPagamento(cobranca);
     setPagamentoSincronizado(true);
     setSolicitacaoSemPagamento(false);
-    setPagamentoOculto(false);
     setEstadoPagamento("PENDING");
   }
 
@@ -229,6 +238,7 @@ function MeuPlano() {
     setIndiceMensagemLoading(0);
     const payload = montarPayloadMeuPlano(form);
     payloadRef.current = payload;
+    localStorage.setItem(FORMULARIO_PLANO_KEY, JSON.stringify(form));
     localStorage.setItem(PAYLOAD_PLANO_KEY, JSON.stringify(payload));
 
     try {
@@ -308,10 +318,34 @@ function MeuPlano() {
     }
   }
 
-  function cancelarJornadaPagamento() {
-    setPagamentoOculto(true);
+  async function encerrarPagamento(editarDados) {
+    if (carregando || !pagamento?.acessoToken) return;
+    const formularioPreservado = editarDados
+      ? lerFormularioPersistido() || form
+      : criarEstadoInicialPlano();
+    setCarregando(true);
     setErro("");
-    setCarregando(false);
+    try {
+      await cancelarPagamentoPix(pagamento.acessoToken);
+      limparFluxoComercialMeuPlano(localStorage);
+      payloadRef.current = null;
+      setForm(formularioPreservado);
+      setPagamento(null);
+      setEstadoPagamento(null);
+      setMensagemPagamento("");
+      setPagamentoSincronizado(false);
+      setSolicitacaoSemPagamento(false);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (error) {
+      if (error?.response?.status === 409) {
+        await consultarPagamento(pagamento.acessoToken);
+        setErro("O pagamento já foi processado e não pode mais ser cancelado.");
+      } else {
+        setErro(obterMensagemErroIa(error, "Não foi possível cancelar o pagamento."));
+      }
+    } finally {
+      setCarregando(false);
+    }
   }
 
   async function buscarPlanoNovamente() {
@@ -339,7 +373,6 @@ function MeuPlano() {
     setPagamento(null);
     setEstadoPagamento(null);
     setMensagemPagamento("");
-    setPagamentoOculto(false);
     setPagamentoSincronizado(false);
     setSolicitacaoSemPagamento(false);
     setErro("");
@@ -378,17 +411,7 @@ function MeuPlano() {
         </section>
       )}
 
-      {pagamento && pagamentoOculto && (
-        <section className="pix-card" aria-live="polite">
-          <h2>Pagamento ocultado</h2>
-          <p>Ocultar esta tela não cancela o Pix. Continuaremos acompanhando esse pagamento.</p>
-          <button className="coach-ia-submit" type="button" onClick={() => setPagamentoOculto(false)}>
-            Retomar pagamento
-          </button>
-        </section>
-      )}
-
-      {pagamento && !pagamentoOculto && (
+      {pagamento && (
         <>
           {erro && <p className="coach-ia-erro pix-erro">{erro}</p>}
           <PagamentoPix
@@ -400,7 +423,9 @@ function MeuPlano() {
             }
             onBuscarPlano={buscarPlanoNovamente}
             onGerarNovo={gerarNovoQrCode}
-            onCancelarPagamento={cancelarJornadaPagamento}
+            onEditarDados={() => encerrarPagamento(true)}
+            onCancelarPagamento={() => encerrarPagamento(false)}
+            cancelando={carregando}
             sincronizado={pagamentoSincronizado}
           />
         </>

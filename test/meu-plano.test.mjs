@@ -33,6 +33,7 @@ test("reinicia somente o estado comercial e preserva outras chaves", () => {
     ["planoToken", "plano-antigo"],
     ["solicitacaoPlanoId", "7"],
     ["payloadMeuPlano", "{}"],
+    ["formularioMeuPlano", "{}"],
     ["preferenciaVisual", "compacta"],
     ["email", "cliente@example.com"]
   ]);
@@ -44,8 +45,48 @@ test("reinicia somente o estado comercial e preserva outras chaves", () => {
   assert.equal(dados.has("planoToken"), false);
   assert.equal(dados.has("solicitacaoPlanoId"), false);
   assert.equal(dados.has("payloadMeuPlano"), false);
+  assert.equal(dados.has("formularioMeuPlano"), false);
   assert.equal(dados.get("preferenciaVisual"), "compacta");
   assert.equal(dados.get("email"), "cliente@example.com");
+});
+
+test("editar e cancelar usam cancelamento real sem manter Pagamento ocultado", async () => {
+  const [pagina, pix, api] = await Promise.all([
+    readFile(new URL("../src/pages/MeuPlano.jsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/plano/PagamentoPix.jsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/services/api.js", import.meta.url), "utf8")
+  ]);
+  const encerramento = pagina.match(
+    /async function encerrarPagamento\(editarDados\) \{([\s\S]*?)\n  \}/
+  )?.[1] || "";
+
+  assert.match(api, /post\(`\/api\/pagamentos\/public\/\$\{acessoToken\}\/cancelar`\)/);
+  assert.match(encerramento, /await cancelarPagamentoPix\(pagamento\.acessoToken\)/);
+  assert.ok(
+    encerramento.indexOf("await cancelarPagamentoPix") <
+      encerramento.indexOf("limparFluxoComercialMeuPlano")
+  );
+  assert.match(encerramento, /lerFormularioPersistido\(\) \|\| form/);
+  assert.match(encerramento, /editarDados[\s\S]*criarEstadoInicialPlano\(\)/);
+  assert.match(encerramento, /error\?\.response\?\.status === 409/);
+  assert.match(encerramento, /await consultarPagamento\(pagamento\.acessoToken\)/);
+  assert.doesNotMatch(pagina, /pagamentoOculto|Pagamento ocultado|Retomar pagamento/);
+  assert.match(pix, />\s*Editar dados\s*</);
+  assert.match(pix, />\s*Cancelar pagamento\s*</);
+  assert.match(pix, /Este Pix será cancelado e não poderá mais ser pago/);
+});
+
+test("submit preserva formulário cru e cancelamento remove solicitação antiga", async () => {
+  const pagina = await readFile(new URL("../src/pages/MeuPlano.jsx", import.meta.url), "utf8");
+  const envio = pagina.match(/async function enviar\(event\) \{([\s\S]*?)\n  \}/)?.[1] || "";
+  const encerramento = pagina.match(
+    /async function encerrarPagamento\(editarDados\) \{([\s\S]*?)\n  \}/
+  )?.[1] || "";
+
+  assert.match(envio, /setItem\(FORMULARIO_PLANO_KEY, JSON\.stringify\(form\)\)/);
+  assert.match(encerramento, /limparFluxoComercialMeuPlano\(localStorage\)/);
+  assert.match(encerramento, /setSolicitacaoSemPagamento\(false\)/);
+  assert.match(pagina, /let solicitacaoPlanoId = localStorage\.getItem\(SOLICITACAO_ID_KEY\)/);
 });
 
 test("sem tokens antigos a recuperacao libera um novo formulario", () => {

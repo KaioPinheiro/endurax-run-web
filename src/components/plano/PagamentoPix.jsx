@@ -13,11 +13,13 @@ function PagamentoPix({
   onTentarNovamente,
   onBuscarPlano,
   onGerarNovo,
+  onEditarDados,
   onCancelarPagamento,
+  cancelando = false,
   sincronizado = false
 }) {
   const [copiado, setCopiado] = useState(false);
-  const [modalCancelamentoAberto, setModalCancelamentoAberto] = useState(false);
+  const [acaoConfirmacao, setAcaoConfirmacao] = useState(null);
   const [agora, setAgora] = useState(() => Date.now());
   const expiracao = pagamento?.dataExpiracao || pagamento?.expirationDate;
   const copiaCola = pagamento?.pixCopiaCola || pagamento?.copiaCola || pagamento?.qrCode || "";
@@ -88,13 +90,19 @@ function PagamentoPix({
         {mensagem}
       </p>
       {estado === "PENDING" && (
-        <button
-          className="pix-cancelar-pagamento"
-          type="button"
-          onClick={() => setModalCancelamentoAberto(true)}
-        >
-          Cancelar pagamento
-        </button>
+        <div className="pix-modal-acoes">
+          <button type="button" onClick={() => setAcaoConfirmacao("editar")} disabled={cancelando}>
+            Editar dados
+          </button>
+          <button
+            className="pix-cancelar-pagamento"
+            type="button"
+            onClick={() => setAcaoConfirmacao("cancelar")}
+            disabled={cancelando}
+          >
+            Cancelar pagamento
+          </button>
+        </div>
       )}
       <p className="pix-informacao">
         Após a confirmação do pagamento seu plano será gerado automaticamente.
@@ -127,12 +135,12 @@ function PagamentoPix({
         </>
       )}
 
-      {modalCancelamentoAberto && (
+      {acaoConfirmacao && (
         <div
           className="pix-modal-overlay"
           role="presentation"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setModalCancelamentoAberto(false);
+            if (event.target === event.currentTarget) setAcaoConfirmacao(null);
           }}
         >
           <section
@@ -142,30 +150,31 @@ function PagamentoPix({
             aria-labelledby="pix-modal-titulo"
             aria-describedby="pix-modal-descricao"
           >
-            <h3 id="pix-modal-titulo">Cancelar pagamento?</h3>
+            <h3 id="pix-modal-titulo">
+              {acaoConfirmacao === "editar" ? "Editar os dados do plano?" : "Cancelar este pagamento?"}
+            </h3>
             <div id="pix-modal-descricao">
-              <p>Você realmente deseja cancelar este pagamento?</p>
               <p>
-                A visualização será fechada, mas este Pix continuará válido até a expiração.
+                Este Pix será cancelado e não poderá mais ser pago.
               </p>
-              <p className="pix-modal-observacao">
-                <strong>Observação:</strong> Caso o pagamento seja realizado posteriormente
-                utilizando este QR Code, ele continuará sendo processado normalmente pelo sistema.
-              </p>
+              {acaoConfirmacao === "editar" && <p>Seus dados preenchidos serão preservados.</p>}
             </div>
             <div className="pix-modal-acoes">
-              <button type="button" onClick={() => setModalCancelamentoAberto(false)}>
-                Cancelar
+              <button type="button" onClick={() => setAcaoConfirmacao(null)} disabled={cancelando}>
+                Voltar
               </button>
               <button
                 className="pix-modal-confirmar"
                 type="button"
+                disabled={cancelando}
                 onClick={() => {
-                  setModalCancelamentoAberto(false);
-                  onCancelarPagamento();
+                  const acao = acaoConfirmacao;
+                  setAcaoConfirmacao(null);
+                  if (acao === "editar") onEditarDados();
+                  else onCancelarPagamento();
                 }}
               >
-                Confirmar cancelamento
+                {acaoConfirmacao === "editar" ? "Cancelar Pix e editar" : "Confirmar cancelamento"}
               </button>
             </div>
           </section>

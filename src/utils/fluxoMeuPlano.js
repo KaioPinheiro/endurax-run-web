@@ -2,7 +2,8 @@ export const CHAVES_FLUXO_MEU_PLANO = {
   pagamentoToken: "pagamentoToken",
   planoToken: "planoToken",
   solicitacaoPlanoId: "solicitacaoPlanoId",
-  payloadMeuPlano: "payloadMeuPlano"
+  payloadMeuPlano: "payloadMeuPlano",
+  formularioMeuPlano: "formularioMeuPlano"
 };
 
 export function limparFluxoComercialMeuPlano(storage) {
