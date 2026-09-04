@@ -667,6 +667,82 @@ test("1 a 3 anos com Primeira Meia limita volume até 20-40 km", () => {
   );
 });
 
+test("Primeira Maratona permite somente 40-60 km", () => {
+  for (const experiencia of ["1 a 3 anos", "Mais de 3 anos"]) {
+    assert.deepEqual(
+      volumesDisponiveisPorObjetivo("Primeira Maratona", experiencia),
+      ["40-60 km"],
+      experiencia
+    );
+  }
+  assert.deepEqual(
+    volumesDisponiveisPorObjetivo("Melhorar tempo na Maratona", "Mais de 3 anos"),
+    VOLUMES_SEMANAIS
+  );
+});
+
+test("formulário renderiza somente 40-60 km para Primeira Maratona", async () => {
+  const { createServer } = await import("vite");
+  const servidor = await createServer({
+    appType: "custom",
+    logLevel: "silent",
+    server: { middlewareMode: true }
+  });
+  try {
+    const { default: FormularioPlanoSemanal } = await servidor.ssrLoadModule(
+      "/src/components/plano/FormularioPlanoSemanal.jsx"
+    );
+    const html = renderToStaticMarkup(React.createElement(FormularioPlanoSemanal, {
+      form: {
+        ...formularioPerformance(),
+        experienciaCorrida: "Mais de 3 anos",
+        objetivo: "Primeira Maratona",
+        maiorDistanciaCorrida: "20"
+      },
+      erro: "",
+      sucesso: "",
+      carregando: false,
+      mensagemLoading: "",
+      onAlterar: () => {},
+      onAlternarDia: () => {},
+      onSubmit: () => {}
+    }));
+    const selectVolume = html.match(
+      /<select name="volumeSemanalAtual"[\s\S]*?<\/select>/
+    )?.[0];
+
+    assert.ok(selectVolume);
+    assert.match(selectVolume, /<option value="40-60 km">40-60 km<\/option>/);
+    assert.doesNotMatch(selectVolume, /<option value="60-80 km">/);
+    assert.doesNotMatch(selectVolume, /<option value="80\+ km">/);
+    assert.equal((selectVolume.match(/<option value="[^"]+"/g) ?? []).length, 1);
+  } finally {
+    await servidor.close();
+  }
+});
+
+test("troca e restauração de Primeira Maratona limpam volume incompatível", () => {
+  const formulario = {
+    ...formularioPerformance(),
+    experienciaCorrida: "Mais de 3 anos",
+    objetivo: "Melhor condicionamento",
+    maiorDistanciaCorrida: "20",
+    volumeSemanalAtual: "60-80 km"
+  };
+  const atualizado = normalizarCampoPlano(formulario, {
+    name: "objetivo",
+    value: "Primeira Maratona",
+    type: "select-one"
+  });
+  const restaurado = normalizarFormularioPlanoRestaurado({
+    ...formulario,
+    objetivo: "Primeira Maratona"
+  });
+
+  assert.equal(atualizado.volumeSemanalAtual, "");
+  assert.equal(restaurado.volumeSemanalAtual, "");
+});
+
 test("troca e restauração limpam volume incompatível da Primeira Meia", () => {
   const formulario = {
     ...formularioPerformance(),

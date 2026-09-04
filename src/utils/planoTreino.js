@@ -307,6 +307,10 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
     volumesDisponiveis = VOLUMES_SEMANAIS.slice(1, 4);
   }
 
+  if (objetivo === "Primeira Maratona") {
+    volumesDisponiveis = ["40-60 km"];
+  }
+
   if (
     experiencia === "1 a 3 anos" &&
     ["Melhorar condicionamento", "Emagrecer"].includes(objetivo)

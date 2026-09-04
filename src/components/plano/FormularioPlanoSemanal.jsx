@@ -99,9 +99,13 @@ function FormularioPlanoSemanal({
   );
   const ocultarVolumeSemanal = EXPERIENCIAS_INICIANTES.includes(form.experienciaCorrida);
   const exibirDiaLongao = diaLongaoEhAplicavel(form.experienciaCorrida);
+  const volumesPorObjetivo = volumesDisponiveisPorObjetivo(
+    form.objetivo,
+    form.experienciaCorrida
+  );
   const volumesDisponiveisBase = planoMaratona
-    ? VOLUMES_SEMANAIS_MARATONA
-    : volumesDisponiveisPorObjetivo(form.objetivo, form.experienciaCorrida);
+    ? volumesPorObjetivo.filter((volume) => VOLUMES_SEMANAIS_MARATONA.includes(volume))
+    : volumesPorObjetivo;
   const volumesDisponiveis = filtrarVolumesPorExperiencia(
     volumesDisponiveisBase,
     form.experienciaCorrida
