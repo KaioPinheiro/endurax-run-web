@@ -89,6 +89,37 @@ test("submit preserva formulário cru e cancelamento remove solicitação antiga
   assert.match(pagina, /let solicitacaoPlanoId = localStorage\.getItem\(SOLICITACAO_ID_KEY\)/);
 });
 
+test("editar preserva formulário e ignora polling antigo após cancelar o Pix", async () => {
+  const pagina = await readFile(new URL("../src/pages/MeuPlano.jsx", import.meta.url), "utf8");
+  const consulta = pagina.match(
+    /const consultarPagamento = useCallback\(async \(acessoToken\) => \{([\s\S]*?)\n  \}, \[concluirComPlano\]\)/
+  )?.[1] || "";
+  const encerramento = pagina.match(
+    /async function encerrarPagamento\(editarDados\) \{([\s\S]*?)\n  \}/
+  )?.[1] || "";
+
+  assert.ok(
+    encerramento.indexOf("lerFormularioPersistido() || form") <
+      encerramento.indexOf("await cancelarPagamentoPix")
+  );
+  assert.ok(
+    encerramento.indexOf("limparFluxoComercialMeuPlano(localStorage)") <
+      encerramento.indexOf("setForm(formularioPreservado)")
+  );
+  assert.match(encerramento, /setPagamento\(null\)/);
+  assert.match(encerramento, /setEstadoPagamento\(null\)/);
+  assert.match(encerramento, /setMensagemPagamento\(""\)/);
+  assert.match(encerramento, /setErro\(""\)/);
+  assert.match(
+    consulta,
+    /buscarResultadoPagamento\(acessoToken\)[\s\S]*localStorage\.getItem\(PAGAMENTO_TOKEN_KEY\) !== acessoToken[\s\S]*setPagamento/
+  );
+  assert.match(
+    consulta,
+    /catch \(error\)[\s\S]*localStorage\.getItem\(PAGAMENTO_TOKEN_KEY\) !== acessoToken[\s\S]*setErro/
+  );
+});
+
 test("sem tokens antigos a recuperacao libera um novo formulario", () => {
   const recuperacao = criarRecuperacaoCompra({
     pagamentoToken: null,

@@ -111,6 +111,7 @@ function MeuPlano() {
   const consultarPagamento = useCallback(async (acessoToken) => {
     try {
       const resultado = await buscarResultadoPagamento(acessoToken);
+      if (localStorage.getItem(PAGAMENTO_TOKEN_KEY) !== acessoToken) return;
       const estado = estadoDoResultado(resultado);
       setPagamento((atual) => ({ ...atual, ...resultado, acessoToken }));
       setPagamentoSincronizado(true);
@@ -128,6 +129,7 @@ function MeuPlano() {
         }
       }
     } catch (error) {
+      if (localStorage.getItem(PAGAMENTO_TOKEN_KEY) !== acessoToken) return;
       setErro(obterMensagemErroIa(error, "Não foi possível consultar o pagamento."));
     }
   }, [concluirComPlano]);
@@ -335,6 +337,8 @@ function MeuPlano() {
       setMensagemPagamento("");
       setPagamentoSincronizado(false);
       setSolicitacaoSemPagamento(false);
+      setErro("");
+      setSucesso("");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       if (error?.response?.status === 409) {
