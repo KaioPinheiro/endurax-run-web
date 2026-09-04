@@ -449,7 +449,7 @@ test("Menos de 6 meses remove volumes a partir de 20 km sem ampliar regras do ob
     ["Menos de 10 km", "10-20 km"]
   );
   assert.deepEqual(
-    volumesDisponiveisPorObjetivo("Melhorar condicionamento", "Mais de 3 anos"),
+    volumesDisponiveisPorObjetivo("Primeira Meia Maratona", "Mais de 3 anos"),
     VOLUMES_SEMANAIS
   );
 });
@@ -495,7 +495,7 @@ test("6 meses a 1 ano remove volumes a partir de 40 km sem ampliar regras do obj
     ["10-20 km", "20-40 km"]
   );
   assert.deepEqual(
-    volumesDisponiveisPorObjetivo("Melhorar condicionamento", "Mais de 3 anos"),
+    volumesDisponiveisPorObjetivo("Primeira Meia Maratona", "Mais de 3 anos"),
     VOLUMES_SEMANAIS
   );
 });
@@ -531,7 +531,7 @@ test("troca e restauração para 6 meses a 1 ano limpam Não sei informar", () =
   assert.equal(atualizado.volumeSemanalAtual, "");
   assert.equal(restaurado.volumeSemanalAtual, "");
   assert.equal(
-    volumesDisponiveisPorObjetivo("Melhorar condicionamento", "Mais de 3 anos")
+    volumesDisponiveisPorObjetivo("Primeira Meia Maratona", "Mais de 3 anos")
       .includes("Não sei informar"),
     true
   );
@@ -609,7 +609,7 @@ test("troca e restauração para 1 a 3 anos limpam Não sei informar", () => {
   assert.equal(atualizado.volumeSemanalAtual, "");
   assert.equal(restaurado.volumeSemanalAtual, "");
   assert.equal(
-    volumesDisponiveisPorObjetivo("Melhorar condicionamento", "Mais de 3 anos")
+    volumesDisponiveisPorObjetivo("Primeira Meia Maratona", "Mais de 3 anos")
       .includes("Não sei informar"),
     true
   );
@@ -648,6 +648,45 @@ test("troca e restauração limpam volume incompatível nas duas combinações",
     });
     const restaurado = normalizarFormularioPlanoRestaurado({
       ...formulario,
+      objetivo
+    });
+
+    assert.equal(atualizado.volumeSemanalAtual, "", objetivo);
+    assert.equal(restaurado.volumeSemanalAtual, "", objetivo);
+  }
+});
+
+test("Mais de 3 anos limita condicionamento e emagrecimento a volumes abaixo de 20 km", () => {
+  for (const objetivo of ["Melhorar condicionamento", "Emagrecer"]) {
+    assert.deepEqual(
+      volumesDisponiveisPorObjetivo(objetivo, "Mais de 3 anos"),
+      ["Menos de 10 km", "10-20 km"],
+      objetivo
+    );
+  }
+  assert.deepEqual(
+    volumesDisponiveisPorObjetivo("Primeira Meia Maratona", "Mais de 3 anos"),
+    VOLUMES_SEMANAIS
+  );
+});
+
+test("troca e restauração limpam volume incompatível para Mais de 3 anos", () => {
+  for (const objetivo of ["Melhorar condicionamento", "Emagrecer"]) {
+    const formulario = {
+      ...formularioPerformance(),
+      experienciaCorrida: "Mais de 3 anos",
+      objetivo: "Melhorar tempo na Meia Maratona",
+      maiorDistanciaCorrida: "10",
+      volumeSemanalAtual: "20-40 km"
+    };
+    const atualizado = normalizarCampoPlano(formulario, {
+      name: "objetivo",
+      value: objetivo,
+      type: "select-one"
+    });
+    const restaurado = normalizarFormularioPlanoRestaurado({
+      ...formulario,
+      experienciaCorrida: "Mais de 3 anos",
       objetivo
     });
 

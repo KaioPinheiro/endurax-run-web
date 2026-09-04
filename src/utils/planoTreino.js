@@ -312,11 +312,11 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
   }
 
   if (
-    experiencia === "1 a 3 anos" &&
+    ["1 a 3 anos", "Mais de 3 anos"].includes(experiencia) &&
     ["Melhorar condicionamento", "Emagrecer"].includes(objetivo)
   ) {
     volumesDisponiveis = volumesDisponiveis.filter((volume) =>
-      VOLUMES_SEMANAIS.slice(0, 3).includes(volume));
+      VOLUMES_SEMANAIS.slice(1, 3).includes(volume));
   }
 
   if (
