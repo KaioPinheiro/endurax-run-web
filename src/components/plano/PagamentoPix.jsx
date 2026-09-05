@@ -1,9 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
-function formatarTempo(segundos) {
-  const minutos = Math.floor(segundos / 60);
-  const restante = segundos % 60;
-  return `${String(minutos).padStart(2, "0")}:${String(restante).padStart(2, "0")}`;
+function formatarHorarioExpiracao(expiracao) {
+  if (!expiracao) return null;
+  const data = new Date(expiracao);
+  if (Number.isNaN(data.getTime())) return null;
+  return data.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  });
 }
 
 function PagamentoPix({
@@ -19,8 +24,8 @@ function PagamentoPix({
 }) {
   const [copiado, setCopiado] = useState(false);
   const [confirmandoEdicao, setConfirmandoEdicao] = useState(false);
-  const [agora, setAgora] = useState(() => Date.now());
   const expiracao = pagamento?.dataExpiracao || pagamento?.expirationDate;
+  const horarioExpiracao = formatarHorarioExpiracao(expiracao);
   const copiaCola = pagamento?.pixCopiaCola || pagamento?.copiaCola || pagamento?.qrCode || "";
   const qrCodeBase64 = pagamento?.qrCodeBase64;
   const ticketUrl = pagamento?.ticketUrl;
@@ -30,17 +35,6 @@ function PagamentoPix({
       ? valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
       : null;
   }, [pagamento?.valor]);
-
-  useEffect(() => {
-    if (!expiracao) return undefined;
-    const intervalo = setInterval(() => setAgora(Date.now()), 1000);
-    return () => clearInterval(intervalo);
-  }, [expiracao]);
-
-  const segundosRestantes = useMemo(() => {
-    if (!expiracao) return null;
-    return Math.max(0, Math.ceil((new Date(expiracao).getTime() - agora) / 1000));
-  }, [agora, expiracao]);
 
   async function copiar() {
     if (!copiaCola) return;
@@ -80,8 +74,8 @@ function PagamentoPix({
       )}
 
       {valorFormatado && <strong className="pix-valor">{valorFormatado}</strong>}
-      {segundosRestantes !== null && estado === "PENDING" && (
-        <p className="pix-expiracao">Expira em {formatarTempo(segundosRestantes)}</p>
+      {horarioExpiracao && estado === "PENDING" && (
+        <p className="pix-expiracao">Expira às {horarioExpiracao}</p>
       )}
 
       <p className={`pix-status pix-status-${estado.toLowerCase()}`}>

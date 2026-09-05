@@ -74,6 +74,19 @@ test("editar usa cancelamento real e o cancelamento manual não é exibido", asy
   assert.match(pix, /Este Pix será cancelado e não poderá mais ser pago/);
 });
 
+test("Pix exibe o horário local de expiração sem contador regressivo", async () => {
+  const pix = await readFile(
+    new URL("../src/components/plano/PagamentoPix.jsx", import.meta.url),
+    "utf8"
+  );
+
+  assert.match(pix, /toLocaleTimeString\("pt-BR",/);
+  assert.match(pix, /hour: "2-digit"/);
+  assert.match(pix, /minute: "2-digit"/);
+  assert.match(pix, /Expira às \{horarioExpiracao\}/);
+  assert.doesNotMatch(pix, /setInterval|segundosRestantes|Expira em/);
+});
+
 test("submit preserva formulário cru e cancelamento remove solicitação antiga", async () => {
   const pagina = await readFile(new URL("../src/pages/MeuPlano.jsx", import.meta.url), "utf8");
   const envio = pagina.match(/async function enviar\(event\) \{([\s\S]*?)\n  \}/)?.[1] || "";
