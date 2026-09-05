@@ -320,11 +320,9 @@ function MeuPlano() {
     }
   }
 
-  async function encerrarPagamento(editarDados) {
+  async function editarDados() {
     if (carregando || !pagamento?.acessoToken) return;
-    const formularioPreservado = editarDados
-      ? lerFormularioPersistido() || form
-      : criarEstadoInicialPlano();
+    const formularioPreservado = lerFormularioPersistido() || form;
     setCarregando(true);
     setErro("");
     try {
@@ -427,8 +425,7 @@ function MeuPlano() {
             }
             onBuscarPlano={buscarPlanoNovamente}
             onGerarNovo={gerarNovoQrCode}
-            onEditarDados={() => encerrarPagamento(true)}
-            onCancelarPagamento={() => encerrarPagamento(false)}
+            onEditarDados={editarDados}
             cancelando={carregando}
             sincronizado={pagamentoSincronizado}
           />

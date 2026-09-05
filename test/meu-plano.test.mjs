@@ -50,42 +50,38 @@ test("reinicia somente o estado comercial e preserva outras chaves", () => {
   assert.equal(dados.get("email"), "cliente@example.com");
 });
 
-test("editar e cancelar usam cancelamento real sem manter Pagamento ocultado", async () => {
+test("editar usa cancelamento real e o cancelamento manual não é exibido", async () => {
   const [pagina, pix, api] = await Promise.all([
     readFile(new URL("../src/pages/MeuPlano.jsx", import.meta.url), "utf8"),
     readFile(new URL("../src/components/plano/PagamentoPix.jsx", import.meta.url), "utf8"),
     readFile(new URL("../src/services/api.js", import.meta.url), "utf8")
   ]);
-  const encerramento = pagina.match(
-    /async function encerrarPagamento\(editarDados\) \{([\s\S]*?)\n  \}/
-  )?.[1] || "";
+  const edicao = pagina.match(/async function editarDados\(\) \{([\s\S]*?)\n  \}/)?.[1] || "";
 
   assert.match(api, /post\(`\/api\/pagamentos\/public\/\$\{acessoToken\}\/cancelar`\)/);
-  assert.match(encerramento, /await cancelarPagamentoPix\(pagamento\.acessoToken\)/);
+  assert.match(edicao, /await cancelarPagamentoPix\(pagamento\.acessoToken\)/);
   assert.ok(
-    encerramento.indexOf("await cancelarPagamentoPix") <
-      encerramento.indexOf("limparFluxoComercialMeuPlano")
+    edicao.indexOf("await cancelarPagamentoPix") <
+      edicao.indexOf("limparFluxoComercialMeuPlano")
   );
-  assert.match(encerramento, /lerFormularioPersistido\(\) \|\| form/);
-  assert.match(encerramento, /editarDados[\s\S]*criarEstadoInicialPlano\(\)/);
-  assert.match(encerramento, /error\?\.response\?\.status === 409/);
-  assert.match(encerramento, /await consultarPagamento\(pagamento\.acessoToken\)/);
+  assert.match(edicao, /lerFormularioPersistido\(\) \|\| form/);
+  assert.match(edicao, /error\?\.response\?\.status === 409/);
+  assert.match(edicao, /await consultarPagamento\(pagamento\.acessoToken\)/);
   assert.doesNotMatch(pagina, /pagamentoOculto|Pagamento ocultado|Retomar pagamento/);
   assert.match(pix, />\s*Editar dados\s*</);
-  assert.match(pix, />\s*Cancelar pagamento\s*</);
+  assert.doesNotMatch(pix, />\s*Cancelar pagamento\s*</);
+  assert.doesNotMatch(pix, /onCancelarPagamento/);
   assert.match(pix, /Este Pix será cancelado e não poderá mais ser pago/);
 });
 
 test("submit preserva formulário cru e cancelamento remove solicitação antiga", async () => {
   const pagina = await readFile(new URL("../src/pages/MeuPlano.jsx", import.meta.url), "utf8");
   const envio = pagina.match(/async function enviar\(event\) \{([\s\S]*?)\n  \}/)?.[1] || "";
-  const encerramento = pagina.match(
-    /async function encerrarPagamento\(editarDados\) \{([\s\S]*?)\n  \}/
-  )?.[1] || "";
+  const edicao = pagina.match(/async function editarDados\(\) \{([\s\S]*?)\n  \}/)?.[1] || "";
 
   assert.match(envio, /setItem\(FORMULARIO_PLANO_KEY, JSON\.stringify\(form\)\)/);
-  assert.match(encerramento, /limparFluxoComercialMeuPlano\(localStorage\)/);
-  assert.match(encerramento, /setSolicitacaoSemPagamento\(false\)/);
+  assert.match(edicao, /limparFluxoComercialMeuPlano\(localStorage\)/);
+  assert.match(edicao, /setSolicitacaoSemPagamento\(false\)/);
   assert.match(pagina, /let solicitacaoPlanoId = localStorage\.getItem\(SOLICITACAO_ID_KEY\)/);
 });
 
@@ -94,22 +90,20 @@ test("editar preserva formulário e ignora polling antigo após cancelar o Pix",
   const consulta = pagina.match(
     /const consultarPagamento = useCallback\(async \(acessoToken\) => \{([\s\S]*?)\n  \}, \[concluirComPlano\]\)/
   )?.[1] || "";
-  const encerramento = pagina.match(
-    /async function encerrarPagamento\(editarDados\) \{([\s\S]*?)\n  \}/
-  )?.[1] || "";
+  const edicao = pagina.match(/async function editarDados\(\) \{([\s\S]*?)\n  \}/)?.[1] || "";
 
   assert.ok(
-    encerramento.indexOf("lerFormularioPersistido() || form") <
-      encerramento.indexOf("await cancelarPagamentoPix")
+    edicao.indexOf("lerFormularioPersistido() || form") <
+      edicao.indexOf("await cancelarPagamentoPix")
   );
   assert.ok(
-    encerramento.indexOf("limparFluxoComercialMeuPlano(localStorage)") <
-      encerramento.indexOf("setForm(formularioPreservado)")
+    edicao.indexOf("limparFluxoComercialMeuPlano(localStorage)") <
+      edicao.indexOf("setForm(formularioPreservado)")
   );
-  assert.match(encerramento, /setPagamento\(null\)/);
-  assert.match(encerramento, /setEstadoPagamento\(null\)/);
-  assert.match(encerramento, /setMensagemPagamento\(""\)/);
-  assert.match(encerramento, /setErro\(""\)/);
+  assert.match(edicao, /setPagamento\(null\)/);
+  assert.match(edicao, /setEstadoPagamento\(null\)/);
+  assert.match(edicao, /setMensagemPagamento\(""\)/);
+  assert.match(edicao, /setErro\(""\)/);
   assert.match(
     consulta,
     /buscarResultadoPagamento\(acessoToken\)[\s\S]*localStorage\.getItem\(PAGAMENTO_TOKEN_KEY\) !== acessoToken[\s\S]*setPagamento/
