@@ -1,14 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-function formatarHorarioExpiracao(expiracao) {
-  if (!expiracao) return null;
-  const data = new Date(expiracao);
-  if (Number.isNaN(data.getTime())) return null;
-  return data.toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false
-  });
+function formatarTempoRestante(segundos) {
+  const minutos = Math.floor(segundos / 60);
+  const segundosRestantes = segundos % 60;
+  return `${String(minutos).padStart(2, "0")}:${String(segundosRestantes).padStart(2, "0")}`;
 }
 
 function PagamentoPix({
@@ -24,8 +19,8 @@ function PagamentoPix({
 }) {
   const [copiado, setCopiado] = useState(false);
   const [confirmandoEdicao, setConfirmandoEdicao] = useState(false);
+  const [agora, setAgora] = useState(() => Date.now());
   const expiracao = pagamento?.dataExpiracao || pagamento?.expirationDate;
-  const horarioExpiracao = formatarHorarioExpiracao(expiracao);
   const copiaCola = pagamento?.pixCopiaCola || pagamento?.copiaCola || pagamento?.qrCode || "";
   const qrCodeBase64 = pagamento?.qrCodeBase64;
   const ticketUrl = pagamento?.ticketUrl;
@@ -35,6 +30,19 @@ function PagamentoPix({
       ? valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
       : null;
   }, [pagamento?.valor]);
+
+  useEffect(() => {
+    if (!expiracao) return undefined;
+    const intervalo = setInterval(() => setAgora(Date.now()), 1000);
+    return () => clearInterval(intervalo);
+  }, [expiracao]);
+
+  const segundosAteExpirar = useMemo(() => {
+    if (!expiracao) return null;
+    const instanteExpiracao = new Date(expiracao).getTime();
+    if (Number.isNaN(instanteExpiracao)) return null;
+    return Math.max(0, Math.ceil((instanteExpiracao - agora) / 1000));
+  }, [agora, expiracao]);
 
   async function copiar() {
     if (!copiaCola) return;
@@ -74,8 +82,8 @@ function PagamentoPix({
       )}
 
       {valorFormatado && <strong className="pix-valor">{valorFormatado}</strong>}
-      {horarioExpiracao && estado === "PENDING" && (
-        <p className="pix-expiracao">Expira às {horarioExpiracao}</p>
+      {segundosAteExpirar !== null && estado === "PENDING" && (
+        <p className="pix-expiracao">Expira em {formatarTempoRestante(segundosAteExpirar)}</p>
       )}
 
       <p className={`pix-status pix-status-${estado.toLowerCase()}`}>
