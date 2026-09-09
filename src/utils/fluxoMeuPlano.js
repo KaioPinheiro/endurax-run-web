@@ -6,8 +6,16 @@ export const CHAVES_FLUXO_MEU_PLANO = {
   formularioMeuPlano: "formularioMeuPlano"
 };
 
+export const ULTIMO_PLANO_TOKEN_KEY = "ultimoPlanoToken";
+
 export function limparFluxoComercialMeuPlano(storage) {
   Object.values(CHAVES_FLUXO_MEU_PLANO).forEach((chave) => storage.removeItem(chave));
+}
+
+export function iniciarNovaJornadaMeuPlano(storage) {
+  const planoToken = storage.getItem(CHAVES_FLUXO_MEU_PLANO.planoToken);
+  if (planoToken) storage.setItem(ULTIMO_PLANO_TOKEN_KEY, planoToken);
+  limparFluxoComercialMeuPlano(storage);
 }
 
 export function estadoDoResultado(resultado) {

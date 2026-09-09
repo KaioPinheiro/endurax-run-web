@@ -4,6 +4,8 @@ import test from "node:test";
 import {
   criarRecuperacaoCompra,
   estadoDoResultado,
+  iniciarNovaJornadaMeuPlano,
+  ULTIMO_PLANO_TOKEN_KEY,
   limparFluxoComercialMeuPlano
 } from "../src/utils/fluxoMeuPlano.js";
 
@@ -48,6 +50,44 @@ test("reinicia somente o estado comercial e preserva outras chaves", () => {
   assert.equal(dados.has("formularioMeuPlano"), false);
   assert.equal(dados.get("preferenciaVisual"), "compacta");
   assert.equal(dados.get("email"), "cliente@example.com");
+});
+
+test("nova jornada limpa o estado ativo e preserva a referencia do plano comprado", () => {
+  const dados = new Map([
+    ["pagamentoToken", "token-compra"],
+    ["planoToken", "token-plano"],
+    ["solicitacaoPlanoId", "7"],
+    ["payloadMeuPlano", "{}"],
+    ["formularioMeuPlano", "{}"]
+  ]);
+  const storage = {
+    getItem: (chave) => dados.get(chave) ?? null,
+    setItem: (chave, valor) => dados.set(chave, valor),
+    removeItem: (chave) => dados.delete(chave)
+  };
+
+  iniciarNovaJornadaMeuPlano(storage);
+
+  assert.equal(dados.get(ULTIMO_PLANO_TOKEN_KEY), "token-plano");
+  assert.equal(dados.has("pagamentoToken"), false);
+  assert.equal(dados.has("planoToken"), false);
+  assert.equal(dados.has("solicitacaoPlanoId"), false);
+  assert.equal(dados.has("payloadMeuPlano"), false);
+  assert.equal(dados.has("formularioMeuPlano"), false);
+});
+
+test("oferece recuperar somente o ultimo plano preservado pelo fluxo existente", async () => {
+  const pagina = await readFile(new URL("../src/pages/MeuPlano.jsx", import.meta.url), "utf8");
+  const recuperacao = pagina.match(/async function verUltimoPlano\(\) \{([\s\S]*?)\n  \}/)?.[1] || "";
+
+  assert.match(
+    pagina,
+    /localStorage\.getItem\(ULTIMO_PLANO_TOKEN_KEY\) && \([\s\S]*Ver último plano/
+  );
+  assert.match(recuperacao, /localStorage\.getItem\(ULTIMO_PLANO_TOKEN_KEY\)/);
+  assert.match(recuperacao, /await concluirComPlano\(ultimoPlanoToken\)/);
+  assert.doesNotMatch(recuperacao, /buscarPlanoGerado\(/);
+  assert.match(pagina, /!pagamento && !plano && !solicitacaoSemPagamento/);
 });
 
 test("editar usa cancelamento real e o cancelamento manual não é exibido", async () => {
@@ -168,7 +208,7 @@ test("mantém travas do submit, envia diaLongao e não usa preço literal", asyn
 
   assert.match(pagina, /envioEmAndamento\.current \|\| carregando \|\| pagamento/);
   const reinicio = pagina.match(/function iniciarNovoPlano\(\) \{([\s\S]*?)\n  \}/)?.[1] || "";
-  assert.match(reinicio, /limparFluxoComercialMeuPlano\(localStorage\)/);
+  assert.match(reinicio, /iniciarNovaJornadaMeuPlano\(localStorage\)/);
   assert.match(reinicio, /setForm\(criarEstadoInicialPlano\(\)\)/);
   assert.match(reinicio, /setPagamento\(null\)/);
   assert.match(reinicio, /setEstadoPagamento\(null\)/);

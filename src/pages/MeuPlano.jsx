@@ -19,7 +19,9 @@ import {
   CHAVES_FLUXO_MEU_PLANO,
   criarRecuperacaoCompra,
   estadoDoResultado,
-  limparFluxoComercialMeuPlano
+  iniciarNovaJornadaMeuPlano,
+  limparFluxoComercialMeuPlano,
+  ULTIMO_PLANO_TOKEN_KEY
 } from "../utils/fluxoMeuPlano";
 import {
   alternarDiaDisponivel,
@@ -365,9 +367,23 @@ function MeuPlano() {
     }
   }
 
+  async function verUltimoPlano() {
+    const ultimoPlanoToken = localStorage.getItem(ULTIMO_PLANO_TOKEN_KEY);
+    if (carregando || !ultimoPlanoToken) return;
+    setCarregando(true);
+    setErro("");
+    try {
+      await concluirComPlano(ultimoPlanoToken);
+    } catch (error) {
+      setErro(obterMensagemErroIa(error, "Não foi possível carregar seu último plano."));
+    } finally {
+      setCarregando(false);
+    }
+  }
+
   function iniciarNovoPlano() {
     ignorarRecuperacaoPlano.current = true;
-    limparFluxoComercialMeuPlano(localStorage);
+    iniciarNovaJornadaMeuPlano(localStorage);
     payloadRef.current = null;
     envioEmAndamento.current = false;
     setForm(criarEstadoInicialPlano());
@@ -394,12 +410,24 @@ function MeuPlano() {
       </header>
 
       {!pagamento && !plano && !solicitacaoSemPagamento && (
-        <FormularioPlanoSemanal
-          form={form} erro={erro} sucesso={sucesso} carregando={fluxoAtivo}
-          mensagemLoading={MENSAGENS_LOADING_PLANO[indiceMensagemLoading]}
-          onAlterar={alterar} onAlternarDia={alternarDia} onSubmit={enviar}
-          validarMaratonaEmTempoReal
-        />
+        <>
+          <FormularioPlanoSemanal
+            form={form} erro={erro} sucesso={sucesso} carregando={fluxoAtivo}
+            mensagemLoading={MENSAGENS_LOADING_PLANO[indiceMensagemLoading]}
+            onAlterar={alterar} onAlternarDia={alternarDia} onSubmit={enviar}
+            validarMaratonaEmTempoReal
+          />
+          {localStorage.getItem(ULTIMO_PLANO_TOKEN_KEY) && (
+            <button
+              className="coach-ia-gerar-novamente"
+              type="button"
+              onClick={verUltimoPlano}
+              disabled={carregando}
+            >
+              Ver último plano
+            </button>
+          )}
+        </>
       )}
 
       {!pagamento && !plano && solicitacaoSemPagamento && (
