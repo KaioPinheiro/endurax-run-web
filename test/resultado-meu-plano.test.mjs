@@ -14,6 +14,10 @@ test("oferece impressão com todas as semanas e oculta os controles", async () =
   assert.match(resultado, /plano-ia-semanas-impressao/);
   assert.match(resultado, /const distanciaEstimada = bloco\.distancia[\s\S]*\? ""[\s\S]*estimarDistanciaBloco/);
   assert.match(resultado, /distanciaEstimada && <small>/);
+  assert.doesNotMatch(resultado, /<dt>Distância<\/dt>/);
+  assert.match(resultado, /<dt>Duração<\/dt>/);
+  assert.match(resultado, /<dt>Pace<\/dt>/);
+  assert.match(estilos, /\.plano-ia-card dl \{[\s\S]*grid-template-columns: repeat\(2,/);
   assert.match(resultado, /semanas\.map\(\(semana\) =>/);
   assert.match(resultado, /endurax-run-logo-light\.svg/);
   assert.match(resultado, /plano-ia-capa/);

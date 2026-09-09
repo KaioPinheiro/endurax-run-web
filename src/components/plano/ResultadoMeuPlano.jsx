@@ -5,7 +5,6 @@ import {
   estimarDistanciaBloco,
   extrairDistanciaExplicitaBloco,
   extrairDuracaoExplicitaBloco,
-  formatarDistancia,
   formatarDuracao,
   formatarPace,
   normalizarNomenclaturaTreino
@@ -272,10 +271,6 @@ function BlocosTreino({ descricao }) {
 
 function CardTreinoDia({ treino }) {
   const possuiBlocos = blocosDaDescricao(treino.descricao).length > 0;
-  const distancia = treino.distanciaKm ??
-    treino.distancia ??
-    treino.distanceKm ??
-    treino.distance;
   const pace = treino.paceSugerido ??
     treino.pace ??
     treino.suggestedPace ??
@@ -290,7 +285,6 @@ function CardTreinoDia({ treino }) {
       <h3>{normalizarNomenclaturaTreino(treino.titulo)}</h3>
       {!possuiBlocos && <p>{treino.descricao}</p>}
       <dl>
-        <div><dt>Distância</dt><dd>{formatarDistancia(distancia)}</dd></div>
         <div><dt>Duração</dt><dd>{formatarDuracao(treino.duracaoEstimada)}</dd></div>
         <div><dt>Pace</dt><dd>{formatarPace(pace)}</dd></div>
       </dl>
