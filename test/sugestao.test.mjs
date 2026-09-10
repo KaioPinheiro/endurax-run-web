@@ -50,4 +50,6 @@ test("landing exibe limite, estados e feedbacks da caixa de sugestões", async (
   assert.match(landing, /Sugestão enviada\. Obrigado!/);
   assert.match(landing, /Não foi possível enviar\. Tente novamente\./);
   assert.doesNotMatch(landing, /catch \{[\s\S]*setSugestao\(""\)/);
+  assert.ok(landing.indexOf('id="como-funciona"') < landing.indexOf('className="landing-sugestao"'));
+  assert.ok(landing.indexOf('className="landing-sugestao"') < landing.indexOf('id="para-quem"'));
 });
