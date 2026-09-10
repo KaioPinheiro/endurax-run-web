@@ -523,6 +523,19 @@
   line-height: 1.45;
 }
 
+.pix-codigo-atendimento {
+  display: grid;
+  gap: 3px;
+  margin-top: 10px;
+  color: #cbd5e1;
+  font-size: 13px;
+  user-select: text;
+}
+
+.pix-codigo-atendimento small {
+  color: #94a3b8;
+}
+
 .plano-ia-logo-capa {
   display: none;
 }

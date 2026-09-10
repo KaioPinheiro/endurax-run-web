@@ -85,6 +85,12 @@ function PagamentoPix({
       {segundosAteExpirar !== null && estado === "PENDING" && (
         <p className="pix-expiracao">Expira em {formatarTempoRestante(segundosAteExpirar)}</p>
       )}
+      {pagamento?.codigoAtendimento && (
+        <div className="pix-codigo-atendimento">
+          <span>Código de atendimento: <strong>{pagamento.codigoAtendimento}</strong></span>
+          <small>Guarde este código caso precise de suporte.</small>
+        </div>
+      )}
 
       <p className={`pix-status pix-status-${estado.toLowerCase()}`}>
         {aguardando && <span className="coach-ia-spinner" aria-hidden="true" />}

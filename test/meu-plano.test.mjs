@@ -219,3 +219,14 @@ test("mantém travas do submit, envia diaLongao e não usa preço literal", asyn
   assert.doesNotMatch(pix, /R\$ 12,90/);
   assert.match(pix, /pagamento\?\.valor/);
 });
+
+test("exibe discretamente o código de atendimento quando fornecido pelo pagamento", async () => {
+  const pix = await readFile(
+    new URL("../src/components/plano/PagamentoPix.jsx", import.meta.url),
+    "utf8"
+  );
+
+  assert.match(pix, /pagamento\?\.codigoAtendimento/);
+  assert.match(pix, /Código de atendimento:/);
+  assert.match(pix, /pagamento\.codigoAtendimento/);
+});
