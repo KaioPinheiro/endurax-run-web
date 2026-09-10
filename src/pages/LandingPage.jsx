@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import logoEndurax from "../assets/brand/endurax-run-logo.svg";
+import { enviarSugestaoFormspree, LIMITE_SUGESTAO } from "../utils/sugestao";
 import "./LandingPage.css";
 
 const treinosSemana = [
@@ -59,6 +61,27 @@ function PreviaSemana({ completa = false }) {
 }
 
 function LandingPage() {
+  const [sugestao, setSugestao] = useState("");
+  const [enviandoSugestao, setEnviandoSugestao] = useState(false);
+  const [feedbackSugestao, setFeedbackSugestao] = useState(null);
+
+  async function enviarSugestao(event) {
+    event.preventDefault();
+    if (enviandoSugestao || !sugestao.trim()) return;
+
+    setEnviandoSugestao(true);
+    setFeedbackSugestao(null);
+    try {
+      await enviarSugestaoFormspree(sugestao);
+      setSugestao("");
+      setFeedbackSugestao({ tipo: "sucesso", texto: "Sugestão enviada. Obrigado!" });
+    } catch {
+      setFeedbackSugestao({ tipo: "erro", texto: "Não foi possível enviar. Tente novamente." });
+    } finally {
+      setEnviandoSugestao(false);
+    }
+  }
+
   return (
     <div className="landing-page">
       <header className="landing-header">
@@ -148,6 +171,43 @@ function LandingPage() {
         <section className="landing-impacto" aria-labelledby="impacto-title">
           <div className="landing-impacto__marca" aria-hidden="true">RUN</div>
           <div><span className="landing-eyebrow">DIREÇÃO MUDA TUDO</span><h2 id="impacto-title">Quem corre com um plano <em>evolui diferente.</em></h2><p>Transforme seus dias disponíveis em um ciclo organizado para alcançar seu próximo objetivo.</p></div>
+        </section>
+
+        <section className="landing-sugestao" aria-labelledby="sugestao-title">
+          <div>
+            <span className="landing-eyebrow">SUA OPINIÃO IMPORTA</span>
+            <h2 id="sugestao-title">Envie uma sugestão</h2>
+            <p>Tem alguma ideia para melhorar o Endurax? Conta pra gente.</p>
+          </div>
+          <form onSubmit={enviarSugestao}>
+            <label htmlFor="sugestao">Sua sugestão</label>
+            <textarea
+              id="sugestao"
+              name="suggestion"
+              value={sugestao}
+              onChange={(event) => {
+                setSugestao(event.target.value.slice(0, LIMITE_SUGESTAO));
+                setFeedbackSugestao(null);
+              }}
+              maxLength={LIMITE_SUGESTAO}
+              placeholder="Escreva sua sugestão..."
+              required
+            />
+            <div className="landing-sugestao__rodape">
+              <span>{sugestao.length}/{LIMITE_SUGESTAO}</span>
+              <button type="submit" disabled={enviandoSugestao || !sugestao.trim()}>
+                {enviandoSugestao ? "Enviando..." : "Enviar"}
+              </button>
+            </div>
+            {feedbackSugestao && (
+              <p
+                className={`landing-sugestao__feedback landing-sugestao__feedback--${feedbackSugestao.tipo}`}
+                role="status"
+              >
+                {feedbackSugestao.texto}
+              </p>
+            )}
+          </form>
         </section>
 
         <section className="landing-final" aria-labelledby="final-title">
