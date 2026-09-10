@@ -230,3 +230,15 @@ test("exibe discretamente o código de atendimento quando fornecido pelo pagamen
   assert.match(pix, /Código de atendimento:/);
   assert.match(pix, /pagamento\.codigoAtendimento/);
 });
+
+test("mantém somente o botão principal para copiar o código Pix", async () => {
+  const pix = await readFile(
+    new URL("../src/components/plano/PagamentoPix.jsx", import.meta.url),
+    "utf8"
+  );
+
+  assert.equal((pix.match(/onClick=\{copiar\}/g) || []).length, 1);
+  assert.match(pix, /"Copiar código Pix"/);
+  assert.match(pix, /navigator\.clipboard\.writeText\(copiaCola\)/);
+  assert.match(pix, /copiado \? "Copiado!" : "Copiar código Pix"/);
+});

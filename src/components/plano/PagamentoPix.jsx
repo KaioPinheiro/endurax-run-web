@@ -73,7 +73,6 @@ function PagamentoPix({
           <label htmlFor="pix-codigo">Pix Copia e Cola</label>
           <div>
             <textarea id="pix-codigo" value={copiaCola} readOnly rows="3" />
-            <button type="button" onClick={copiar}>{copiado ? "Copiado!" : "Copiar"}</button>
           </div>
           <button className="pix-copiar-principal" type="button" onClick={copiar}>
             {copiado ? "Copiado!" : "Copiar código Pix"}
