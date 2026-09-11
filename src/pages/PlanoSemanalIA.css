@@ -4,6 +4,7 @@
 }
 
 .plano-ia-ver-ultimo {
+  display: flex;
   width: fit-content;
   margin: 0 auto 22px;
 }
