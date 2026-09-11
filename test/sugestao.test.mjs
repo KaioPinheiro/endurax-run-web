@@ -51,5 +51,19 @@ test("landing exibe limite, estados e feedbacks da caixa de sugestões", async (
   assert.match(landing, /Não foi possível enviar\. Tente novamente\./);
   assert.doesNotMatch(landing, /catch \{[\s\S]*setSugestao\(""\)/);
   assert.ok(landing.indexOf('id="como-funciona"') < landing.indexOf('className="landing-sugestao"'));
-  assert.ok(landing.indexOf('className="landing-sugestao"') < landing.indexOf('id="para-quem"'));
+  assert.ok(landing.indexOf('className="landing-sugestao"') < landing.indexOf('className="landing-footer"'));
+});
+
+test("landing termina no rodapé depois de como funciona e sugestões", async () => {
+  const landing = await readFile(new URL("../src/pages/LandingPage.jsx", import.meta.url), "utf8");
+
+  assert.match(landing, /className="landing-hero"/);
+  assert.match(landing, /id="como-funciona"/);
+  assert.match(landing, /Envie uma sugestão/);
+  assert.doesNotMatch(landing, /Para quem é|PARA QUEM É|Treinar ficou muito mais simples/);
+  assert.doesNotMatch(landing, /Veja o que|DIREÇÃO MUDA TUDO|COMECE AGORA/);
+  assert.doesNotMatch(landing, /href="#como-funciona"|href="#para-quem"|href="#previa"/);
+  assert.match(landing, /className="landing-logo"[\s\S]*alt="Endurax Run"/);
+  assert.match(landing, /className="landing-footer"[\s\S]*Direção para cada quilômetro\.[\s\S]*© \{new Date\(\)\.getFullYear\(\)\} Endurax Run/);
+  assert.match(landing, /<Cta>QUERO MEU PLANO<\/Cta>/);
 });

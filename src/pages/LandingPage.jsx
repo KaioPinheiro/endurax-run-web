@@ -10,15 +10,6 @@ const treinosSemana = [
   { dia: "Sábado", tipo: "Longão", detalhe: "14 km · ritmo confortável", tom: "longao" },
 ];
 
-const beneficios = [
-  "Plano de corrida de 4 a 6 semanas",
-  "Treinos apenas nos dias escolhidos",
-  "Plano para seu objetivo",
-  "Ciclo ajustado ao seu nível",
-  "Organização simples",
-  "Funciona no celular e computador",
-];
-
 function IconeSeta() {
   return <span aria-hidden="true">↗</span>;
 }
@@ -88,11 +79,6 @@ function LandingPage() {
         <Link className="landing-logo" to="/" aria-label="Endurax Run — início">
           <img src={logoEndurax} alt="Endurax Run" />
         </Link>
-        <nav className="landing-nav" aria-label="Navegação principal">
-          <a href="#como-funciona">Como funciona</a>
-          <a href="#para-quem">Para quem é</a>
-          <a href="#previa">Veja o plano</a>
-        </nav>
         <Link className="landing-header__acao" to="/meu-plano">MONTAR MEU PLANO <IconeSeta /></Link>
       </header>
 
@@ -117,12 +103,6 @@ function LandingPage() {
             <PreviaSemana />
             <span className="landing-hero__nota">Somente nos dias que você escolher</span>
           </div>
-        </section>
-
-        <section className="landing-frase" aria-label="Mensagem de motivação">
-          <span aria-hidden="true">ENDURAX RUN ·</span>
-          <p>Todo grande resultado começa com um plano.</p>
-          <span aria-hidden="true">· 4–6 SEMANAS</span>
         </section>
 
         <section className="landing-section" id="como-funciona" aria-labelledby="como-title">
@@ -181,41 +161,6 @@ function LandingPage() {
           </form>
         </section>
 
-        <section className="landing-section landing-section--contraste" id="para-quem" aria-labelledby="para-quem-title">
-          <div className="landing-section__cabecalho landing-section__cabecalho--largo">
-            <span className="landing-eyebrow">PARA QUEM É</span>
-            <h2 id="para-quem-title">Não importa onde você está.<br /><em>O importante é para onde você quer correr.</em></h2>
-          </div>
-          <div className="objetivos-grid">
-            <article><span>01</span><div><h3>Quero evoluir em uma distância.</h3><p>Receba um ciclo estruturado para avançar no seu objetivo.</p></div><IconeSeta /></article>
-            <article><span>02</span><div><h3>Quero evoluir na corrida.</h3><p>Transforme consistência em progresso com um ciclo bem definido.</p></div><IconeSeta /></article>
-          </div>
-        </section>
-
-        <section className="landing-section beneficios-section" aria-labelledby="beneficios-title">
-          <div className="landing-section__cabecalho"><span className="landing-eyebrow">O ESSENCIAL, BEM FEITO</span><h2 id="beneficios-title">Treinar ficou muito mais simples.</h2></div>
-          <ul className="beneficios-lista">
-            {beneficios.map((beneficio, indice) => <li key={beneficio}><span>0{indice + 1}</span>{beneficio}<b aria-hidden="true">✓</b></li>)}
-          </ul>
-        </section>
-
-        <section className="landing-section previa-section" id="previa" aria-labelledby="previa-title">
-          <div className="previa-section__texto"><span className="landing-eyebrow">UMA SEMANA DE CADA VEZ</span><h2 id="previa-title">Veja o que<br />você recebe.</h2><p>Treinos claros, organizados por semana e apenas nos dias que fazem sentido para você.</p></div>
-          <div className="previa-section__mockup"><PreviaSemana completa /></div>
-          <div className="landing-cta-faixa landing-cta-faixa--previa"><div><span className="landing-eyebrow">SEM SURPRESAS</span><h3>É exatamente isso que você vai receber.</h3></div><Cta /></div>
-        </section>
-
-        <section className="landing-impacto" aria-labelledby="impacto-title">
-          <div className="landing-impacto__marca" aria-hidden="true">RUN</div>
-          <div><span className="landing-eyebrow">DIREÇÃO MUDA TUDO</span><h2 id="impacto-title">Quem corre com um plano <em>evolui diferente.</em></h2><p>Transforme seus dias disponíveis em um ciclo organizado para alcançar seu próximo objetivo.</p></div>
-        </section>
-
-        <section className="landing-final" aria-labelledby="final-title">
-          <span className="landing-eyebrow">COMECE AGORA</span>
-          <h2 id="final-title">Seu próximo objetivo merece<br /><em>mais do que improviso.</em></h2>
-          <p><span>Escolha seus dias.</span><span>Defina seu objetivo.</span><span>Comece a correr com um plano feito para você.</span></p>
-          <Cta destaque />
-        </section>
       </main>
 
       <footer className="landing-footer">

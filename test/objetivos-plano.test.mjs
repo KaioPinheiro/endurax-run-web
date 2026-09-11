@@ -1080,8 +1080,8 @@ test("landing não promete planejamento para prova marcada", () => {
   );
 
   assert.doesNotMatch(landing, /Plano para prova|Tenho uma prova marcada|data em mente/);
-  assert.match(landing, /Plano para seu objetivo/);
-  assert.match(landing, /Quero evoluir em uma distância/);
+  assert.match(landing, /Escolha seus dias, defina seu objetivo/);
+  assert.match(landing, /plano de corrida de 4 a 6 semanas/i);
 });
 
 test("expõe exatamente os novos objetivos", () => {
