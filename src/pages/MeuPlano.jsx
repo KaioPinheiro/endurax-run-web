@@ -409,25 +409,25 @@ function MeuPlano() {
         <p>Receba um ciclo de corrida personalizado para o objetivo que deseja alcançar.</p>
       </header>
 
+      {!pagamento && !plano && !solicitacaoSemPagamento &&
+        localStorage.getItem(ULTIMO_PLANO_TOKEN_KEY) && (
+          <button
+            className="coach-ia-gerar-novamente plano-ia-ver-ultimo"
+            type="button"
+            onClick={verUltimoPlano}
+            disabled={carregando}
+          >
+            Ver último plano
+          </button>
+        )}
+
       {!pagamento && !plano && !solicitacaoSemPagamento && (
-        <>
-          <FormularioPlanoSemanal
-            form={form} erro={erro} sucesso={sucesso} carregando={fluxoAtivo}
-            mensagemLoading={MENSAGENS_LOADING_PLANO[indiceMensagemLoading]}
-            onAlterar={alterar} onAlternarDia={alternarDia} onSubmit={enviar}
-            validarMaratonaEmTempoReal
-          />
-          {localStorage.getItem(ULTIMO_PLANO_TOKEN_KEY) && (
-            <button
-              className="coach-ia-gerar-novamente"
-              type="button"
-              onClick={verUltimoPlano}
-              disabled={carregando}
-            >
-              Ver último plano
-            </button>
-          )}
-        </>
+        <FormularioPlanoSemanal
+          form={form} erro={erro} sucesso={sucesso} carregando={fluxoAtivo}
+          mensagemLoading={MENSAGENS_LOADING_PLANO[indiceMensagemLoading]}
+          onAlterar={alterar} onAlternarDia={alternarDia} onSubmit={enviar}
+          validarMaratonaEmTempoReal
+        />
       )}
 
       {!pagamento && !plano && solicitacaoSemPagamento && (

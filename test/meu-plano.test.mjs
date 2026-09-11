@@ -88,6 +88,9 @@ test("oferece recuperar somente o ultimo plano preservado pelo fluxo existente",
   assert.match(recuperacao, /await concluirComPlano\(ultimoPlanoToken\)/);
   assert.doesNotMatch(recuperacao, /buscarPlanoGerado\(/);
   assert.match(pagina, /!pagamento && !plano && !solicitacaoSemPagamento/);
+  assert.equal((pagina.match(/Ver último plano/g) || []).length, 1);
+  assert.ok(pagina.indexOf("</header>") < pagina.indexOf("Ver último plano"));
+  assert.ok(pagina.indexOf("Ver último plano") < pagina.indexOf("<FormularioPlanoSemanal"));
 });
 
 test("editar usa cancelamento real e o cancelamento manual não é exibido", async () => {

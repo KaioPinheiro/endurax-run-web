@@ -3,6 +3,11 @@
   margin: 0 auto;
 }
 
+.plano-ia-ver-ultimo {
+  width: fit-content;
+  margin: 0 auto 22px;
+}
+
 .pix-card {
   display: flex;
   align-items: center;
