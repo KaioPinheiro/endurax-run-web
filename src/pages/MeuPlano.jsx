@@ -404,7 +404,6 @@ function MeuPlano() {
   return (
     <section className="coach-ia-page plano-ia-page">
       <header className="coach-ia-hero">
-        <span>MEU PLANO</span>
         <h1>Meu Plano</h1>
         <p>Receba um ciclo de corrida personalizado para o objetivo que deseja alcançar.</p>
       </header>

@@ -93,6 +93,13 @@ test("oferece recuperar somente o ultimo plano preservado pelo fluxo existente",
   assert.ok(pagina.indexOf("Ver último plano") < pagina.indexOf("<FormularioPlanoSemanal"));
 });
 
+test("cabeçalho de Meu Plano não exibe badge duplicado", async () => {
+  const pagina = await readFile(new URL("../src/pages/MeuPlano.jsx", import.meta.url), "utf8");
+
+  assert.doesNotMatch(pagina, /<span>MEU PLANO<\/span>/);
+  assert.match(pagina, /<header className="coach-ia-hero">\s*<h1>Meu Plano<\/h1>\s*<p>Receba um ciclo de corrida personalizado/);
+});
+
 test("editar usa cancelamento real e o cancelamento manual não é exibido", async () => {
   const [pagina, pix, api] = await Promise.all([
     readFile(new URL("../src/pages/MeuPlano.jsx", import.meta.url), "utf8"),
