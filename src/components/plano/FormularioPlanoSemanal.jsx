@@ -119,7 +119,6 @@ function FormularioPlanoSemanal({
     <form className="coach-ia-form plano-ia-form" onSubmit={onSubmit}>
       <div className="coach-ia-form-titulo">
         <div><h2>Configure seu plano</h2></div>
-        <p>Receba um ciclo de corrida personalizado para o objetivo que deseja alcançar.</p>
       </div>
 
       <div className="coach-ia-campos plano-ia-campos">

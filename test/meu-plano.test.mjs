@@ -100,6 +100,16 @@ test("cabeçalho de Meu Plano não exibe badge duplicado", async () => {
   assert.match(pagina, /<header className="coach-ia-hero">\s*<h1>Meu Plano<\/h1>\s*<p>Receba um ciclo de corrida personalizado/);
 });
 
+test("card do formulário não repete o subtítulo principal", async () => {
+  const formulario = await readFile(
+    new URL("../src/components/plano/FormularioPlanoSemanal.jsx", import.meta.url),
+    "utf8"
+  );
+
+  assert.match(formulario, /<h2>Configure seu plano<\/h2>/);
+  assert.doesNotMatch(formulario, /Receba um ciclo de corrida personalizado para o objetivo que deseja alcançar/);
+});
+
 test("editar usa cancelamento real e o cancelamento manual não é exibido", async () => {
   const [pagina, pix, api] = await Promise.all([
     readFile(new URL("../src/pages/MeuPlano.jsx", import.meta.url), "utf8"),
