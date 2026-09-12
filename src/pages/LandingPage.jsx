@@ -65,7 +65,7 @@ function LandingPage() {
     try {
       await enviarSugestaoFormspree(sugestao);
       setSugestao("");
-      setFeedbackSugestao({ tipo: "sucesso", texto: "Sugestão enviada. Obrigado!" });
+      setFeedbackSugestao({ tipo: "sucesso", texto: "Mensagem enviada. Obrigado!" });
     } catch {
       setFeedbackSugestao({ tipo: "erro", texto: "Não foi possível enviar. Tente novamente." });
     } finally {
@@ -127,21 +127,21 @@ function LandingPage() {
         <section className="landing-sugestao" aria-labelledby="sugestao-title">
           <div>
             <span className="landing-eyebrow">SUA OPINIÃO IMPORTA</span>
-            <h2 id="sugestao-title">Envie uma sugestão</h2>
-            <p>Tem alguma ideia para melhorar o Endurax? Conta pra gente.</p>
+            <h2 id="sugestao-title">Sugestão ou problema?</h2>
+            <p>Envie uma sugestão ou relate algum problema. Se for sobre um plano, informe também seu código de atendimento.</p>
           </div>
           <form onSubmit={enviarSugestao}>
-            <label htmlFor="sugestao">Sua sugestão</label>
+            <label htmlFor="sugestao">Mensagem</label>
             <textarea
               id="sugestao"
-              name="suggestion"
+              name="message"
               value={sugestao}
               onChange={(event) => {
                 setSugestao(event.target.value.slice(0, LIMITE_SUGESTAO));
                 setFeedbackSugestao(null);
               }}
               maxLength={LIMITE_SUGESTAO}
-              placeholder="Escreva sua sugestão..."
+              placeholder="Conte sua sugestão ou problema. Se necessário, informe o código END-XXXXXX."
               required
             />
             <div className="landing-sugestao__rodape">

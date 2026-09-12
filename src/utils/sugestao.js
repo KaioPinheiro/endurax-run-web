@@ -13,7 +13,7 @@ export async function enviarSugestaoFormspree(sugestao, fetchImpl = fetch) {
       Accept: "application/json",
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ suggestion: texto })
+    body: JSON.stringify({ message: texto })
   });
 
   if (!response.ok) {

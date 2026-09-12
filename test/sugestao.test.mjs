@@ -14,11 +14,12 @@ test("envia a sugestão por POST JSON ao Formspree", async () => {
     return { ok: true };
   });
 
+  assert.equal(FORMSPREE_SUGESTAO_URL, "https://formspree.io/f/xkjnyjzj");
   assert.equal(chamada[0], FORMSPREE_SUGESTAO_URL);
   assert.equal(chamada[1].method, "POST");
   assert.equal(chamada[1].headers.Accept, "application/json");
   assert.equal(chamada[1].headers["Content-Type"], "application/json");
-  assert.deepEqual(JSON.parse(chamada[1].body), { suggestion: "Minha sugestão" });
+  assert.deepEqual(JSON.parse(chamada[1].body), { message: "Minha sugestão" });
 });
 
 test("não envia conteúdo vazio ou acima do limite", async () => {
@@ -47,11 +48,22 @@ test("landing exibe limite, estados e feedbacks da caixa de sugestões", async (
   assert.match(landing, /enviandoSugestao \? "Enviando\.\.\." : "Enviar"/);
   assert.match(landing, /await enviarSugestaoFormspree\(sugestao\)/);
   assert.match(landing, /setSugestao\(""\)/);
-  assert.match(landing, /Sugestão enviada\. Obrigado!/);
+  assert.match(landing, /Mensagem enviada\. Obrigado!/);
   assert.match(landing, /Não foi possível enviar\. Tente novamente\./);
   assert.doesNotMatch(landing, /catch \{[\s\S]*setSugestao\(""\)/);
   assert.ok(landing.indexOf('id="como-funciona"') < landing.indexOf('className="landing-sugestao"'));
   assert.ok(landing.indexOf('className="landing-sugestao"') < landing.indexOf('className="landing-footer"'));
+});
+
+test("landing apresenta o formulário como canal de sugestão ou problema", async () => {
+  const landing = await readFile(new URL("../src/pages/LandingPage.jsx", import.meta.url), "utf8");
+
+  assert.match(landing, /Sugestão ou problema\?/);
+  assert.match(landing, /informe também seu código de atendimento/);
+  assert.match(landing, /<label htmlFor="sugestao">Mensagem<\/label>/);
+  assert.match(landing, /name="message"/);
+  assert.match(landing, /placeholder="Conte sua sugestão ou problema\. Se necessário, informe o código END-XXXXXX\."/);
+  assert.match(landing, /maxLength=\{LIMITE_SUGESTAO\}/);
 });
 
 test("landing termina no rodapé depois de como funciona e sugestões", async () => {
@@ -59,7 +71,7 @@ test("landing termina no rodapé depois de como funciona e sugestões", async ()
 
   assert.match(landing, /className="landing-hero"/);
   assert.match(landing, /id="como-funciona"/);
-  assert.match(landing, /Envie uma sugestão/);
+  assert.match(landing, /Sugestão ou problema\?/);
   assert.doesNotMatch(landing, /Para quem é|PARA QUEM É|Treinar ficou muito mais simples/);
   assert.doesNotMatch(landing, /Veja o que|DIREÇÃO MUDA TUDO|COMECE AGORA/);
   assert.doesNotMatch(landing, /href="#como-funciona"|href="#para-quem"|href="#previa"/);
