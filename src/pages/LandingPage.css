@@ -13,9 +13,10 @@
 .landing-hero h1 { margin:24px 0 30px; }
 .landing-page em { color:var(--cyan); font-style:normal; }
 .landing-hero__subtitulo { max-width:650px; color:#b7c8d4; font-size:19px; line-height:1.65; }
-.landing-hero__apoio { display:flex; gap:24px; margin:25px 0 36px; color:#758da0; font-size:13px; font-weight:700; }
+.landing-hero__apoio { display:flex; gap:24px; margin:25px 0 18px; color:#758da0; font-size:13px; font-weight:700; }
 .landing-hero__apoio span { display:flex; align-items:center; gap:8px; }
 .landing-hero__apoio span::before { width:5px; height:5px; background:var(--cyan); border-radius:50%; content:""; }
+.landing-hero__preco { margin:0 0 18px; color:#ccecf5; font-size:16px; font-weight:800; }
 .landing-cta { display:inline-flex; align-items:center; justify-content:space-between; gap:42px; min-width:238px; padding:18px 22px; color:#04101a!important; background:var(--cyan); border:1px solid var(--cyan); font-size:12px; font-weight:950; letter-spacing:.07em; box-shadow:0 14px 38px rgba(30,202,249,.18); transition:transform .25s ease,box-shadow .25s ease,background .25s ease; }
 .landing-cta:hover { background:#86e8ff; box-shadow:0 18px 46px rgba(30,202,249,.3); transform:translateY(-3px); }
 .landing-cta:focus-visible,.landing-page a:focus-visible { outline:3px solid #fff; outline-offset:4px; }

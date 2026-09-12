@@ -6,6 +6,7 @@ import {
   FORMSPREE_SUGESTAO_URL,
   LIMITE_SUGESTAO
 } from "../src/utils/sugestao.js";
+import { formatarPrecoPlano } from "../src/utils/precoPlano.js";
 
 test("envia a sugestão por POST JSON ao Formspree", async () => {
   let chamada;
@@ -77,5 +78,18 @@ test("landing termina no rodapé depois de como funciona e sugestões", async ()
   assert.doesNotMatch(landing, /href="#como-funciona"|href="#para-quem"|href="#previa"/);
   assert.match(landing, /className="landing-logo"[\s\S]*alt="Endurax Run"/);
   assert.match(landing, /className="landing-footer"[\s\S]*Direção para cada quilômetro\.[\s\S]*© \{new Date\(\)\.getFullYear\(\)\} Endurax Run/);
+  assert.match(landing, /<Cta>QUERO MEU PLANO<\/Cta>/);
+});
+
+test("landing exibe o valor público do plano formatado junto ao CTA", async () => {
+  const landing = await readFile(new URL("../src/pages/LandingPage.jsx", import.meta.url), "utf8");
+
+  assert.equal(formatarPrecoPlano(9.90), "R$ 9,90");
+  assert.equal(formatarPrecoPlano(14.90), "R$ 14,90");
+  assert.equal(formatarPrecoPlano(undefined), null);
+  assert.match(landing, /buscarConfigPublica\(\)/);
+  assert.match(landing, /formatarPrecoPlano\(config\?\.valorPlano\)/);
+  assert.match(landing, /Preço de lançamento: \{precoPlano\}/);
+  assert.doesNotMatch(landing, /R\$ 9,90|9\.90/);
   assert.match(landing, /<Cta>QUERO MEU PLANO<\/Cta>/);
 });

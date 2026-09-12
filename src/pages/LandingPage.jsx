@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import logoEndurax from "../assets/brand/endurax-run-logo.svg";
+import { buscarConfigPublica } from "../services/api";
+import { formatarPrecoPlano } from "../utils/precoPlano";
 import { enviarSugestaoFormspree, LIMITE_SUGESTAO } from "../utils/sugestao";
 import "./LandingPage.css";
 
@@ -55,6 +57,23 @@ function LandingPage() {
   const [sugestao, setSugestao] = useState("");
   const [enviandoSugestao, setEnviandoSugestao] = useState(false);
   const [feedbackSugestao, setFeedbackSugestao] = useState(null);
+  const [precoPlano, setPrecoPlano] = useState(null);
+
+  useEffect(() => {
+    let ativo = true;
+
+    buscarConfigPublica()
+      .then((config) => {
+        if (ativo) setPrecoPlano(formatarPrecoPlano(config?.valorPlano));
+      })
+      .catch(() => {
+        if (ativo) setPrecoPlano(null);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   async function enviarSugestao(event) {
     event.preventDefault();
@@ -95,6 +114,11 @@ function LandingPage() {
             <p className="landing-hero__apoio landing-reveal landing-reveal--delay-2">
               <span>Sem planilhas genéricas.</span><span>Sem treinos fora da sua rotina.</span>
             </p>
+            {precoPlano && (
+              <p className="landing-hero__preco landing-reveal landing-reveal--delay-3">
+                Preço de lançamento: {precoPlano}
+              </p>
+            )}
             <div className="landing-reveal landing-reveal--delay-3"><Cta>QUERO MEU PLANO</Cta></div>
           </div>
           <div className="landing-hero__visual landing-reveal landing-reveal--delay-2">
