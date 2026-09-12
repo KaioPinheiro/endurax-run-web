@@ -87,7 +87,7 @@ function PagamentoPix({
       {pagamento?.codigoAtendimento && (
         <div className="pix-codigo-atendimento">
           <span>Código de atendimento: <strong>{pagamento.codigoAtendimento}</strong></span>
-          <small>Guarde este código caso tenha algum problema com o pagamento ou a geração do seu plano. Se isso acontecer, dirija-se à caixa de sugestões no final da página principal e informe o código de atendimento.</small>
+          <small>Guarde este código caso tenha problemas com o pagamento ou a geração do plano. Se precisar, informe-o na caixa de sugestões da página principal.</small>
         </div>
       )}
 

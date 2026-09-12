@@ -249,7 +249,7 @@ test("exibe discretamente o código de atendimento quando fornecido pelo pagamen
   assert.match(pix, /pagamento\?\.codigoAtendimento/);
   assert.match(pix, /Código de atendimento:/);
   assert.match(pix, /pagamento\.codigoAtendimento/);
-  assert.match(pix, /Guarde este código caso tenha algum problema com o pagamento ou a geração do seu plano\. Se isso acontecer, dirija-se à caixa de sugestões no final da página principal e informe o código de atendimento\./);
+  assert.match(pix, /Guarde este código caso tenha problemas com o pagamento ou a geração do plano\. Se precisar, informe-o na caixa de sugestões da página principal\./);
 });
 
 test("mantém somente o botão principal para copiar o código Pix", async () => {
