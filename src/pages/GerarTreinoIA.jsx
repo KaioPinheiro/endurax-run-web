@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { DIAS_SEMANA } from "../constants/diasSemana";
 import { gerarTreinoComIA } from "../services/api";
 import { obterMensagemErroIa } from "../utils/mensagemErroIa";
-import { normalizarIdade } from "../utils/planoTreino";
+import { mascararEntradaTempo, normalizarIdade } from "../utils/planoTreino";
 import "./GerarTreinoIA.css";
 
 const FORM_INICIAL = {
@@ -97,6 +97,13 @@ function GerarTreinoIA() {
       ...(name === "objetivoProva" && value !== "Buscar um tempo específico"
         ? { tempoDesejadoProva: "" }
         : {})
+    }));
+  }
+
+  function alterarTempoDesejadoProva(event) {
+    setForm((atual) => ({
+      ...atual,
+      tempoDesejadoProva: mascararEntradaTempo(event.target.value, null)
     }));
   }
 
@@ -494,8 +501,9 @@ function GerarTreinoIA() {
                     <input
                       name="tempoDesejadoProva"
                       value={form.tempoDesejadoProva}
-                      onChange={alterarCampo}
+                      onChange={alterarTempoDesejadoProva}
                       placeholder="Ex.: 45:00 ou 1:35:00"
+                      inputMode="numeric"
                       required
                     />
                   </label>

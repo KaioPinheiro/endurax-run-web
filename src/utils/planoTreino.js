@@ -214,6 +214,27 @@ export function normalizarEntradaTempo(valor) {
     .slice(0, 7);
 }
 
+export function mascararEntradaTempo(valor, maximoDigitos = 5) {
+  const texto = String(valor ?? "");
+  if (!texto) return "";
+
+  const todosOsDigitos = texto.replace(/\D/g, "");
+  let digitos = Number.isInteger(maximoDigitos) && maximoDigitos > 0
+    ? todosOsDigitos.slice(0, maximoDigitos)
+    : todosOsDigitos;
+  if (texto.includes(":")) {
+    digitos = digitos.replace(/^0+/, "");
+  }
+  if (!digitos) return "";
+
+  if (digitos.length <= 4) {
+    const tempo = digitos.padStart(4, "0");
+    return `${tempo.slice(0, 2)}:${tempo.slice(2)}`;
+  }
+
+  return `${digitos.slice(0, -4)}:${digitos.slice(-4, -2)}:${digitos.slice(-2)}`;
+}
+
 export function completarEntradaTempo(valor) {
   const texto = normalizarEntradaTempo(valor);
   if (!texto || texto.includes(":")) {

@@ -14,9 +14,8 @@ import {
   ehObjetivoPerformance,
   filtrarVolumesPorExperiencia,
   formatoTempoObjetivo,
-  normalizarEntradaTempo,
+  mascararEntradaTempo,
   normalizarIdade,
-  normalizarTempo5Km,
   corre5KmSemCaminharEhAplicavel,
   objetivosDisponiveisPorExperiencia,
   rotuloObjetivoPorExperiencia,
@@ -61,7 +60,7 @@ function FormularioPlanoSemanal({
   const alterarTempoPerformance = (event) => onAlterar({
     target: {
       name: event.target.name,
-      value: normalizarEntradaTempo(event.target.value),
+      value: mascararEntradaTempo(event.target.value),
       type: "text"
     }
   });
@@ -75,7 +74,7 @@ function FormularioPlanoSemanal({
   const alterarTempo5Km = (event) => onAlterar({
     target: {
       name: event.target.name,
-      value: normalizarTempo5Km(event.target.value),
+      value: mascararEntradaTempo(event.target.value),
       type: "text"
     }
   });

@@ -23,6 +23,7 @@ import {
   estimarDistanciaBloco,
   extrairDistanciaExplicitaBloco,
   extrairDuracaoExplicitaBloco,
+  mascararEntradaTempo,
   montarPayloadMeuPlano,
   normalizarCampoPlano,
   normalizarEntradaTempo,
@@ -1325,7 +1326,7 @@ test("payload envia tempos estruturados para performance", () => {
   assert.equal(payload.tempoDesejado, "29:30");
 });
 
-test("tempos de performance não recebem máscara agressiva durante a digitação", () => {
+test("normalizador base de tempo preserva a entrada limitada", () => {
   assert.equal(normalizarEntradaTempo("5"), "5");
   assert.equal(normalizarEntradaTempo("44"), "44");
   assert.equal(normalizarEntradaTempo("105"), "105");
@@ -1333,6 +1334,42 @@ test("tempos de performance não recebem máscara agressiva durante a digitaçã
   assert.equal(normalizarEntradaTempo("10530"), "10530");
   assert.equal(normalizarEntradaTempo("123456"), "12345");
   assert.equal(normalizarEntradaTempo(""), "");
+});
+
+test("campos de tempo recebem máscara durante a digitação", () => {
+  const formulario = readFileSync(
+    new URL("../src/components/plano/FormularioPlanoSemanal.jsx", import.meta.url),
+    "utf8"
+  );
+  const formularioTreino = readFileSync(
+    new URL("../src/pages/GerarTreinoIA.jsx", import.meta.url),
+    "utf8"
+  );
+
+  assert.equal(mascararEntradaTempo("4"), "00:04");
+  assert.equal(mascararEntradaTempo("44"), "00:44");
+  assert.equal(mascararEntradaTempo("100"), "01:00");
+  assert.equal(mascararEntradaTempo("130"), "01:30");
+  assert.equal(mascararEntradaTempo("200"), "02:00");
+  assert.equal(mascararEntradaTempo("245"), "02:45");
+  assert.equal(mascararEntradaTempo("300"), "03:00");
+  assert.equal(mascararEntradaTempo("10530"), "1:05:30");
+  assert.match(formulario, /const alterarTempoPerformance[\s\S]*value: mascararEntradaTempo/);
+  assert.match(formulario, /const alterarTempo5Km[\s\S]*value: mascararEntradaTempo/);
+  assert.match(formulario, /name="tempoAtual"[\s\S]*onChange=\{alterarTempoPerformance\}/);
+  assert.match(formulario, /name="tempoDesejado"[\s\S]*onChange=\{alterarTempoPerformance\}/);
+  assert.match(formulario, /name="tempo5Km"[\s\S]*onChange=\{alterarTempo5Km\}/);
+  assert.match(formularioTreino, /name="tempoDesejadoProva"[\s\S]*onChange=\{alterarTempoDesejadoProva\}/);
+  assert.equal(mascararEntradaTempo("123456", null), "12:34:56");
+});
+
+test("máscara em tempo real preserva edição, remoção e valores formatados", () => {
+  assert.equal(mascararEntradaTempo("00:044"), "00:44");
+  assert.equal(mascararEntradaTempo("00:4"), "00:04");
+  assert.equal(mascararEntradaTempo("00:0"), "");
+  assert.equal(mascararEntradaTempo(""), "");
+  assert.equal(mascararEntradaTempo("29:30"), "29:30");
+  assert.equal(mascararEntradaTempo("1:05:30"), "1:05:30");
 });
 
 test("tempos de performance são completados somente no blur", () => {
