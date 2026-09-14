@@ -595,6 +595,50 @@ test("6 meses a 1 ano preserva o filtro salvo nas exceções mínimas da nova fa
   );
 });
 
+test("formulário exibe a nova faixa para condicionamento e primeiros 5 km", async () => {
+  const { createServer } = await import("vite");
+  const servidor = await createServer({
+    appType: "custom",
+    logLevel: "silent",
+    server: { middlewareMode: true }
+  });
+  try {
+    const { default: FormularioPlanoSemanal } = await servidor.ssrLoadModule(
+      "/src/components/plano/FormularioPlanoSemanal.jsx"
+    );
+
+    for (const objetivo of ["Melhorar condicionamento", "Primeiros 5 km"]) {
+      const html = renderToStaticMarkup(React.createElement(FormularioPlanoSemanal, {
+        form: {
+          ...formularioPerformance(),
+          experienciaCorrida: EXPERIENCIA_6_MESES_A_1_ANO,
+          objetivo
+        },
+        erro: "",
+        sucesso: "",
+        carregando: false,
+        mensagemLoading: "",
+        onAlterar: () => {},
+        onAlternarDia: () => {},
+        onSubmit: () => {}
+      }));
+      const selectVolume = html.match(
+        /<select name="volumeSemanalAtual"[\s\S]*?<\/select>/
+      )?.[0];
+
+      assert.ok(selectVolume, objetivo);
+      assert.match(
+        selectVolume,
+        /<option value="40-60 km">40-60 km<\/option>/,
+        objetivo
+      );
+      assert.doesNotMatch(selectVolume, /<option value="60-80 km">/, objetivo);
+    }
+  } finally {
+    await servidor.close();
+  }
+});
+
 test("6 meses a 1 ano nunca oferece Não sei informar", () => {
   for (const objetivo of objetivosDisponiveisPorExperiencia(EXPERIENCIA_6_MESES_A_1_ANO)) {
     assert.equal(

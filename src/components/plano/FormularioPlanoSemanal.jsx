@@ -12,7 +12,6 @@ import {
   diaLongaoEhAplicavel,
   distanciaObjetivoPerformance,
   ehObjetivoPerformance,
-  filtrarVolumesPorExperiencia,
   formatoTempoObjetivo,
   mascararEntradaTempo,
   normalizarIdade,
@@ -105,10 +104,7 @@ function FormularioPlanoSemanal({
   const volumesDisponiveisBase = planoMaratona
     ? volumesPorObjetivo.filter((volume) => VOLUMES_SEMANAIS_MARATONA.includes(volume))
     : volumesPorObjetivo;
-  const volumesDisponiveis = filtrarVolumesPorExperiencia(
-    volumesDisponiveisBase,
-    form.experienciaCorrida
-  );
+  const volumesDisponiveis = volumesDisponiveisBase;
   const erroTempoDesejado = validarComparacaoTemposPerformance(form) ||
     (erro === "O tempo desejado deve ser menor que o tempo atual." ? erro : null);
   const erroVisivel = erroTempoReal || (erroTempoDesejado ? null : erro);
