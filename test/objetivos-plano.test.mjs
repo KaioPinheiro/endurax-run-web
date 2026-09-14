@@ -516,13 +516,13 @@ test("Melhorar tempo nos 10 km ganha somente a faixa 40-60 km", () => {
   assert.equal(volumes.includes("80+ km"), false);
 });
 
-test("Menos de 6 meses com Melhorar tempo nos 10 km permite somente 10-20 km", () => {
+test("Menos de 6 meses com Melhorar tempo nos 10 km acrescenta 20-40 km", () => {
   assert.deepEqual(
     volumesDisponiveisPorObjetivo(
       "Melhorar tempo nos 10 km",
       EXPERIENCIA_MENOS_6_MESES
     ),
-    ["10-20 km"]
+    ["10-20 km", "20-40 km"]
   );
   assert.deepEqual(
     volumesDisponiveisPorObjetivo("Melhorar tempo nos 10 km", "1 a 3 anos"),
@@ -530,18 +530,18 @@ test("Menos de 6 meses com Melhorar tempo nos 10 km permite somente 10-20 km", (
   );
 });
 
-test("Menos de 6 meses remove volumes a partir de 20 km sem ampliar regras do objetivo", () => {
+test("Menos de 6 meses aplica somente os ajustes manuais dos três objetivos", () => {
   assert.deepEqual(
     volumesDisponiveisPorObjetivo("Melhorar condicionamento", EXPERIENCIA_MENOS_6_MESES),
     ["Não sei informar", "Menos de 10 km", "10-20 km"]
   );
   assert.deepEqual(
     volumesDisponiveisPorObjetivo("Primeiros 10 km", EXPERIENCIA_MENOS_6_MESES),
-    ["Menos de 10 km", "10-20 km"]
+    ["10-20 km", "20-40 km"]
   );
   assert.deepEqual(
     volumesDisponiveisPorObjetivo("Melhorar tempo nos 5 km", EXPERIENCIA_MENOS_6_MESES),
-    ["Menos de 10 km", "10-20 km"]
+    ["10-20 km", "20-40 km"]
   );
   assert.deepEqual(
     volumesDisponiveisPorObjetivo("Melhorar tempo na Maratona", "Mais de 3 anos"),

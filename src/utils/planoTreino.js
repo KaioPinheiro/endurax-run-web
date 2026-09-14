@@ -378,7 +378,26 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
       VOLUMES_SEMANAIS.slice(1, 5).includes(volume));
   }
 
-  return filtrarVolumesPorExperiencia(volumesDisponiveis, experiencia);
+  const volumesFiltrados = filtrarVolumesPorExperiencia(volumesDisponiveis, experiencia);
+
+  if (
+    experiencia === EXPERIENCIA_MENOS_6_MESES &&
+    ["Primeiros 10 km", "Melhorar tempo nos 5 km"].includes(objetivo)
+  ) {
+    return [
+      ...volumesFiltrados.filter((volume) => volume !== "Menos de 10 km"),
+      "20-40 km"
+    ];
+  }
+
+  if (
+    experiencia === EXPERIENCIA_MENOS_6_MESES &&
+    objetivo === "Melhorar tempo nos 10 km"
+  ) {
+    return [...volumesFiltrados, "20-40 km"];
+  }
+
+  return volumesFiltrados;
 }
 
 export function filtrarVolumesPorExperiencia(volumes, experienciaCorrida) {
