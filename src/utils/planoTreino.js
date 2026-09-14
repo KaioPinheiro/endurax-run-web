@@ -322,23 +322,23 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
   let volumesDisponiveis = VOLUMES_SEMANAIS;
 
   if (objetivo === "Melhorar tempo nos 5 km") {
-    volumesDisponiveis = VOLUMES_SEMANAIS.slice(1, 3);
-  }
-
-  if (objetivo === "Melhorar tempo nos 10 km") {
-    volumesDisponiveis = VOLUMES_SEMANAIS.slice(2, 4);
-  }
-
-  if (objetivo === "Melhorar tempo na Meia Maratona") {
-    volumesDisponiveis = VOLUMES_SEMANAIS.slice(2, 4);
-  }
-
-  if (objetivo === "Primeiros 10 km") {
     volumesDisponiveis = VOLUMES_SEMANAIS.slice(1, 4);
   }
 
+  if (objetivo === "Melhorar tempo nos 10 km") {
+    volumesDisponiveis = VOLUMES_SEMANAIS.slice(2, 5);
+  }
+
+  if (objetivo === "Melhorar tempo na Meia Maratona") {
+    volumesDisponiveis = VOLUMES_SEMANAIS.slice(2, 5);
+  }
+
+  if (objetivo === "Primeiros 10 km") {
+    volumesDisponiveis = VOLUMES_SEMANAIS.slice(1, 5);
+  }
+
   if (objetivo === "Primeira Maratona") {
-    volumesDisponiveis = ["40-60 km"];
+    volumesDisponiveis = ["40-60 km", "60-80 km"];
   }
 
   if (
@@ -351,7 +351,15 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
 
   if (
     experiencia === "1 a 3 anos" &&
-    ["Primeira Meia Maratona", "Melhorar tempo na Meia Maratona"].includes(objetivo)
+    objetivo === "Primeira Meia Maratona"
+  ) {
+    volumesDisponiveis = volumesDisponiveis.filter((volume) =>
+      VOLUMES_SEMANAIS.slice(0, 5).includes(volume));
+  }
+
+  if (
+    experiencia === "1 a 3 anos" &&
+    objetivo === "Melhorar tempo na Meia Maratona"
   ) {
     volumesDisponiveis = volumesDisponiveis.filter((volume) =>
       VOLUMES_SEMANAIS.slice(0, 4).includes(volume));
@@ -360,6 +368,14 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
   if (experiencia === "Mais de 3 anos" && objetivo === "Primeira Meia Maratona") {
     volumesDisponiveis = volumesDisponiveis.filter((volume) =>
       VOLUMES_SEMANAIS.slice(2, 4).includes(volume));
+  }
+
+  if (
+    experiencia === EXPERIENCIA_6_MESES_A_1_ANO &&
+    ["Melhorar condicionamento", "Emagrecer", "Primeiros 5 km"].includes(objetivo)
+  ) {
+    return volumesDisponiveis.filter((volume) =>
+      VOLUMES_SEMANAIS.slice(1, 5).includes(volume));
   }
 
   return filtrarVolumesPorExperiencia(volumesDisponiveis, experiencia);

@@ -47,7 +47,6 @@ export const DURACOES_PLANO = [
 export const OBJETIVOS_PLANO = [
   "Começar a correr",
   "Melhorar condicionamento",
-  "Emagrecer",
   "Primeiros 5 km",
   "Primeiros 10 km",
   "Primeira Meia Maratona",
@@ -79,7 +78,6 @@ export const OBJETIVOS_PLANO_SEM_EXPERIENCIA = OBJETIVOS_PLANO.slice(
 );
 export const OBJETIVOS_PLANO_MENOS_6_MESES = OBJETIVOS_PLANO.filter((objetivo) => [
   "Melhorar condicionamento",
-  "Emagrecer",
   "Primeiros 5 km",
   "Primeiros 10 km",
   "Melhorar tempo nos 5 km",
