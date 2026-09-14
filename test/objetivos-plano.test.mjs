@@ -570,18 +570,23 @@ test("troca para Menos de 6 meses limpa volume geral incompatível", () => {
   assert.equal(restaurado.volumeSemanalAtual, "");
 });
 
-test("6 meses a 1 ano preserva o filtro salvo nas exceções mínimas da nova faixa", () => {
-  for (const objetivo of ["Melhorar condicionamento", "Emagrecer", "Primeiros 5 km"]) {
+test("6 meses a 1 ano aplica somente os ajustes manuais dos seis objetivos", () => {
+  const volumesPorObjetivo = new Map([
+    ["Melhorar condicionamento", ["Menos de 10 km", "10-20 km", "20-40 km"]],
+    ["Primeiros 5 km", ["10-20 km", "20-40 km"]],
+    ["Primeiros 10 km", ["10-20 km", "20-40 km"]],
+    ["Primeira Meia Maratona", ["10-20 km", "20-40 km", "40-60 km"]],
+    ["Melhorar tempo nos 5 km", ["10-20 km", "20-40 km"]],
+    ["Melhorar tempo na Meia Maratona", ["10-20 km", "20-40 km", "40-60 km"]]
+  ]);
+
+  for (const [objetivo, volumes] of volumesPorObjetivo) {
     assert.deepEqual(
       volumesDisponiveisPorObjetivo(objetivo, EXPERIENCIA_6_MESES_A_1_ANO),
-      ["Menos de 10 km", "10-20 km", "20-40 km", "40-60 km"],
+      volumes,
       objetivo
     );
   }
-  assert.deepEqual(
-    volumesDisponiveisPorObjetivo("Primeiros 10 km", EXPERIENCIA_6_MESES_A_1_ANO),
-    ["Menos de 10 km", "10-20 km", "20-40 km"]
-  );
   assert.deepEqual(
     volumesDisponiveisPorObjetivo(
       "Melhorar tempo nos 10 km",
@@ -595,7 +600,7 @@ test("6 meses a 1 ano preserva o filtro salvo nas exceções mínimas da nova fa
   );
 });
 
-test("formulário exibe a nova faixa para condicionamento e primeiros 5 km", async () => {
+test("formulário exibe os volumes revisados para 6 meses a 1 ano", async () => {
   const { createServer } = await import("vite");
   const servidor = await createServer({
     appType: "custom",
@@ -607,7 +612,16 @@ test("formulário exibe a nova faixa para condicionamento e primeiros 5 km", asy
       "/src/components/plano/FormularioPlanoSemanal.jsx"
     );
 
-    for (const objetivo of ["Melhorar condicionamento", "Primeiros 5 km"]) {
+    const volumesPorObjetivo = new Map([
+      ["Melhorar condicionamento", ["Menos de 10 km", "10-20 km", "20-40 km"]],
+      ["Primeiros 5 km", ["10-20 km", "20-40 km"]],
+      ["Primeiros 10 km", ["10-20 km", "20-40 km"]],
+      ["Primeira Meia Maratona", ["10-20 km", "20-40 km", "40-60 km"]],
+      ["Melhorar tempo nos 5 km", ["10-20 km", "20-40 km"]],
+      ["Melhorar tempo na Meia Maratona", ["10-20 km", "20-40 km", "40-60 km"]]
+    ]);
+
+    for (const [objetivo, volumes] of volumesPorObjetivo) {
       const html = renderToStaticMarkup(React.createElement(FormularioPlanoSemanal, {
         form: {
           ...formularioPerformance(),
@@ -627,12 +641,11 @@ test("formulário exibe a nova faixa para condicionamento e primeiros 5 km", asy
       )?.[0];
 
       assert.ok(selectVolume, objetivo);
-      assert.match(
-        selectVolume,
-        /<option value="40-60 km">40-60 km<\/option>/,
+      assert.deepEqual(
+        [...selectVolume.matchAll(/<option value="([^"]+)">/g)].map((match) => match[1]),
+        volumes,
         objetivo
       );
-      assert.doesNotMatch(selectVolume, /<option value="60-80 km">/, objetivo);
     }
   } finally {
     await servidor.close();
@@ -889,7 +902,7 @@ test("melhoria na Meia ganha somente a faixa 40-60 km", () => {
   ]) {
     assert.deepEqual(
       volumesDisponiveisPorObjetivo("Melhorar tempo na Meia Maratona", experiencia),
-      [EXPERIENCIA_6_MESES_A_1_ANO, "1 a 3 anos"].includes(experiencia)
+      experiencia === "1 a 3 anos"
         ? ["10-20 km", "20-40 km"]
         : ["10-20 km", "20-40 km", "40-60 km"],
       experiencia

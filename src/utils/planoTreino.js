@@ -370,15 +370,48 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
       VOLUMES_SEMANAIS.slice(2, 4).includes(volume));
   }
 
+  let volumesFiltrados;
+
   if (
     experiencia === EXPERIENCIA_6_MESES_A_1_ANO &&
     ["Melhorar condicionamento", "Emagrecer", "Primeiros 5 km"].includes(objetivo)
   ) {
-    return volumesDisponiveis.filter((volume) =>
+    volumesFiltrados = volumesDisponiveis.filter((volume) =>
       VOLUMES_SEMANAIS.slice(1, 5).includes(volume));
+  } else {
+    volumesFiltrados = filtrarVolumesPorExperiencia(volumesDisponiveis, experiencia);
   }
 
-  const volumesFiltrados = filtrarVolumesPorExperiencia(volumesDisponiveis, experiencia);
+  if (experiencia === EXPERIENCIA_6_MESES_A_1_ANO && objetivo === "Melhorar condicionamento") {
+    return volumesFiltrados.filter((volume) => volume !== "40-60 km");
+  }
+
+  if (experiencia === EXPERIENCIA_6_MESES_A_1_ANO && objetivo === "Primeiros 5 km") {
+    return volumesFiltrados.filter((volume) =>
+      !["Menos de 10 km", "40-60 km"].includes(volume));
+  }
+
+  if (experiencia === EXPERIENCIA_6_MESES_A_1_ANO && objetivo === "Primeiros 10 km") {
+    return volumesFiltrados.filter((volume) => volume !== "Menos de 10 km");
+  }
+
+  if (experiencia === EXPERIENCIA_6_MESES_A_1_ANO && objetivo === "Primeira Meia Maratona") {
+    return [
+      ...volumesFiltrados.filter((volume) => volume !== "Menos de 10 km"),
+      "40-60 km"
+    ];
+  }
+
+  if (experiencia === EXPERIENCIA_6_MESES_A_1_ANO && objetivo === "Melhorar tempo nos 5 km") {
+    return volumesFiltrados.filter((volume) => volume !== "Menos de 10 km");
+  }
+
+  if (
+    experiencia === EXPERIENCIA_6_MESES_A_1_ANO &&
+    objetivo === "Melhorar tempo na Meia Maratona"
+  ) {
+    return [...volumesFiltrados, "40-60 km"];
+  }
 
   if (
     experiencia === EXPERIENCIA_MENOS_6_MESES &&
