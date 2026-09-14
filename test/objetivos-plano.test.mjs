@@ -864,43 +864,97 @@ test("troca e restauração preservam 20-40 km em Melhorar condicionamento", () 
   assert.equal(restaurado.volumeSemanalAtual, "20-40 km");
 });
 
-test("Mais de 3 anos limita condicionamento e emagrecimento a volumes abaixo de 20 km", () => {
-  for (const objetivo of ["Melhorar condicionamento", "Emagrecer"]) {
+test("Mais de 3 anos aplica somente os ajustes manuais dos quatro objetivos", () => {
+  const volumesPorObjetivo = new Map([
+    ["Melhorar condicionamento", ["Menos de 10 km", "10-20 km", "20-40 km"]],
+    ["Primeira Meia Maratona", ["10-20 km", "20-40 km", "40-60 km"]],
+    ["Melhorar tempo nos 5 km", ["10-20 km", "20-40 km"]],
+    ["Melhorar tempo nos 10 km", ["10-20 km", "20-40 km"]]
+  ]);
+
+  for (const [objetivo, volumes] of volumesPorObjetivo) {
     assert.deepEqual(
       volumesDisponiveisPorObjetivo(objetivo, "Mais de 3 anos"),
-      ["Menos de 10 km", "10-20 km"],
+      volumes,
       objetivo
     );
   }
+
+  assert.deepEqual(
+    volumesDisponiveisPorObjetivo("Emagrecer", "Mais de 3 anos"),
+    ["Menos de 10 km", "10-20 km"]
+  );
   assert.deepEqual(
     volumesDisponiveisPorObjetivo("Melhorar tempo na Maratona", "Mais de 3 anos"),
     VOLUMES_SEMANAIS
   );
 });
 
-test("troca e restauração limpam volume incompatível para Mais de 3 anos", () => {
-  for (const objetivo of ["Melhorar condicionamento"]) {
-    const formulario = {
-      ...formularioPerformance(),
-      experienciaCorrida: "Mais de 3 anos",
-      objetivo: "Melhorar tempo na Meia Maratona",
-      maiorDistanciaCorrida: "10",
-      volumeSemanalAtual: "20-40 km"
-    };
-    const atualizado = normalizarCampoPlano(formulario, {
-      name: "objetivo",
-      value: objetivo,
-      type: "select-one"
-    });
-    const restaurado = normalizarFormularioPlanoRestaurado({
-      ...formulario,
-      experienciaCorrida: "Mais de 3 anos",
-      objetivo
-    });
+test("formulário exibe os volumes revisados para Mais de 3 anos", async () => {
+  const { createServer } = await import("vite");
+  const servidor = await createServer({
+    appType: "custom",
+    logLevel: "silent",
+    server: { middlewareMode: true }
+  });
+  try {
+    const { default: FormularioPlanoSemanal } = await servidor.ssrLoadModule(
+      "/src/components/plano/FormularioPlanoSemanal.jsx"
+    );
+    const volumesPorObjetivo = new Map([
+      ["Melhorar condicionamento", ["Menos de 10 km", "10-20 km", "20-40 km"]],
+      ["Primeira Meia Maratona", ["10-20 km", "20-40 km", "40-60 km"]],
+      ["Melhorar tempo nos 5 km", ["10-20 km", "20-40 km"]],
+      ["Melhorar tempo nos 10 km", ["10-20 km", "20-40 km"]]
+    ]);
 
-    assert.equal(atualizado.volumeSemanalAtual, "", objetivo);
-    assert.equal(restaurado.volumeSemanalAtual, "", objetivo);
+    for (const [objetivo, volumes] of volumesPorObjetivo) {
+      const html = renderToStaticMarkup(React.createElement(FormularioPlanoSemanal, {
+        form: { ...formularioPerformance(), experienciaCorrida: "Mais de 3 anos", objetivo },
+        erro: "",
+        sucesso: "",
+        carregando: false,
+        mensagemLoading: "",
+        onAlterar: () => {},
+        onAlternarDia: () => {},
+        onSubmit: () => {}
+      }));
+      const selectVolume = html.match(
+        /<select name="volumeSemanalAtual"[\s\S]*?<\/select>/
+      )?.[0];
+
+      assert.ok(selectVolume, objetivo);
+      assert.deepEqual(
+        [...selectVolume.matchAll(/<option value="([^"]+)">/g)].map((match) => match[1]),
+        volumes,
+        objetivo
+      );
+    }
+  } finally {
+    await servidor.close();
   }
+});
+
+test("troca e restauração preservam 20-40 km em Melhorar condicionamento para Mais de 3 anos", () => {
+  const formulario = {
+    ...formularioPerformance(),
+    experienciaCorrida: "Mais de 3 anos",
+    objetivo: "Melhorar tempo na Meia Maratona",
+    maiorDistanciaCorrida: "10",
+    volumeSemanalAtual: "20-40 km"
+  };
+  const atualizado = normalizarCampoPlano(formulario, {
+    name: "objetivo",
+    value: "Melhorar condicionamento",
+    type: "select-one"
+  });
+  const restaurado = normalizarFormularioPlanoRestaurado({
+    ...formulario,
+    objetivo: "Melhorar condicionamento"
+  });
+
+  assert.equal(atualizado.volumeSemanalAtual, "20-40 km");
+  assert.equal(restaurado.volumeSemanalAtual, "20-40 km");
 });
 
 test("1 a 3 anos com Primeira Meia ganha somente a faixa 40-60 km", () => {
@@ -910,21 +964,21 @@ test("1 a 3 anos com Primeira Meia ganha somente a faixa 40-60 km", () => {
   );
   assert.deepEqual(
     volumesDisponiveisPorObjetivo("Primeira Meia Maratona", "Mais de 3 anos"),
-    ["10-20 km", "20-40 km"]
+    ["10-20 km", "20-40 km", "40-60 km"]
   );
 });
 
-test("Mais de 3 anos com Primeira Meia permite somente entre 10 e 40 km", () => {
+test("Mais de 3 anos com Primeira Meia acrescenta 40-60 km", () => {
   const volumes = volumesDisponiveisPorObjetivo(
     "Primeira Meia Maratona",
     " Mais de 3 anos "
   );
 
-  assert.deepEqual(volumes, ["10-20 km", "20-40 km"]);
-  assert.equal(volumes.length, 2);
+  assert.deepEqual(volumes, ["10-20 km", "20-40 km", "40-60 km"]);
+  assert.equal(volumes.length, 3);
 });
 
-test("troca e restauração limpam volume incompatível da Primeira Meia para Mais de 3 anos", () => {
+test("troca e restauração preservam 40-60 km da Primeira Meia para Mais de 3 anos", () => {
   const formulario = {
     ...formularioPerformance(),
     experienciaCorrida: "Mais de 3 anos",
@@ -942,8 +996,8 @@ test("troca e restauração limpam volume incompatível da Primeira Meia para Ma
     objetivo: "Primeira Meia Maratona"
   });
 
-  assert.equal(atualizado.volumeSemanalAtual, "");
-  assert.equal(restaurado.volumeSemanalAtual, "");
+  assert.equal(atualizado.volumeSemanalAtual, "40-60 km");
+  assert.equal(restaurado.volumeSemanalAtual, "40-60 km");
   assert.deepEqual(
     volumesDisponiveisPorObjetivo("Melhorar tempo na Maratona", "Mais de 3 anos"),
     VOLUMES_SEMANAIS

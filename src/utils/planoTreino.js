@@ -441,6 +441,22 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
     return [...volumesFiltrados, "40-60 km"];
   }
 
+  if (experiencia === "Mais de 3 anos" && objetivo === "Melhorar condicionamento") {
+    return [...volumesFiltrados, "20-40 km"];
+  }
+
+  if (experiencia === "Mais de 3 anos" && objetivo === "Primeira Meia Maratona") {
+    return [...volumesFiltrados, "40-60 km"];
+  }
+
+  if (experiencia === "Mais de 3 anos" && objetivo === "Melhorar tempo nos 5 km") {
+    return volumesFiltrados.filter((volume) => volume !== "Menos de 10 km");
+  }
+
+  if (experiencia === "Mais de 3 anos" && objetivo === "Melhorar tempo nos 10 km") {
+    return volumesFiltrados.filter((volume) => volume !== "40-60 km");
+  }
+
   if (
     experiencia === EXPERIENCIA_MENOS_6_MESES &&
     ["Primeiros 10 km", "Melhorar tempo nos 5 km"].includes(objetivo)
