@@ -2,15 +2,19 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("oferece impressão com todas as semanas e oculta os controles", async () => {
-  const [resultado, estilos] = await Promise.all([
+test("oferece ações no topo e impressão com todas as semanas", async () => {
+  const [resultado, pagina, estilos] = await Promise.all([
     readFile(new URL("../src/components/plano/ResultadoMeuPlano.jsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/pages/MeuPlano.jsx", import.meta.url), "utf8"),
     readFile(new URL("../src/pages/PlanoSemanalIA.css", import.meta.url), "utf8")
   ]);
 
-  assert.match(resultado, /onClick=\{\(\) => window\.print\(\)\}/);
-  assert.match(resultado, /onClick=\{onGerarNovamente\}/);
-  assert.match(resultado, /Gerar novo plano/);
+  assert.match(pagina, /onClick=\{\(\) => window\.print\(\)\}/);
+  assert.match(pagina, /onClick=\{iniciarNovoPlano\}/);
+  assert.equal((pagina.match(/Baixar PDF/g) || []).length, 1);
+  assert.equal((pagina.match(/Gerar novo plano/g) || []).length, 1);
+  assert.ok(pagina.indexOf("Baixar PDF") < pagina.indexOf("<ResultadoMeuPlano"));
+  assert.doesNotMatch(resultado, /Baixar PDF|Gerar novo plano/);
   assert.match(resultado, /plano-ia-semanas-impressao/);
   assert.match(resultado, /const distanciaEstimada = bloco\.distancia[\s\S]*\? ""[\s\S]*estimarDistanciaBloco/);
   assert.match(resultado, /distanciaEstimada && <small>/);

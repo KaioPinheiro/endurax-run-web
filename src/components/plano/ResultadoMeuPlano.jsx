@@ -318,7 +318,7 @@ function SemanaPlano({ semana }) {
   );
 }
 
-function ResultadoMeuPlano({ plano, carregando, onGerarNovamente }) {
+function ResultadoMeuPlano({ plano }) {
   const [semanaAtiva, setSemanaAtiva] = useState(0);
   const semanas = useMemo(() => plano?.semanas ?? [], [plano]);
   const semanaSelecionada = semanas[semanaAtiva] ?? semanas[0];
@@ -392,23 +392,6 @@ function ResultadoMeuPlano({ plano, carregando, onGerarNovamente }) {
         ))}
       </div>
 
-      <div className="plano-ia-acoes">
-        <button
-          className="coach-ia-gerar-novamente plano-ia-baixar-pdf"
-          type="button"
-          onClick={() => window.print()}
-        >
-          Baixar PDF
-        </button>
-        <button
-          className="coach-ia-gerar-novamente plano-ia-gerar-novamente"
-          type="button"
-          onClick={onGerarNovamente}
-          disabled={carregando}
-        >
-          Gerar novo plano
-        </button>
-      </div>
     </section>
   );
 }

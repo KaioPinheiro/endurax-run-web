@@ -408,6 +408,26 @@ function MeuPlano() {
         <p>Receba um ciclo de corrida personalizado para o objetivo que deseja alcançar.</p>
       </header>
 
+      {plano && (
+        <div className="plano-ia-acoes plano-ia-ver-ultimo">
+          <button
+            className="coach-ia-gerar-novamente plano-ia-baixar-pdf"
+            type="button"
+            onClick={() => window.print()}
+          >
+            Baixar PDF
+          </button>
+          <button
+            className="coach-ia-gerar-novamente plano-ia-gerar-novamente"
+            type="button"
+            onClick={iniciarNovoPlano}
+            disabled={fluxoAtivo}
+          >
+            Gerar novo plano
+          </button>
+        </div>
+      )}
+
       {!pagamento && !plano && !solicitacaoSemPagamento &&
         localStorage.getItem(ULTIMO_PLANO_TOKEN_KEY) && (
           <button
@@ -459,10 +479,7 @@ function MeuPlano() {
         </>
       )}
 
-      <ResultadoMeuPlano
-        key={versaoPlano} plano={plano} carregando={fluxoAtivo}
-        onGerarNovamente={iniciarNovoPlano}
-      />
+      <ResultadoMeuPlano key={versaoPlano} plano={plano} />
     </section>
   );
 }
