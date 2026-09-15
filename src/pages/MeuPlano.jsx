@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import FormularioPlanoSemanal from "../components/plano/FormularioPlanoSemanal";
+import DemonstracaoPlano from "../components/plano/DemonstracaoPlano";
 import PagamentoPix from "../components/plano/PagamentoPix";
 import ResultadoMeuPlano from "../components/plano/ResultadoMeuPlano";
 import { MENSAGENS_LOADING_PLANO } from "../constants/planoTreino";
@@ -441,12 +442,15 @@ function MeuPlano() {
         )}
 
       {!pagamento && !plano && !solicitacaoSemPagamento && (
-        <FormularioPlanoSemanal
-          form={form} erro={erro} sucesso={sucesso} carregando={fluxoAtivo}
-          mensagemLoading={MENSAGENS_LOADING_PLANO[indiceMensagemLoading]}
-          onAlterar={alterar} onAlternarDia={alternarDia} onSubmit={enviar}
-          validarMaratonaEmTempoReal
-        />
+        <>
+          <FormularioPlanoSemanal
+            form={form} erro={erro} sucesso={sucesso} carregando={fluxoAtivo}
+            mensagemLoading={MENSAGENS_LOADING_PLANO[indiceMensagemLoading]}
+            onAlterar={alterar} onAlternarDia={alternarDia} onSubmit={enviar}
+            validarMaratonaEmTempoReal
+          />
+          <DemonstracaoPlano />
+        </>
       )}
 
       {!pagamento && !plano && solicitacaoSemPagamento && (
