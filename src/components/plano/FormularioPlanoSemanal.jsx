@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import {
   DIAS_SEMANA,
   DURACOES_PLANO,
@@ -24,6 +25,11 @@ import {
   validarBloqueiosMaratona,
   volumesDisponiveisPorObjetivo
 } from "../../utils/planoTreino";
+import {
+  analyticsHabilitado,
+  observarCamposAlcancados,
+  rastrearEventoUmami
+} from "../../utils/analytics";
 
 function OpcoesSelect({ opcoes, rotulo = (opcao) => opcao }) {
   return opcoes.map((opcao) => (
@@ -52,6 +58,8 @@ function FormularioPlanoSemanal({
   onSubmit,
   validarMaratonaEmTempoReal = false
 }) {
+  const formularioRef = useRef(null);
+  const camposRegistradosRef = useRef(new Set());
   const objetivosDisponiveis = objetivosDisponiveisPorExperiencia(form.experienciaCorrida);
   const objetivoPerformance = ehObjetivoPerformance(form.objetivo);
   const distanciaPerformance = distanciaObjetivoPerformance(form.objetivo);
@@ -109,15 +117,37 @@ function FormularioPlanoSemanal({
     (erro === "O tempo desejado deve ser menor que o tempo atual." ? erro : null);
   const erroVisivel = erroTempoReal || (erroTempoDesejado ? null : erro);
   const submitBloqueado = carregando || Boolean(erroTempoReal);
+  const camposCondicionais = [
+    objetivoPerformance,
+    exibirPergunta5Km,
+    form.corre5KmSemCaminhar === "sim",
+    planoMeiaOuMaratona,
+    ocultarVolumeSemanal,
+    exibirDiaLongao,
+    form.possuiLesao
+  ].join("|");
+
+  useEffect(() => {
+    if (!analyticsHabilitado({
+      producao: import.meta.env.PROD,
+      hostname: window.location.hostname
+    })) return undefined;
+
+    return observarCamposAlcancados({
+      raiz: formularioRef.current,
+      registrados: camposRegistradosRef.current,
+      rastrear: rastrearEventoUmami
+    });
+  }, [camposCondicionais]);
 
   return (
-    <form className="coach-ia-form plano-ia-form" onSubmit={onSubmit}>
+    <form ref={formularioRef} className="coach-ia-form plano-ia-form" onSubmit={onSubmit}>
       <div className="coach-ia-form-titulo">
         <div><h2>Configure seu plano</h2></div>
       </div>
 
       <div className="coach-ia-campos plano-ia-campos">
-        <label className="coach-ia-campo coach-ia-largo">
+        <label className="coach-ia-campo coach-ia-largo" data-analytics-field="email">
           <span>E-mail *</span>
           <input
             type="email"
@@ -133,7 +163,7 @@ function FormularioPlanoSemanal({
           </small>
         </label>
 
-        <label className="coach-ia-campo">
+        <label className="coach-ia-campo" data-analytics-field="idade">
           <span>Idade *</span>
           <input
             type="number"
@@ -174,7 +204,7 @@ function FormularioPlanoSemanal({
           />
         </label>
 
-        <label className="coach-ia-campo">
+        <label className="coach-ia-campo" data-analytics-field="experiencia">
           <span>Experiência na corrida *</span>
           <select
             name="experienciaCorrida"
@@ -187,7 +217,7 @@ function FormularioPlanoSemanal({
           </select>
         </label>
 
-        <label className="coach-ia-campo">
+        <label className="coach-ia-campo" data-analytics-field="objetivo">
           <span>Objetivo *</span>
           <select name="objetivo" value={form.objetivo} onChange={onAlterar} required>
             <PlaceholderSelect>Selecione</PlaceholderSelect>
@@ -203,7 +233,7 @@ function FormularioPlanoSemanal({
 
         {objetivoPerformance && (
           <>
-            <label className="coach-ia-campo">
+            <label className="coach-ia-campo" data-analytics-field="tempo_atual">
               <span>Tempo atual {distanciaPerformance === "Maratona" ? "na" : "nos"} {distanciaPerformance} *</span>
               <input
                 name="tempoAtual"
@@ -216,7 +246,7 @@ function FormularioPlanoSemanal({
                 required
               />
             </label>
-            <label className="coach-ia-campo">
+            <label className="coach-ia-campo" data-analytics-field="tempo_desejado">
               <span>Tempo desejado *</span>
               <input name="tempoDesejado" value={form.tempoDesejado}
                 onChange={alterarTempoPerformance} onBlur={completarTempoPerformanceAoSair}
@@ -229,7 +259,7 @@ function FormularioPlanoSemanal({
           </>
         )}
 
-        <label className="coach-ia-campo">
+        <label className="coach-ia-campo" data-analytics-field="ritmo_confortavel">
           <span>Ritmo confortável atual *</span>
           <select
             name="ritmoConfortavel"
@@ -243,7 +273,7 @@ function FormularioPlanoSemanal({
         </label>
 
         {exibirPergunta5Km && (
-          <fieldset className="coach-ia-radio-grupo">
+          <fieldset className="coach-ia-radio-grupo" data-analytics-field="corre_5km">
             <legend>Você já corre 5 km direto sem caminhar? *</legend>
             <div>
               <label>
@@ -273,7 +303,7 @@ function FormularioPlanoSemanal({
         )}
 
         {exibirPergunta5Km && form.corre5KmSemCaminhar === "sim" && (
-          <label className="coach-ia-campo">
+          <label className="coach-ia-campo" data-analytics-field="tempo_5km">
             <span>Em quanto tempo? *</span>
             <input
               name="tempo5Km"
@@ -289,7 +319,7 @@ function FormularioPlanoSemanal({
         )}
 
         {planoMeiaOuMaratona && (
-          <label className="coach-ia-campo">
+          <label className="coach-ia-campo" data-analytics-field="maior_distancia">
             <span>Qual foi a maior distância que você já correu? *</span>
             <input
               name="maiorDistanciaCorrida"
@@ -305,7 +335,7 @@ function FormularioPlanoSemanal({
         )}
 
         {!ocultarVolumeSemanal && (
-          <label className="coach-ia-campo">
+          <label className="coach-ia-campo" data-analytics-field="volume_semanal">
           <span>Volume semanal *</span>
           <select
             name="volumeSemanalAtual"
@@ -321,7 +351,7 @@ function FormularioPlanoSemanal({
           </label>
         )}
 
-        <fieldset className="coach-ia-dias">
+        <fieldset className="coach-ia-dias" data-analytics-field="dias_disponiveis">
           <legend>Dias disponíveis para treinar *</legend>
           <div>
             {DIAS_SEMANA.map((dia) => {
@@ -342,7 +372,7 @@ function FormularioPlanoSemanal({
           </div>
         </fieldset>
 
-        {exibirDiaLongao && <label className="coach-ia-campo">
+        {exibirDiaLongao && <label className="coach-ia-campo" data-analytics-field="dia_longao">
           <span>Dia do longão (treino mais longo) *</span>
           <select
             name="diaLongao"
@@ -362,7 +392,7 @@ function FormularioPlanoSemanal({
           </select>
         </label>}
 
-        <label className="coach-ia-campo">
+        <label className="coach-ia-campo" data-analytics-field="duracao_plano">
           <span>Duração do plano *</span>
           <select
             name="duracaoSemanas"
@@ -378,7 +408,7 @@ function FormularioPlanoSemanal({
           </select>
         </label>
 
-        <label className="coach-ia-lesao">
+        <label className="coach-ia-lesao" data-analytics-field="lesao_limitacao">
           <input
             type="checkbox"
             name="possuiLesao"
@@ -393,7 +423,7 @@ function FormularioPlanoSemanal({
         </label>
 
         {form.possuiLesao && (
-          <label className="coach-ia-campo">
+          <label className="coach-ia-campo" data-analytics-field="descricao_lesao">
             <span>Descrição da lesão *</span>
             <textarea
               name="descricaoLesao"
@@ -404,7 +434,7 @@ function FormularioPlanoSemanal({
           </label>
         )}
 
-        <label className="coach-ia-campo coach-ia-largo">
+        <label className="coach-ia-campo coach-ia-largo" data-analytics-field="observacoes">
           <span>Observações</span>
           <textarea
             name="observacoes"

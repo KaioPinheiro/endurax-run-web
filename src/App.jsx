@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Routes, Route, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Navbar from "./components/Navbar";
 
@@ -11,6 +11,7 @@ import GerarTreinoIA from "./pages/GerarTreinoIA";
 import MeuPlano from "./pages/MeuPlano";
 import Login from "./pages/Login";
 import LandingPage from "./pages/LandingPage";
+import { carregarUmami } from "./utils/analytics";
 
 import "./App.css";
 
@@ -97,6 +98,10 @@ function AppRoutes() {
 }
 
 function App() {
+  useEffect(() => {
+    carregarUmami();
+  }, []);
+
   return (
     <BrowserRouter>
       <AppRoutes />

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { rastrearEventoUmami } from "../../utils/analytics";
 
 function formatarTempoRestante(segundos) {
   const minutos = Math.floor(segundos / 60);
@@ -20,6 +21,7 @@ function PagamentoPix({
   const [copiado, setCopiado] = useState(false);
   const [confirmandoEdicao, setConfirmandoEdicao] = useState(false);
   const [agora, setAgora] = useState(() => Date.now());
+  const pixVisualizado = useRef(false);
   const expiracao = pagamento?.dataExpiracao || pagamento?.expirationDate;
   const copiaCola = pagamento?.pixCopiaCola || pagamento?.copiaCola || pagamento?.qrCode || "";
   const qrCodeBase64 = pagamento?.qrCodeBase64;
@@ -36,6 +38,15 @@ function PagamentoPix({
     const intervalo = setInterval(() => setAgora(Date.now()), 1000);
     return () => clearInterval(intervalo);
   }, [expiracao]);
+
+  useEffect(() => {
+    const pixDisponivel = estado === "PENDING" && Boolean(
+      qrCodeBase64 || copiaCola || (sincronizado && ticketUrl)
+    );
+    if (!pixDisponivel || pixVisualizado.current) return;
+    pixVisualizado.current = true;
+    rastrearEventoUmami("pix_viewed");
+  }, [copiaCola, estado, qrCodeBase64, sincronizado, ticketUrl]);
 
   const segundosAteExpirar = useMemo(() => {
     if (!expiracao) return null;

@@ -16,6 +16,7 @@ import {
   tentarGeracaoNovamente
 } from "../services/api";
 import { obterMensagemErroIa } from "../utils/mensagemErroIa";
+import { rastrearEventoUmami } from "../utils/analytics";
 import {
   CHAVES_FLUXO_MEU_PLANO,
   criarRecuperacaoCompra,
@@ -213,6 +214,7 @@ function MeuPlano() {
 
     if (!solicitacaoPlanoId) {
       const solicitacao = await criarSolicitacaoPlano(email, payload);
+      rastrearEventoUmami("form_submitted");
       solicitacaoPlanoId = String(solicitacao.solicitacaoPlanoId);
       localStorage.setItem(SOLICITACAO_ID_KEY, solicitacaoPlanoId);
       setSolicitacaoSemPagamento(true);
