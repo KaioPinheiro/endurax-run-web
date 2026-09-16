@@ -245,7 +245,9 @@ function PassoTreino({ bloco }) {
         {bloco.pace && (
           <p className="plano-bloco-pace">Pace: {formatarPace(bloco.pace)}</p>
         )}
-        {bloco.descricao && <p>{bloco.descricao}</p>}
+        {tipo !== "aquecimento" && tipo !== "desaquecimento" && bloco.descricao && (
+          <p>{bloco.descricao}</p>
+        )}
       </div>
     </article>
   );

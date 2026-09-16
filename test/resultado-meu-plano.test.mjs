@@ -1,6 +1,57 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+
+test("oculta apenas a descricao de aquecimento e desaquecimento", async () => {
+  const { createServer } = await import("vite");
+  const servidor = await createServer({
+    appType: "custom",
+    logLevel: "silent",
+    server: { middlewareMode: true }
+  });
+
+  try {
+    const { default: ResultadoMeuPlano } = await servidor.ssrLoadModule(
+      "/src/components/plano/ResultadoMeuPlano.jsx"
+    );
+    const descricao = [
+      "Aquecimento: 10 min de trote leve a 6:20-6:40 min/km",
+      "Principal: 30 min de corrida confortavel a 5:30-5:50 min/km",
+      "Desaquecimento: 10 min de trote suave a 6:30-6:50 min/km"
+    ].join(" | ");
+    const plano = {
+      titulo: "Plano teste",
+      objetivoPlano: "Corrida",
+      duracaoSemanas: 1,
+      semanas: [{
+        numeroSemana: 1,
+        titulo: "Semana teste",
+        treinos: [{
+          diaSemana: "Segunda-feira",
+          tipo: "Corrida",
+          titulo: "Corrida leve",
+          descricao,
+          duracaoEstimada: "50 min"
+        }]
+      }]
+    };
+
+    const html = renderToStaticMarkup(React.createElement(ResultadoMeuPlano, { plano }));
+    assert.doesNotMatch(html, /10 min de trote leve a/);
+    assert.doesNotMatch(html, /10 min de trote suave a/);
+    assert.match(html, /30 min de corrida confortavel a 5:30-5:50 min\/km/);
+    assert.match(html, /<strong>Aquecimento<\/strong>/);
+    assert.match(html, /<strong>Desaquecimento<\/strong>/);
+    assert.match(html, /<span>10 min<\/span>/);
+    assert.match(html, /<small>~1,5 km<\/small>/);
+    assert.match(html, /Pace: 6:20-6:40 min\/km/);
+    assert.match(html, /Pace: 6:30-6:50 min\/km/);
+  } finally {
+    await servidor.close();
+  }
+});
 
 test("oferece ações no topo e impressão com todas as semanas", async () => {
   const [resultado, pagina, estilos] = await Promise.all([
