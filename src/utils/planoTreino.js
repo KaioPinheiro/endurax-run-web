@@ -382,7 +382,10 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
     volumesFiltrados = filtrarVolumesPorExperiencia(volumesDisponiveis, experiencia);
   }
 
-  if (experiencia === EXPERIENCIA_6_MESES_A_1_ANO && objetivo === "Melhorar condicionamento") {
+  if (
+    experiencia === EXPERIENCIA_6_MESES_A_1_ANO &&
+    ["Melhorar condicionamento", "Emagrecer"].includes(objetivo)
+  ) {
     return volumesFiltrados.filter((volume) => volume !== "40-60 km");
   }
 
@@ -413,7 +416,7 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
     return [...volumesFiltrados, "40-60 km"];
   }
 
-  if (experiencia === "1 a 3 anos" && objetivo === "Melhorar condicionamento") {
+  if (experiencia === "1 a 3 anos" && ["Melhorar condicionamento", "Emagrecer"].includes(objetivo)) {
     return [...volumesFiltrados, "20-40 km"];
   }
 
@@ -441,7 +444,7 @@ export function volumesDisponiveisPorObjetivo(objetivo, experienciaCorrida) {
     return [...volumesFiltrados, "40-60 km"];
   }
 
-  if (experiencia === "Mais de 3 anos" && objetivo === "Melhorar condicionamento") {
+  if (experiencia === "Mais de 3 anos" && ["Melhorar condicionamento", "Emagrecer"].includes(objetivo)) {
     return [...volumesFiltrados, "20-40 km"];
   }
 

@@ -40,7 +40,7 @@ import {
 } from "../src/utils/planoTreino.js";
 
 const objetivos = [
-  "Começar a correr", "Melhorar condicionamento",
+  "Começar a correr", "Melhorar condicionamento", "Emagrecer",
   "Primeiros 5 km", "Primeiros 10 km", "Primeira Meia Maratona", "Primeira Maratona",
   "Melhorar tempo nos 5 km", "Melhorar tempo nos 10 km",
   "Melhorar tempo na Meia Maratona", "Melhorar tempo na Maratona"
@@ -57,7 +57,7 @@ function formularioPerformance() {
 }
 
 test("limita objetivos para quem nunca correu ou está parado", () => {
-  const objetivosIniciais = objetivos.slice(0, 3);
+  const objetivosIniciais = objetivos.slice(0, 4);
 
   assert.deepEqual(
     objetivosDisponiveisPorExperiencia(EXPERIENCIA_SEM_CORRIDA),
@@ -77,6 +77,7 @@ test("limita objetivos para quem nunca correu ou está parado", () => {
 test("menos de 6 meses mantém somente objetivos de até 10 km", () => {
   const permitidos = [
     "Melhorar condicionamento",
+    "Emagrecer",
     "Primeiros 5 km",
     "Primeiros 10 km",
     "Melhorar tempo nos 5 km",
@@ -787,7 +788,7 @@ test("1 a 3 anos aplica somente os ajustes manuais dos seis objetivos", () => {
 
   assert.deepEqual(
     volumesDisponiveisPorObjetivo("Emagrecer", "1 a 3 anos"),
-    ["Menos de 10 km", "10-20 km"]
+    ["Menos de 10 km", "10-20 km", "20-40 km"]
   );
 
   assert.deepEqual(
@@ -882,7 +883,7 @@ test("Mais de 3 anos aplica somente os ajustes manuais dos quatro objetivos", ()
 
   assert.deepEqual(
     volumesDisponiveisPorObjetivo("Emagrecer", "Mais de 3 anos"),
-    ["Menos de 10 km", "10-20 km"]
+    ["Menos de 10 km", "10-20 km", "20-40 km"]
   );
   assert.deepEqual(
     volumesDisponiveisPorObjetivo("Melhorar tempo na Maratona", "Mais de 3 anos"),
@@ -1482,8 +1483,38 @@ test("troca para objetivo geral limpa tempos e payload não os envia", () => {
   assert.equal(form.tempoAtual, "");
   assert.equal(form.tempoDesejado, "");
   const payload = montarPayloadMeuPlano(form);
+  assert.equal(payload.objetivo, "Emagrecer");
   assert.equal(payload.tempoAtual, null);
   assert.equal(payload.tempoDesejado, null);
+  assert.equal(payload.maiorDistanciaCorrida, null);
+  assert.equal(payload.distanciaAlvo, "Sem distância alvo definida");
+});
+
+test("Emagrecer segue exatamente os volumes de Melhorar condicionamento", () => {
+  const volumesEsperados = new Map([
+    [EXPERIENCIA_MENOS_6_MESES, ["Não sei informar", "Menos de 10 km", "10-20 km"]],
+    [EXPERIENCIA_6_MESES_A_1_ANO, ["Menos de 10 km", "10-20 km", "20-40 km"]],
+    ["1 a 3 anos", ["Menos de 10 km", "10-20 km", "20-40 km"]],
+    ["Mais de 3 anos", ["Menos de 10 km", "10-20 km", "20-40 km"]]
+  ]);
+
+  for (const [experiencia, volumes] of volumesEsperados) {
+    assert.ok(objetivosDisponiveisPorExperiencia(experiencia).includes("Emagrecer"));
+    assert.deepEqual(volumesDisponiveisPorObjetivo("Emagrecer", experiencia), volumes);
+    assert.deepEqual(
+      volumesDisponiveisPorObjetivo("Emagrecer", experiencia),
+      volumesDisponiveisPorObjetivo("Melhorar condicionamento", experiencia)
+    );
+  }
+  for (const experiencia of [EXPERIENCIA_SEM_CORRIDA, EXPERIENCIA_PARADO]) {
+    const formulario = normalizarFormularioPlanoRestaurado({
+      ...formularioPerformance(), experienciaCorrida: experiencia,
+      objetivo: "Emagrecer", volumeSemanalAtual: "20-40 km"
+    });
+    assert.equal(formulario.objetivo, "Emagrecer");
+    assert.equal(formulario.volumeSemanalAtual, "");
+    assert.equal(montarPayloadMeuPlano(formulario).volumeSemanalAtual, null);
+  }
 });
 
 test("payload envia tempos estruturados para performance", () => {
@@ -1598,7 +1629,7 @@ test("pergunta sobre 5 km exige tambÃ©m uma experiÃªncia aplicÃ¡vel", () =
   assert.equal(corre5KmSemCaminharEhAplicavel(
     "Mais de 3 anos", OBJETIVOS_PLANO[3]), false);
   assert.equal(corre5KmSemCaminharEhAplicavel(
-    EXPERIENCIA_MENOS_6_MESES, OBJETIVOS_PLANO[4]), false);
+    EXPERIENCIA_MENOS_6_MESES, "Primeiros 10 km"), false);
   assert.equal(corre5KmSemCaminharEhAplicavel(
     EXPERIENCIA_6_MESES_A_1_ANO, OBJETIVOS_PLANO[7]), false);
 });
