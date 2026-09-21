@@ -78,7 +78,7 @@ test("landing termina no rodapé depois de como funciona e sugestões", async ()
   assert.doesNotMatch(landing, /href="#como-funciona"|href="#para-quem"|href="#previa"/);
   assert.match(landing, /className="landing-logo"[\s\S]*alt="Endurax Run"/);
   assert.match(landing, /className="landing-footer"[\s\S]*Direção para cada quilômetro\.[\s\S]*© \{new Date\(\)\.getFullYear\(\)\} Endurax Run/);
-  assert.match(landing, /<Cta>QUERO MEU PLANO<\/Cta>/);
+  assert.match(landing, /<Cta>CRIAR MEU PLANO<\/Cta>/);
 });
 
 test("landing exibe o valor público do plano formatado junto ao CTA", async () => {
@@ -91,5 +91,20 @@ test("landing exibe o valor público do plano formatado junto ao CTA", async () 
   assert.match(landing, /formatarPrecoPlano\(config\?\.valorPlano\)/);
   assert.match(landing, /Preço de lançamento: \{precoPlano\}/);
   assert.doesNotMatch(landing, /R\$ 9,90|9\.90/);
-  assert.match(landing, /<Cta>QUERO MEU PLANO<\/Cta>/);
+  assert.match(landing, /<Cta>CRIAR MEU PLANO<\/Cta>/);
+});
+
+test("hero apresenta personalização e exemplo preservando CTA e card", async () => {
+  const landing = await readFile(new URL("../src/pages/LandingPage.jsx", import.meta.url), "utf8");
+  assert.match(landing, /PLANO DE CORRIDA PERSONALIZADO/);
+  assert.match(landing, /Seu plano de corrida\.<br \/><em>Feito para você\.<\/em>/);
+  assert.match(landing, /Do iniciante ao avançado, receba um plano de corrida personalizado para seu nível, objetivo e rotina\./);
+  assert.match(landing, /Treinos que cabem na sua rotina\./);
+  assert.match(landing, /to="\/meu-plano">CRIAR MEU PLANO <IconeSeta \/>/);
+  assert.match(landing, /VEJA NA PRÁTICA[\s\S]*Um plano que se adapta a você\.[\s\S]*Seu nível, objetivo e rotina definem como serão seus treinos\.[\s\S]*<PreviaSemana \/>/);
+  assert.match(landing, /<span className="treino-mini__seta" aria-hidden="true" \/>/);
+  assert.doesNotMatch(landing, /className="treino-mini__seta"[^>]*>→/);
+  assert.equal(landing.match(/<PreviaSemana \/>/g).length, 1);
+  assert.match(landing, /<div className="plano-preview__progresso" \/>/);
+  assert.match(landing, /Somente nos dias que você escolher/);
 });

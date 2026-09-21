@@ -35,7 +35,7 @@ function PreviaSemana({ completa = false }) {
         </div>
         <span className="plano-preview__badge">3 treinos</span>
       </div>
-      <div className="plano-preview__progresso"><span /></div>
+      <div className="plano-preview__progresso" />
       <div className="plano-preview__lista">
         {treinosSemana.map((treino, indice) => (
           <article className={`treino-mini treino-mini--${treino.tom}`} key={treino.dia}>
@@ -45,7 +45,7 @@ function PreviaSemana({ completa = false }) {
               <strong>{treino.tipo}</strong>
               {completa && <small>{treino.detalhe}</small>}
             </div>
-            <span className="treino-mini__seta" aria-hidden="true">→</span>
+            <span className="treino-mini__seta" aria-hidden="true" />
           </article>
         ))}
       </div>
@@ -98,32 +98,37 @@ function LandingPage() {
         <Link className="landing-logo" to="/" aria-label="Endurax Run — início">
           <img src={logoEndurax} alt="Endurax Run" />
         </Link>
-        <Link className="landing-header__acao" to="/meu-plano">MONTAR MEU PLANO <IconeSeta /></Link>
+        <Link className="landing-header__acao" to="/meu-plano">CRIAR MEU PLANO <IconeSeta /></Link>
       </header>
 
       <main>
         <section className="landing-hero" aria-labelledby="hero-title">
           <div className="landing-hero__conteudo">
-            <span className="landing-eyebrow landing-reveal">PLANEJAMENTO QUE CABE NA SUA ROTINA</span>
+            <span className="landing-eyebrow landing-reveal">PLANO DE CORRIDA PERSONALIZADO</span>
             <h1 id="hero-title" className="landing-reveal landing-reveal--delay-1">
-              Treine com direção.<br /><em>Corra com propósito.</em>
+              Seu plano de corrida.<br /><em>Feito para você.</em>
             </h1>
             <p className="landing-hero__subtitulo landing-reveal landing-reveal--delay-2">
-              Escolha seus dias, defina seu objetivo e receba um plano de corrida de 4 a 6 semanas feito para a sua rotina.
+              Do iniciante ao avançado, receba um plano de corrida personalizado para seu nível, objetivo e rotina.
             </p>
             <p className="landing-hero__apoio landing-reveal landing-reveal--delay-2">
-              <span>Sem planilhas genéricas.</span><span>Sem treinos fora da sua rotina.</span>
+              <span>Sem planilhas genéricas.</span><span>Treinos que cabem na sua rotina.</span>
             </p>
             {precoPlano && (
               <p className="landing-hero__preco landing-reveal landing-reveal--delay-3">
                 Preço de lançamento: {precoPlano}
               </p>
             )}
-            <div className="landing-reveal landing-reveal--delay-3"><Cta>QUERO MEU PLANO</Cta></div>
+            <div className="landing-reveal landing-reveal--delay-3"><Cta>CRIAR MEU PLANO</Cta></div>
           </div>
           <div className="landing-hero__visual landing-reveal landing-reveal--delay-2">
             <div className="landing-orbita landing-orbita--um" aria-hidden="true" />
             <div className="landing-orbita landing-orbita--dois" aria-hidden="true" />
+            <div className="landing-hero__exemplo">
+              <span className="landing-eyebrow">VEJA NA PRÁTICA</span>
+              <h2>Um plano que se adapta a você.</h2>
+              <p>Seu nível, objetivo e rotina definem como serão seus treinos.</p>
+            </div>
             <PreviaSemana />
             <span className="landing-hero__nota">Somente nos dias que você escolher</span>
           </div>

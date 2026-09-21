@@ -22,6 +22,9 @@
 .landing-cta:focus-visible,.landing-page a:focus-visible { outline:3px solid #fff; outline-offset:4px; }
 .landing-cta span { font-size:19px; }
 .landing-hero__visual { position:relative; display:grid; place-items:center; min-height:540px; }
+.landing-hero__exemplo { position:relative; z-index:2; width:min(100%,450px); }
+.landing-hero__exemplo h2 { color:var(--ink); font-size:24px; }
+.landing-hero__exemplo p { color:var(--muted); font-size:13px; }
 .landing-orbita { position:absolute; border:1px solid rgba(66,215,255,.15); border-radius:50%; }
 .landing-orbita--um { width:560px; height:560px; }
 .landing-orbita--dois { width:420px; height:420px; border-color:rgba(66,215,255,.08); }
@@ -80,7 +83,7 @@
   .passos-grid { grid-template-columns:1fr; }.passo-card { min-height:auto; border-right:0; border-bottom:1px solid #263b4b; }.passo-card h3 { margin-top:40px; }
 }
 @media (max-width:700px) {
-  .landing-header { width:calc(100% - 36px); min-height:78px; }.landing-logo img { width:132px; }.landing-header__acao { font-size:0; }.landing-header__acao::before { font-size:10px; content:"MEU PLANO"; }
+  .landing-header { width:calc(100% - 36px); min-height:78px; }.landing-logo img { width:132px; }.landing-header__acao { font-size:0; }.landing-header__acao::before { font-size:10px; content:"CRIAR MEU PLANO"; }
   .landing-hero,.landing-section { width:calc(100% - 36px); }.landing-hero { display:block; min-height:auto; padding:70px 0 80px; }.landing-hero h1 { font-size:clamp(47px,13vw,68px); }.landing-hero__subtitulo { font-size:16px; }.landing-hero__apoio { align-items:flex-start; flex-direction:column; gap:10px; }
   .landing-hero__visual { min-height:500px; margin-top:65px; }.landing-orbita--um { width:470px; height:470px; }.plano-preview { padding:22px; transform:none; }.landing-hero__nota { right:5px; bottom:15px; }
   .landing-section { padding:95px 0; }.landing-section h2 { font-size:clamp(40px,11vw,58px); }
