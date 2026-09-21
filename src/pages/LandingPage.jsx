@@ -141,16 +141,16 @@ function LandingPage() {
           </div>
           <div className="passos-grid">
             {[
-              ["01", "Conte seu objetivo", "Mostre onde você está e aonde quer chegar."],
-              ["02", "Escolha seus dias", "Seu ciclo respeita a disponibilidade da sua semana."],
-              ["03", "Receba seu plano", "Veja cada sessão organizada pelas próximas semanas."],
+              ["01", "Conte onde você está", "Responda algumas perguntas rápidas sobre sua corrida."],
+              ["02", "Escolha seus dias", "Defina quais dias você pode treinar."],
+              ["03", "Receba seu plano", "Tenha seus treinos organizados para as próximas semanas."],
             ].map(([numero, titulo, texto]) => (
               <article className="passo-card" key={numero}>
                 <span>{numero}</span><h3>{titulo}</h3><p>{texto}</p>
               </article>
             ))}
           </div>
-          <div className="landing-cta-faixa"><div><span className="landing-eyebrow">O PRÓXIMO PASSO É SEU</span><h3>Pronto para começar?</h3></div><Cta /></div>
+          <div className="landing-cta-faixa"><div><span className="landing-eyebrow">O PRÓXIMO PASSO É SEU</span><h3>Pronto para começar?</h3></div><Cta>CRIAR MEU PLANO</Cta></div>
         </section>
 
         <section className="landing-sugestao" aria-labelledby="sugestao-title">

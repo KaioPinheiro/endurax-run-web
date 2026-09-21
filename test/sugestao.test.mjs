@@ -94,6 +94,19 @@ test("landing exibe o valor público do plano formatado junto ao CTA", async () 
   assert.match(landing, /<Cta>CRIAR MEU PLANO<\/Cta>/);
 });
 
+test("como funciona apresenta os três passos e CTA atualizado", async () => {
+  const landing = await readFile(new URL("../src/pages/LandingPage.jsx", import.meta.url), "utf8");
+  const secao = landing.slice(landing.indexOf('id="como-funciona"'), landing.indexOf('className="landing-sugestao"'));
+  assert.ok(secao.includes('["01", "Conte onde você está", "Responda algumas perguntas rápidas sobre sua corrida."]'));
+  assert.ok(secao.includes('["02", "Escolha seus dias", "Defina quais dias você pode treinar."]'));
+  assert.ok(secao.includes('["03", "Receba seu plano", "Tenha seus treinos organizados para as próximas semanas."]'));
+  assert.match(secao, /Seu plano pronto<br \/>em três passos\./);
+  assert.match(secao, /O PRÓXIMO PASSO É SEU[\s\S]*Pronto para começar\?[\s\S]*<Cta>CRIAR MEU PLANO<\/Cta>/);
+  const css = await readFile(new URL("../src/pages/LandingPage.css", import.meta.url), "utf8");
+  assert.doesNotMatch(landing, /passo-card__frase|passo-card__quebra/);
+  assert.doesNotMatch(css, /passo-card__frase|passo-card__quebra|\.passo-card:nth-child\(2\) p/);
+});
+
 test("hero apresenta personalização e exemplo preservando CTA e card", async () => {
   const landing = await readFile(new URL("../src/pages/LandingPage.jsx", import.meta.url), "utf8");
   assert.match(landing, /PLANO DE CORRIDA PERSONALIZADO/);
