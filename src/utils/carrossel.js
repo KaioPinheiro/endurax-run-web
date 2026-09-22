@@ -16,3 +16,12 @@ export function indiceCarrossel(posicoes, scrollLeft) {
       ? indice : melhor
   ), 0);
 }
+
+export function indiceCircular(indice, total) {
+  return ((indice % total) + total) % total;
+}
+
+// Três ciclos idênticos permitem atravessar as bordas sem voltar visualmente.
+export function posicaoCentralCarrossel(indiceFisico, total) {
+  return total + indiceCircular(indiceFisico - total, total);
+}

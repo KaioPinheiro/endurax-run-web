@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { indiceCarrossel, posicoesCarrossel } from "../src/utils/carrossel.js";
+import { indiceCarrossel, indiceCircular, posicaoCentralCarrossel, posicoesCarrossel } from "../src/utils/carrossel.js";
 
 test("carrossel possui somente posições alcançáveis com um, dois ou três cards visíveis", () => {
   assert.deepEqual(posicoesCarrossel([0, 320, 640, 960, 1280, 1600], 1900, 300), [0, 320, 640, 960, 1280, 1600]);
@@ -25,16 +25,35 @@ test("indicador acompanha swipe, retorno, limites e resize", () => {
   assert.equal(indiceCarrossel([0], 0), 0);
 });
 
+test("ciclo retorna do último ao primeiro e do primeiro ao último sem mudar conteúdo visível", () => {
+  assert.equal(indiceCircular(6, 6), 0);
+  assert.equal(indiceCircular(-1, 6), 5);
+  assert.equal(posicaoCentralCarrossel(12, 6), 6);
+  assert.equal(posicaoCentralCarrossel(5, 6), 11);
+  for (const visiveis of [1, 2, 3]) {
+    const posicoes = posicoesCarrossel(Array.from({ length: 18 }, (_, i) => i * 320), 18 * 320 - 20, visiveis * 320 - 20);
+    for (let fisico = 0; fisico < posicoes.length; fisico++) {
+      const central = posicaoCentralCarrossel(fisico, 6);
+      assert.ok(central < posicoes.length);
+      for (let card = 0; card < visiveis; card++) {
+        assert.equal(indiceCircular(fisico + card, 6), indiceCircular(central + card, 6));
+      }
+    }
+  }
+});
+
 test("renderiza seis depoimentos informativos e controles acessíveis sem CTA nos cards", async () => {
   const { createServer } = await import("vite");
   const servidor = await createServer({ appType: "custom", logLevel: "silent", server: { middlewareMode: true } });
   try {
     const { default: Depoimentos } = await servidor.ssrLoadModule("/src/components/Depoimentos.jsx");
     const html = renderToStaticMarkup(React.createElement(Depoimentos));
-    assert.match(html, /QUEM JÁ USOU/);
+    assert.match(html, /RELATOS DE QUEM JÁ USOU/);
     assert.match(html, /Feito para diferentes corredores\./);
-    assert.match(html, /Do primeiro treino a novos objetivos, cada plano começa pela realidade de quem vai correr\./);
-    const cards = [...html.matchAll(/<article\b[^>]*>([\s\S]*?)<\/article>/g)];
+    assert.match(html, /Conheça quem escolheu o Endurax para dar os próximos passos na corrida\./);
+    const todos = [...html.matchAll(/<article\b[^>]*>([\s\S]*?)<\/article>/g)];
+    const cards = todos.filter((card) => !card[0].includes('aria-hidden="true"'));
+    assert.equal(todos.length, 18);
     assert.equal(cards.length, 6);
     for (const [indice, nome] of ["Lucas", "Mariana", "Bruno", "Rafael", "Camila", "André"].entries()) {
       assert.ok(cards[indice][1].includes(`<strong>${nome}</strong>`));
@@ -44,6 +63,7 @@ test("renderiza seis depoimentos informativos e controles acessíveis sem CTA no
     assert.match(html, /aria-label="Depoimentos anteriores"/);
     assert.match(html, /aria-label="Próximos depoimentos"/);
     assert.match(html, /aria-current="true"/);
+    assert.doesNotMatch(html, /disabled/);
     assert.doesNotMatch(html, /CRIAR MEU PLANO/);
   } finally {
     await servidor.close();
@@ -63,7 +83,9 @@ test("integra somente entre como funciona e conversão e usa scroll nativo respo
   assert.match(componente, /new ResizeObserver\(medir\)/);
   assert.match(componente, /observer\?\.disconnect\(\)/);
   assert.match(componente, /prefers-reduced-motion/);
-  assert.doesNotMatch(componente, /setInterval|setTimeout|autoplay/i);
+  assert.doesNotMatch(componente, /setInterval|autoplay/i);
+  assert.match(componente, /addEventListener\("scrollend", reposicionar\)/);
+  assert.match(componente, /clearTimeout\(timer\)/);
   assert.match(css, /scroll-snap-type:x mandatory/);
   assert.match(css, /overflow-x:auto/);
   assert.match(css, /@media \(max-width:700px\)[\s\S]*grid-auto-columns:100%/);

@@ -48,8 +48,8 @@
 .treino-mini__seta { color:#507084; }
 .landing-hero__nota { position:absolute; z-index:3; right:0; bottom:45px; padding:12px 16px; color:#bdd0db; background:#0c1b29; border:1px solid #234359; font-size:11px; font-weight:750; }
 .landing-section { width:min(1280px,calc(100% - 64px)); margin:auto; padding:145px 0; }
-.landing-page { --espaco-entre-secoes:140px; }
-.landing-hero + .landing-section { padding-top:calc(var(--espaco-entre-secoes) - 110px); padding-bottom:calc(var(--espaco-entre-secoes) - 24px); }
+.landing-page { --espaco-entre-secoes:140px; --espaco-transicoes-finais:calc(var(--espaco-entre-secoes) * .75); }
+.landing-hero + .landing-section { padding-top:calc(var(--espaco-entre-secoes) - 110px); padding-bottom:calc(var(--espaco-transicoes-finais) - 24px); }
 .landing-section__cabecalho { max-width:780px; margin-bottom:64px; }
 .landing-section__cabecalho h2 { margin:20px 0 0; font-size:clamp(44px,5.4vw,72px); }
 .passos-grid { display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid #263b4b; border-bottom:1px solid #263b4b; }

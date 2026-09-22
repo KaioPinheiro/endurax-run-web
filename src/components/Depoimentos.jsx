@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { indiceCarrossel, posicoesCarrossel } from "../utils/carrossel";
+import { useLayoutEffect, useRef, useState } from "react";
+import { indiceCarrossel, indiceCircular, posicaoCentralCarrossel, posicoesCarrossel } from "../utils/carrossel";
 import "./Depoimentos.css";
 
 const depoimentos = [
@@ -11,41 +11,95 @@ const depoimentos = [
   { nome: "André", perfil: "Corredor amador", texto: "Já tinha procurado vários treinos prontos na internet, mas sempre precisava adaptar alguma coisa. Gostei de receber um plano considerando meu nível, meu objetivo e os dias que posso correr." },
 ];
 
+const ciclos = [0, 1, 2];
+
 export default function Depoimentos() {
   const trilhaRef = useRef(null);
   const posicoesRef = useRef([0]);
-  const [navegacao, setNavegacao] = useState({ indice: 0, total: 1 });
+  const [navegacao, setNavegacao] = useState({ indice: 0, total: depoimentos.length });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const trilha = trilhaRef.current;
-    function atualizarIndice() {
+    let timer;
+    let arrastando = false;
+    let indiceAtual = 0;
+    let larguraMedida = 0;
+
+    function reposicionar() {
+      clearTimeout(timer);
+      if (arrastando) return;
       const indice = indiceCarrossel(posicoesRef.current, trilha.scrollLeft);
-      const total = posicoesRef.current.length;
-      setNavegacao((anterior) => anterior.indice === indice && anterior.total === total
-        ? anterior : { indice, total });
+      const central = posicaoCentralCarrossel(indice, depoimentos.length);
+      if (indice !== central) {
+        trilha.scrollTo({ left: posicoesRef.current[central], behavior: "instant" });
+      }
+    }
+
+    function atualizarIndice() {
+      if (trilha.clientWidth !== larguraMedida) return;
+      const fisico = indiceCarrossel(posicoesRef.current, trilha.scrollLeft);
+      const indice = indiceCircular(fisico - depoimentos.length, depoimentos.length);
+      indiceAtual = indice;
+      setNavegacao((anterior) => anterior.indice === indice
+        ? anterior : { indice, total: depoimentos.length });
+      clearTimeout(timer);
+      // Fallback para navegadores sem scrollend; nunca movimenta sem rolagem prévia.
+      if (!("onscrollend" in trilha)) timer = setTimeout(reposicionar, 180);
     }
     function medir() {
+      clearTimeout(timer);
+      const central = depoimentos.length + indiceAtual;
       const cards = Array.from(trilha.children);
       const origem = cards[0].offsetLeft;
       posicoesRef.current = posicoesCarrossel(
         cards.map((card) => card.offsetLeft - origem), trilha.scrollWidth, trilha.clientWidth
       );
+      larguraMedida = trilha.clientWidth;
+      trilha.scrollTo({ left: posicoesRef.current[central], behavior: "instant" });
       atualizarIndice();
+    }
+    function iniciarArraste() { arrastando = true; }
+    function terminarArraste() {
+      arrastando = false;
+      clearTimeout(timer);
+      if (!("onscrollend" in trilha)) timer = setTimeout(reposicionar, 180);
     }
     medir();
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(medir);
     observer?.observe(trilha);
     window.addEventListener("resize", medir);
     trilha.addEventListener("scroll", atualizarIndice, { passive: true });
+    trilha.addEventListener("scrollend", reposicionar);
+    trilha.addEventListener("pointerdown", iniciarArraste, { passive: true });
+    window.addEventListener("pointerup", terminarArraste);
+    window.addEventListener("pointercancel", terminarArraste);
     return () => {
+      clearTimeout(timer);
       observer?.disconnect();
       window.removeEventListener("resize", medir);
       trilha.removeEventListener("scroll", atualizarIndice);
+      trilha.removeEventListener("scrollend", reposicionar);
+      trilha.removeEventListener("pointerdown", iniciarArraste);
+      window.removeEventListener("pointerup", terminarArraste);
+      window.removeEventListener("pointercancel", terminarArraste);
     };
   }, []);
 
-  function navegar(indice) {
-    const destino = Math.max(0, Math.min(indice, posicoesRef.current.length - 1));
+  function navegar(indice, absoluto = false) {
+    const posicoes = posicoesRef.current;
+    let atual = indiceCarrossel(posicoes, trilhaRef.current.scrollLeft);
+    let destino;
+    if (absoluto) {
+      destino = ciclos.map((ciclo) => ciclo * depoimentos.length + indice)
+        .filter((posicao) => posicao < posicoes.length)
+        .reduce((melhor, posicao) => Math.abs(posicao - atual) < Math.abs(melhor - atual) ? posicao : melhor);
+    } else {
+      if (atual + indice < 0 || atual + indice >= posicoes.length) {
+        atual = posicaoCentralCarrossel(atual, depoimentos.length);
+        trilhaRef.current.scrollTo({ left: posicoes[atual], behavior: "instant" });
+      }
+      destino = atual + indice;
+    }
     trilhaRef.current.scrollTo({
       left: posicoesRef.current[destino],
       behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
@@ -55,9 +109,9 @@ export default function Depoimentos() {
   return (
     <section className="landing-depoimentos" aria-labelledby="depoimentos-title" aria-roledescription="carrossel">
       <div className="landing-depoimentos__cabecalho">
-        <span className="landing-eyebrow">QUEM JÁ USOU</span>
+        <span className="landing-eyebrow">RELATOS DE QUEM JÁ USOU</span>
         <h2 id="depoimentos-title">Feito para diferentes corredores.</h2>
-        <p>Do primeiro treino a novos objetivos, cada plano começa pela realidade de quem vai correr.</p>
+        <p>Conheça quem escolheu o Endurax para dar os próximos passos na corrida.</p>
       </div>
       <div
         id="depoimentos-trilha"
@@ -69,19 +123,19 @@ export default function Depoimentos() {
         onKeyDown={(event) => {
           if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
             event.preventDefault();
-            navegar(navegacao.indice + (event.key === "ArrowRight" ? 1 : -1));
+            navegar(event.key === "ArrowRight" ? 1 : -1);
           }
         }}
       >
-        {depoimentos.map(({ nome, perfil, texto }, indice) => (
-          <article className="landing-depoimentos__card" key={nome} aria-label={`Depoimento ${indice + 1} de ${depoimentos.length}`}>
+        {ciclos.flatMap((ciclo) => depoimentos.map(({ nome, perfil, texto }, indice) => (
+          <article className="landing-depoimentos__card" key={`${ciclo}-${nome}`} aria-hidden={ciclo !== 1 ? true : undefined} aria-label={`Depoimento ${indice + 1} de ${depoimentos.length}`}>
             <blockquote>{texto}</blockquote>
             <div><strong>{nome}</strong><span>{perfil}</span></div>
           </article>
-        ))}
+        )))}
       </div>
       <div className="landing-depoimentos__controles">
-        <button type="button" aria-label="Depoimentos anteriores" aria-controls="depoimentos-trilha" disabled={navegacao.indice === 0} onClick={() => navegar(navegacao.indice - 1)}>←</button>
+        <button type="button" aria-label="Depoimentos anteriores" aria-controls="depoimentos-trilha" onClick={() => navegar(-1)}>←</button>
         <div className="landing-depoimentos__indicadores">
           {Array.from({ length: navegacao.total }, (_, indice) => (
             <button
@@ -90,11 +144,11 @@ export default function Depoimentos() {
               aria-label={`Mostrar depoimentos a partir de ${depoimentos[indice].nome}`}
               aria-controls="depoimentos-trilha"
               aria-current={navegacao.indice === indice ? "true" : undefined}
-              onClick={() => navegar(indice)}
+              onClick={() => navegar(indice, true)}
             ><span /></button>
           ))}
         </div>
-        <button type="button" aria-label="Próximos depoimentos" aria-controls="depoimentos-trilha" disabled={navegacao.indice === navegacao.total - 1} onClick={() => navegar(navegacao.indice + 1)}>→</button>
+        <button type="button" aria-label="Próximos depoimentos" aria-controls="depoimentos-trilha" onClick={() => navegar(1)}>→</button>
       </div>
     </section>
   );
