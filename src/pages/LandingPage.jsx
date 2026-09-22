@@ -4,6 +4,7 @@ import logoEndurax from "../assets/brand/endurax-run-logo.svg";
 import { buscarConfigPublica } from "../services/api";
 import { formatarPrecoPlano } from "../utils/precoPlano";
 import Depoimentos from "../components/Depoimentos";
+import PrecoPlanoLanding from "../components/PrecoPlanoLanding";
 import "./LandingPage.css";
 
 const treinosSemana = [
@@ -95,11 +96,7 @@ function LandingPage() {
             <p className="landing-hero__apoio landing-reveal landing-reveal--delay-2">
               <span>Sem planilhas genéricas.</span><span>Treinos que cabem na sua rotina.</span>
             </p>
-            {precoPlano && (
-              <p className="landing-hero__preco landing-reveal landing-reveal--delay-3">
-                Preço de lançamento: {precoPlano}
-              </p>
-            )}
+            <PrecoPlanoLanding preco={precoPlano} className="landing-reveal landing-reveal--delay-3" />
             <div className="landing-reveal landing-reveal--delay-3"><Cta>CRIAR MEU PLANO</Cta></div>
           </div>
           <div className="landing-hero__visual landing-reveal landing-reveal--delay-2">
@@ -143,9 +140,7 @@ function LandingPage() {
           <span className="landing-eyebrow">PRONTO PARA COMEÇAR?</span>
           <h2 id="conversao-title">Seu próximo plano começa aqui.</h2>
           <p>Dê o próximo passo na sua corrida. O Endurax mostra o caminho.</p>
-          {precoPlano && (
-            <p className="landing-hero__preco">{precoPlano} por plano · pagamento único · sem assinatura</p>
-          )}
+          <PrecoPlanoLanding preco={precoPlano} />
           <Cta>CRIAR MEU PLANO</Cta>
         </section>
 

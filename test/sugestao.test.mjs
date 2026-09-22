@@ -72,7 +72,7 @@ test("landing termina com conversão e rodapé sem formulário de suporte", asyn
   assert.match(landing, /id="como-funciona"/);
   assert.doesNotMatch(landing, /Sugestão ou problema|SUA OPINIÃO IMPORTA|<form|<textarea|enviarSugestao/);
   assert.match(landing, /PRONTO PARA COMEÇAR\?[\s\S]*Seu próximo plano começa aqui\.[\s\S]*Dê o próximo passo na sua corrida\. O Endurax mostra o caminho\./);
-  assert.match(landing, /\{precoPlano\} por plano · pagamento único · sem assinatura/);
+  assert.match(landing, /<PrecoPlanoLanding preco=\{precoPlano\} \/>/);
   assert.match(landing, /<Cta>CRIAR MEU PLANO<\/Cta>\s*<\/section>\s*<\/main>\s*<footer/);
   assert.equal((landing.match(/<section\b/g) || []).length, 3);
   assert.doesNotMatch(landing, /Para quem é|PARA QUEM É|Treinar ficou muito mais simples/);
@@ -91,7 +91,7 @@ test("landing exibe o valor público do plano formatado junto ao CTA", async () 
   assert.equal(formatarPrecoPlano(undefined), null);
   assert.match(landing, /buscarConfigPublica\(\)/);
   assert.match(landing, /formatarPrecoPlano\(config\?\.valorPlano\)/);
-  assert.match(landing, /Preço de lançamento: \{precoPlano\}/);
+  assert.equal((landing.match(/<PrecoPlanoLanding preco=\{precoPlano\}/g) || []).length, 2);
   assert.doesNotMatch(landing, /R\$ 9,90|9\.90/);
   assert.match(landing, /<Cta>CRIAR MEU PLANO<\/Cta>/);
 });
