@@ -41,8 +41,8 @@ test("propaga falha do Formspree para o formulário tratar", async () => {
   );
 });
 
-test("landing exibe limite, estados e feedbacks da caixa de sugestões", async () => {
-  const landing = await readFile(new URL("../src/pages/LandingPage.jsx", import.meta.url), "utf8");
+test("componente preserva limite, estados e feedbacks da caixa de sugestões", async () => {
+  const landing = await readFile(new URL("../src/components/SugestaoProblema.jsx", import.meta.url), "utf8");
 
   assert.match(landing, /<textarea[\s\S]*maxLength=\{LIMITE_SUGESTAO\}[\s\S]*required/);
   assert.match(landing, /sugestao\.length\}\/\{LIMITE_SUGESTAO/);
@@ -52,12 +52,10 @@ test("landing exibe limite, estados e feedbacks da caixa de sugestões", async (
   assert.match(landing, /Mensagem enviada\. Obrigado!/);
   assert.match(landing, /Não foi possível enviar\. Tente novamente\./);
   assert.doesNotMatch(landing, /catch \{[\s\S]*setSugestao\(""\)/);
-  assert.ok(landing.indexOf('id="como-funciona"') < landing.indexOf('className="landing-sugestao"'));
-  assert.ok(landing.indexOf('className="landing-sugestao"') < landing.indexOf('className="landing-footer"'));
 });
 
-test("landing apresenta o formulário como canal de sugestão ou problema", async () => {
-  const landing = await readFile(new URL("../src/pages/LandingPage.jsx", import.meta.url), "utf8");
+test("componente preserva o formulário como canal de sugestão ou problema", async () => {
+  const landing = await readFile(new URL("../src/components/SugestaoProblema.jsx", import.meta.url), "utf8");
 
   assert.match(landing, /Sugestão ou problema\?/);
   assert.match(landing, /informe também seu código de atendimento/);
@@ -67,12 +65,16 @@ test("landing apresenta o formulário como canal de sugestão ou problema", asyn
   assert.match(landing, /maxLength=\{LIMITE_SUGESTAO\}/);
 });
 
-test("landing termina no rodapé depois de como funciona e sugestões", async () => {
+test("landing termina com conversão e rodapé sem formulário de suporte", async () => {
   const landing = await readFile(new URL("../src/pages/LandingPage.jsx", import.meta.url), "utf8");
 
   assert.match(landing, /className="landing-hero"/);
   assert.match(landing, /id="como-funciona"/);
-  assert.match(landing, /Sugestão ou problema\?/);
+  assert.doesNotMatch(landing, /Sugestão ou problema|SUA OPINIÃO IMPORTA|<form|<textarea|enviarSugestao/);
+  assert.match(landing, /PRONTO PARA COMEÇAR\?[\s\S]*Seu próximo plano começa aqui\.[\s\S]*Dê o próximo passo na sua corrida\. O Endurax mostra o caminho\./);
+  assert.match(landing, /\{precoPlano\} por plano · pagamento único · sem assinatura/);
+  assert.match(landing, /<Cta>CRIAR MEU PLANO<\/Cta>\s*<\/section>\s*<\/main>\s*<footer/);
+  assert.equal((landing.match(/<section\b/g) || []).length, 3);
   assert.doesNotMatch(landing, /Para quem é|PARA QUEM É|Treinar ficou muito mais simples/);
   assert.doesNotMatch(landing, /Veja o que|DIREÇÃO MUDA TUDO|COMECE AGORA/);
   assert.doesNotMatch(landing, /href="#como-funciona"|href="#para-quem"|href="#previa"/);
@@ -94,15 +96,16 @@ test("landing exibe o valor público do plano formatado junto ao CTA", async () 
   assert.match(landing, /<Cta>CRIAR MEU PLANO<\/Cta>/);
 });
 
-test("como funciona apresenta os três passos e CTA atualizado", async () => {
+test("como funciona termina após os três passos sem CTA redundante", async () => {
   const landing = await readFile(new URL("../src/pages/LandingPage.jsx", import.meta.url), "utf8");
-  const secao = landing.slice(landing.indexOf('id="como-funciona"'), landing.indexOf('className="landing-sugestao"'));
+  const secao = landing.slice(landing.indexOf('id="como-funciona"'), landing.indexOf('className="landing-conversao"'));
   assert.ok(secao.includes('["01", "Conte onde você está", "Responda algumas perguntas rápidas sobre sua corrida."]'));
   assert.ok(secao.includes('["02", "Escolha seus dias", "Defina quais dias você pode treinar."]'));
   assert.ok(secao.includes('["03", "Receba seu plano", "Tenha seus treinos organizados para as próximas semanas."]'));
   assert.match(secao, /Seu plano pronto<br \/>em três passos\./);
-  assert.match(secao, /O PRÓXIMO PASSO É SEU[\s\S]*Pronto para começar\?[\s\S]*<Cta>CRIAR MEU PLANO<\/Cta>/);
+  assert.doesNotMatch(secao, /O PRÓXIMO PASSO É SEU|Pronto para começar\?|<Cta|landing-cta-faixa/);
   const css = await readFile(new URL("../src/pages/LandingPage.css", import.meta.url), "utf8");
+  assert.doesNotMatch(css, /landing-cta-faixa/);
   assert.doesNotMatch(landing, /passo-card__frase|passo-card__quebra/);
   assert.doesNotMatch(css, /passo-card__frase|passo-card__quebra|\.passo-card:nth-child\(2\) p/);
 });
@@ -111,10 +114,14 @@ test("hero apresenta personalização e exemplo preservando CTA e card", async (
   const landing = await readFile(new URL("../src/pages/LandingPage.jsx", import.meta.url), "utf8");
   assert.match(landing, /PLANO DE CORRIDA PERSONALIZADO/);
   assert.match(landing, /Seu plano de corrida\.<br \/><em>Feito para você\.<\/em>/);
-  assert.match(landing, /Do iniciante ao avançado, receba um plano de corrida personalizado para seu nível, objetivo e rotina\./);
+  assert.match(landing, /Você dá o primeiro passo\. O Endurax mostra os próximos\./);
   assert.match(landing, /Treinos que cabem na sua rotina\./);
   assert.match(landing, /to="\/meu-plano">CRIAR MEU PLANO <IconeSeta \/>/);
-  assert.match(landing, /VEJA NA PRÁTICA[\s\S]*Um plano que se adapta a você\.[\s\S]*Seu nível, objetivo e rotina definem como serão seus treinos\.[\s\S]*<PreviaSemana \/>/);
+  assert.match(landing, /VEJA NA PRÁTICA[\s\S]*Um plano que se adapta a você\.[\s\S]*className="landing-hero__tags"[\s\S]*<PreviaSemana \/>/);
+  const tags = landing.match(/<p className="landing-hero__tags">([\s\S]*?)<\/p>/)[1];
+  assert.deepEqual([...tags.matchAll(/<span>(.*?)<\/span>/g)].map((match) => match[1]), ["SEU NÍVEL", "SEU OBJETIVO", "SUA ROTINA"]);
+  assert.doesNotMatch(tags, /<button|<a\b|onClick|tabIndex/);
+  assert.doesNotMatch(landing, /Seu nível, objetivo e rotina definem como serão seus treinos/);
   assert.match(landing, /<span className="treino-mini__seta" aria-hidden="true" \/>/);
   assert.doesNotMatch(landing, /className="treino-mini__seta"[^>]*>→/);
   assert.equal(landing.match(/<PreviaSemana \/>/g).length, 1);

@@ -1248,8 +1248,7 @@ test("landing não promete planejamento para prova marcada", () => {
   );
 
   assert.doesNotMatch(landing, /Plano para prova|Tenho uma prova marcada|data em mente/);
-  assert.match(landing, /Do iniciante ao avançado/);
-  assert.match(landing, /plano de corrida personalizado para seu nível, objetivo e rotina/);
+  assert.match(landing, /Você dá o primeiro passo\. O Endurax mostra os próximos\./);
 });
 
 test("expõe exatamente os novos objetivos", () => {

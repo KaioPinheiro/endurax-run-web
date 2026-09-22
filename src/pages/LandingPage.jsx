@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import logoEndurax from "../assets/brand/endurax-run-logo.svg";
 import { buscarConfigPublica } from "../services/api";
 import { formatarPrecoPlano } from "../utils/precoPlano";
-import { enviarSugestaoFormspree, LIMITE_SUGESTAO } from "../utils/sugestao";
+import Depoimentos from "../components/Depoimentos";
 import "./LandingPage.css";
 
 const treinosSemana = [
@@ -54,9 +54,6 @@ function PreviaSemana({ completa = false }) {
 }
 
 function LandingPage() {
-  const [sugestao, setSugestao] = useState("");
-  const [enviandoSugestao, setEnviandoSugestao] = useState(false);
-  const [feedbackSugestao, setFeedbackSugestao] = useState(null);
   const [precoPlano, setPrecoPlano] = useState(null);
 
   useEffect(() => {
@@ -75,22 +72,6 @@ function LandingPage() {
     };
   }, []);
 
-  async function enviarSugestao(event) {
-    event.preventDefault();
-    if (enviandoSugestao || !sugestao.trim()) return;
-
-    setEnviandoSugestao(true);
-    setFeedbackSugestao(null);
-    try {
-      await enviarSugestaoFormspree(sugestao);
-      setSugestao("");
-      setFeedbackSugestao({ tipo: "sucesso", texto: "Mensagem enviada. Obrigado!" });
-    } catch {
-      setFeedbackSugestao({ tipo: "erro", texto: "Não foi possível enviar. Tente novamente." });
-    } finally {
-      setEnviandoSugestao(false);
-    }
-  }
 
   return (
     <div className="landing-page">
@@ -109,7 +90,7 @@ function LandingPage() {
               Seu plano de corrida.<br /><em>Feito para você.</em>
             </h1>
             <p className="landing-hero__subtitulo landing-reveal landing-reveal--delay-2">
-              Do iniciante ao avançado, receba um plano de corrida personalizado para seu nível, objetivo e rotina.
+              Você dá o primeiro passo. O Endurax mostra os próximos.
             </p>
             <p className="landing-hero__apoio landing-reveal landing-reveal--delay-2">
               <span>Sem planilhas genéricas.</span><span>Treinos que cabem na sua rotina.</span>
@@ -127,7 +108,11 @@ function LandingPage() {
             <div className="landing-hero__exemplo">
               <span className="landing-eyebrow">VEJA NA PRÁTICA</span>
               <h2>Um plano que se adapta a você.</h2>
-              <p>Seu nível, objetivo e rotina definem como serão seus treinos.</p>
+              <p className="landing-hero__tags">
+                <span>SEU NÍVEL</span>
+                <span>SEU OBJETIVO</span>
+                <span>SUA ROTINA</span>
+              </p>
             </div>
             <PreviaSemana />
             <span className="landing-hero__nota">Somente nos dias que você escolher</span>
@@ -150,44 +135,18 @@ function LandingPage() {
               </article>
             ))}
           </div>
-          <div className="landing-cta-faixa"><div><span className="landing-eyebrow">O PRÓXIMO PASSO É SEU</span><h3>Pronto para começar?</h3></div><Cta>CRIAR MEU PLANO</Cta></div>
         </section>
 
-        <section className="landing-sugestao" aria-labelledby="sugestao-title">
-          <div>
-            <span className="landing-eyebrow">SUA OPINIÃO IMPORTA</span>
-            <h2 id="sugestao-title">Sugestão ou problema?</h2>
-            <p>Envie uma sugestão ou relate algum problema. Se for sobre um plano, informe também seu código de atendimento.</p>
-          </div>
-          <form onSubmit={enviarSugestao}>
-            <label htmlFor="sugestao">Mensagem</label>
-            <textarea
-              id="sugestao"
-              name="message"
-              value={sugestao}
-              onChange={(event) => {
-                setSugestao(event.target.value.slice(0, LIMITE_SUGESTAO));
-                setFeedbackSugestao(null);
-              }}
-              maxLength={LIMITE_SUGESTAO}
-              placeholder="Conte sua sugestão ou problema. Se necessário, informe o código END-XXXXXX."
-              required
-            />
-            <div className="landing-sugestao__rodape">
-              <span>{sugestao.length}/{LIMITE_SUGESTAO}</span>
-              <button type="submit" disabled={enviandoSugestao || !sugestao.trim()}>
-                {enviandoSugestao ? "Enviando..." : "Enviar"}
-              </button>
-            </div>
-            {feedbackSugestao && (
-              <p
-                className={`landing-sugestao__feedback landing-sugestao__feedback--${feedbackSugestao.tipo}`}
-                role="status"
-              >
-                {feedbackSugestao.texto}
-              </p>
-            )}
-          </form>
+        <Depoimentos />
+
+        <section className="landing-conversao" aria-labelledby="conversao-title">
+          <span className="landing-eyebrow">PRONTO PARA COMEÇAR?</span>
+          <h2 id="conversao-title">Seu próximo plano começa aqui.</h2>
+          <p>Dê o próximo passo na sua corrida. O Endurax mostra o caminho.</p>
+          {precoPlano && (
+            <p className="landing-hero__preco">{precoPlano} por plano · pagamento único · sem assinatura</p>
+          )}
+          <Cta>CRIAR MEU PLANO</Cta>
         </section>
 
       </main>
