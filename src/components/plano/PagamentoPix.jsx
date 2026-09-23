@@ -113,6 +113,7 @@ function PagamentoPix({
           onClick={() => setConfirmandoEdicao(true)}
           disabled={cancelando}
         >
+          <span aria-hidden="true">✎</span>
           Editar dados
         </button>
       )}
