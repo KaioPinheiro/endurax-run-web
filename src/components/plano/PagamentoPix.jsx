@@ -107,7 +107,12 @@ function PagamentoPix({
         {mensagem}
       </p>
       {estado === "PENDING" && (
-        <button type="button" onClick={() => setConfirmandoEdicao(true)} disabled={cancelando}>
+        <button
+          className="pix-editar-dados"
+          type="button"
+          onClick={() => setConfirmandoEdicao(true)}
+          disabled={cancelando}
+        >
           Editar dados
         </button>
       )}

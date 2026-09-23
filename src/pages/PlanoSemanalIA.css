@@ -254,6 +254,37 @@
   border-color: rgba(248, 113, 113, .25);
 }
 
+.pix-editar-dados {
+  min-height: 38px;
+  margin: 4px 0 8px;
+  padding: 9px 18px;
+  color: #7dd3fc;
+  background: rgba(15, 39, 64, .72);
+  border: 1px solid rgba(56, 189, 248, .38);
+  border-radius: 9px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.pix-editar-dados:hover:not(:disabled) {
+  color: #bae6fd;
+  background: rgba(18, 53, 82, .9);
+  border-color: rgba(125, 211, 252, .62);
+}
+
+.pix-editar-dados:focus-visible {
+  outline: 3px solid rgba(125, 211, 252, .3);
+  outline-offset: 2px;
+}
+
+.pix-editar-dados:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+
 .pix-cancelar-pagamento {
   width: 100%;
   min-height: 44px;
