@@ -1,7 +1,11 @@
 export const LIMITE_SUGESTAO = 1500;
 export const FORMSPREE_SUGESTAO_URL = "https://formspree.io/f/xkjnyjzj";
 
-export async function enviarSugestaoFormspree(sugestao, fetchImpl = fetch) {
+export async function enviarSugestaoFormspree(sugestao, codigoAtendimento = null, fetchImpl = fetch) {
+  if (typeof codigoAtendimento === "function") {
+    fetchImpl = codigoAtendimento;
+    codigoAtendimento = null;
+  }
   const texto = String(sugestao ?? "").trim();
   if (!texto || texto.length > LIMITE_SUGESTAO) {
     throw new Error("Sugestão inválida.");
@@ -13,7 +17,10 @@ export async function enviarSugestaoFormspree(sugestao, fetchImpl = fetch) {
       Accept: "application/json",
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ message: texto })
+    body: JSON.stringify({
+      message: texto,
+      ...(codigoAtendimento ? { codigoAtendimento } : {})
+    })
   });
 
   if (!response.ok) {

@@ -3,6 +3,7 @@ import FormularioPlanoSemanal from "../components/plano/FormularioPlanoSemanal";
 import DemonstracaoPlano from "../components/plano/DemonstracaoPlano";
 import PagamentoPix from "../components/plano/PagamentoPix";
 import ResultadoMeuPlano from "../components/plano/ResultadoMeuPlano";
+import SugestaoProblema from "../components/SugestaoProblema";
 import { MENSAGENS_LOADING_PLANO } from "../constants/planoTreino";
 import {
   buscarConfigPublica,
@@ -493,6 +494,9 @@ function MeuPlano() {
             cancelando={carregando}
             sincronizado={pagamentoSincronizado}
           />
+          {pagamento.codigoAtendimento && (
+            <SugestaoProblema codigoAtendimento={pagamento.codigoAtendimento} />
+          )}
         </>
       )}
 

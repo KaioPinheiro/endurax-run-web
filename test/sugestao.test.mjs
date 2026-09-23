@@ -41,13 +41,27 @@ test("propaga falha do Formspree para o formulário tratar", async () => {
   );
 });
 
+test("associa automaticamente o código de atendimento ao envio", async () => {
+  let chamada;
+  await enviarSugestaoFormspree("Problema no pagamento", "END-ABC123", async (...args) => {
+    chamada = args;
+    return { ok: true };
+  });
+
+  assert.equal(chamada[0], FORMSPREE_SUGESTAO_URL);
+  assert.deepEqual(JSON.parse(chamada[1].body), {
+    message: "Problema no pagamento",
+    codigoAtendimento: "END-ABC123"
+  });
+});
+
 test("componente preserva limite, estados e feedbacks da caixa de sugestões", async () => {
   const landing = await readFile(new URL("../src/components/SugestaoProblema.jsx", import.meta.url), "utf8");
 
   assert.match(landing, /<textarea[\s\S]*maxLength=\{LIMITE_SUGESTAO\}[\s\S]*required/);
   assert.match(landing, /sugestao\.length\}\/\{LIMITE_SUGESTAO/);
   assert.match(landing, /enviandoSugestao \? "Enviando\.\.\." : "Enviar"/);
-  assert.match(landing, /await enviarSugestaoFormspree\(sugestao\)/);
+  assert.match(landing, /await enviarSugestaoFormspree\(sugestao, codigoAtendimento\)/);
   assert.match(landing, /setSugestao\(""\)/);
   assert.match(landing, /Mensagem enviada\. Obrigado!/);
   assert.match(landing, /Não foi possível enviar\. Tente novamente\./);
@@ -58,10 +72,10 @@ test("componente preserva o formulário como canal de sugestão ou problema", as
   const landing = await readFile(new URL("../src/components/SugestaoProblema.jsx", import.meta.url), "utf8");
 
   assert.match(landing, /Sugestão ou problema\?/);
-  assert.match(landing, /informe também seu código de atendimento/);
+  assert.match(landing, /problema relacionado ao pagamento ou à geração do plano/);
   assert.match(landing, /<label htmlFor="sugestao">Mensagem<\/label>/);
   assert.match(landing, /name="message"/);
-  assert.match(landing, /placeholder="Conte sua sugestão ou problema\. Se necessário, informe o código END-XXXXXX\."/);
+  assert.match(landing, /placeholder="Conte sua sugestão ou problema\."/);
   assert.match(landing, /maxLength=\{LIMITE_SUGESTAO\}/);
 });
 

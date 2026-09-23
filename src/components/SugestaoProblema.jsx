@@ -2,7 +2,7 @@ import { useState } from "react";
 import { enviarSugestaoFormspree, LIMITE_SUGESTAO } from "../utils/sugestao";
 import "../pages/LandingPage.css";
 
-export default function SugestaoProblema() {
+export default function SugestaoProblema({ codigoAtendimento }) {
   const [sugestao, setSugestao] = useState("");
   const [enviandoSugestao, setEnviandoSugestao] = useState(false);
   const [feedbackSugestao, setFeedbackSugestao] = useState(null);
@@ -14,7 +14,7 @@ export default function SugestaoProblema() {
     setEnviandoSugestao(true);
     setFeedbackSugestao(null);
     try {
-      await enviarSugestaoFormspree(sugestao);
+      await enviarSugestaoFormspree(sugestao, codigoAtendimento);
       setSugestao("");
       setFeedbackSugestao({ tipo: "sucesso", texto: "Mensagem enviada. Obrigado!" });
     } catch {
@@ -25,11 +25,11 @@ export default function SugestaoProblema() {
   }
 
   return (
-        <section className="landing-sugestao" aria-labelledby="sugestao-title">
+        <section className="landing-sugestao sugestao-problema--pagamento" aria-labelledby="sugestao-title">
           <div>
             <span className="landing-eyebrow">SUA OPINIÃO IMPORTA</span>
             <h2 id="sugestao-title">Sugestão ou problema?</h2>
-            <p>Envie uma sugestão ou relate algum problema. Se for sobre um plano, informe também seu código de atendimento.</p>
+            <p>Envie uma sugestão ou relate algum problema relacionado ao pagamento ou à geração do plano.</p>
           </div>
           <form onSubmit={enviarSugestao}>
             <label htmlFor="sugestao">Mensagem</label>
@@ -42,7 +42,7 @@ export default function SugestaoProblema() {
                 setFeedbackSugestao(null);
               }}
               maxLength={LIMITE_SUGESTAO}
-              placeholder="Conte sua sugestão ou problema. Se necessário, informe o código END-XXXXXX."
+              placeholder="Conte sua sugestão ou problema."
               required
             />
             <div className="landing-sugestao__rodape">

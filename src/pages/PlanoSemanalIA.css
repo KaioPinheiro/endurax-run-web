@@ -381,6 +381,30 @@
   margin: 0 auto 12px;
 }
 
+.landing-sugestao.sugestao-problema--pagamento {
+  --cyan: #38bdf8;
+  --ink: #f8fafc;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  width: min(100%, 620px);
+  margin: 24px auto 0;
+  padding: 24px;
+  background: rgba(15, 23, 42, .72);
+  border: 1px solid rgba(56, 189, 248, .2);
+  border-radius: 18px;
+  box-sizing: border-box;
+}
+
+.landing-sugestao.sugestao-problema--pagamento h2 {
+  margin: 8px 0 10px;
+  font-size: clamp(26px, 5vw, 32px);
+}
+
+.landing-sugestao.sugestao-problema--pagamento > div p {
+  margin: 0;
+  font-size: 14px;
+}
+
 .plano-ia-campos {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -781,6 +805,12 @@
 
   .pix-card {
     padding: 24px 16px;
+  }
+
+  .landing-sugestao.sugestao-problema--pagamento {
+    width: 100%;
+    gap: 16px;
+    padding: 20px 16px;
   }
 
   .pix-modal {

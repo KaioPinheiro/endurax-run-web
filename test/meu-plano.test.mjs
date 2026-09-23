@@ -315,7 +315,22 @@ test("exibe discretamente o código de atendimento quando fornecido pelo pagamen
   assert.match(pix, /pagamento\?\.codigoAtendimento/);
   assert.match(pix, /Código de atendimento:/);
   assert.match(pix, /pagamento\.codigoAtendimento/);
-  assert.match(pix, /Guarde este código caso tenha problemas com o pagamento ou a geração do plano\. Se precisar, informe-o na caixa de sugestões da página principal\./);
+  assert.match(pix, /Use este código como referência caso precise de suporte\./);
+});
+
+test("exibe suporte abaixo do Pix e repassa o código de atendimento existente", async () => {
+  const [pagina, suporte] = await Promise.all([
+    readFile(new URL("../src/pages/MeuPlano.jsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/SugestaoProblema.jsx", import.meta.url), "utf8")
+  ]);
+
+  assert.match(
+    pagina,
+    /<PagamentoPix[\s\S]*<SugestaoProblema codigoAtendimento=\{pagamento\.codigoAtendimento\}/
+  );
+  assert.match(suporte, /enviarSugestaoFormspree\(sugestao, codigoAtendimento\)/);
+  assert.match(suporte, /SUA OPINIÃO IMPORTA/);
+  assert.match(suporte, /Sugestão ou problema\?/);
 });
 
 test("mantém somente o botão principal para copiar o código Pix", async () => {
