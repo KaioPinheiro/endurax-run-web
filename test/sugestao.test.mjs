@@ -72,7 +72,7 @@ test("componente preserva o formulário como canal de sugestão ou problema", as
   const landing = await readFile(new URL("../src/components/SugestaoProblema.jsx", import.meta.url), "utf8");
 
   assert.match(landing, /Sugestão ou suporte\?/);
-  assert.match(landing, /Envie sua sugestão ou fale com a gente caso precise de suporte\./);
+  assert.match(landing, /Estamos aqui para ouvir você e ajudar no que for preciso\./);
   assert.match(landing, /<label htmlFor="sugestao">Mensagem<\/label>/);
   assert.match(landing, /name="message"/);
   assert.match(landing, /placeholder="Descreva como podemos ajudar\."/);

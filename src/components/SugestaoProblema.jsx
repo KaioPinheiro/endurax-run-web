@@ -29,7 +29,7 @@ export default function SugestaoProblema({ codigoAtendimento }) {
           <div>
             <span className="landing-eyebrow">SUA OPINIÃO IMPORTA</span>
             <h2 id="sugestao-title">Sugestão ou suporte?</h2>
-            <p>Envie sua sugestão ou fale com a gente caso precise de suporte.</p>
+            <p>Estamos aqui para ouvir você e ajudar no que for preciso.</p>
           </div>
           <form onSubmit={enviarSugestao}>
             <label htmlFor="sugestao">Mensagem</label>
