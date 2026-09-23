@@ -106,10 +106,10 @@ test("todos os campos usam somente identificadores tecnicos fixos", async () => 
     .map((resultado) => resultado[1]);
 
   assert.deepEqual(campos, [
-    "email", "idade", "experiencia", "objetivo", "tempo_atual", "tempo_desejado",
+    "idade", "experiencia", "objetivo", "tempo_atual", "tempo_desejado",
     "ritmo_confortavel", "corre_5km", "tempo_5km", "maior_distancia",
     "volume_semanal", "dias_disponiveis", "dia_longao", "duracao_plano",
-    "lesao_limitacao", "descricao_lesao", "observacoes"
+    "lesao_limitacao", "descricao_lesao", "observacoes", "email"
   ]);
   assert.doesNotMatch(formulario, /rastrearEventoUmami\([^)]*,/);
 });

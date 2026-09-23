@@ -7,6 +7,24 @@ export const CHAVES_FLUXO_MEU_PLANO = {
 };
 
 export const ULTIMO_PLANO_TOKEN_KEY = "ultimoPlanoToken";
+export const ULTIMO_PLANO_LOCAL_KEY = "ultimoPlanoDesenvolvimento";
+
+export function lerUltimoPlanoLocal(storage) {
+  try {
+    const plano = JSON.parse(storage.getItem(ULTIMO_PLANO_LOCAL_KEY));
+    return plano && Array.isArray(plano.semanas) ? plano : null;
+  } catch {
+    return null;
+  }
+}
+
+export function salvarUltimoPlanoLocal(storage, plano) {
+  try {
+    storage.setItem(ULTIMO_PLANO_LOCAL_KEY, JSON.stringify(plano));
+  } catch {
+    // Falha de armazenamento não impede a exibição do plano gerado.
+  }
+}
 
 export function limparFluxoComercialMeuPlano(storage) {
   Object.values(CHAVES_FLUXO_MEU_PLANO).forEach((chave) => storage.removeItem(chave));

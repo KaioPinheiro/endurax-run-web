@@ -22,6 +22,8 @@ import {
   criarRecuperacaoCompra,
   estadoDoResultado,
   iniciarNovaJornadaMeuPlano,
+  lerUltimoPlanoLocal,
+  salvarUltimoPlanoLocal,
   limparFluxoComercialMeuPlano,
   ULTIMO_PLANO_TOKEN_KEY
 } from "../utils/fluxoMeuPlano";
@@ -83,6 +85,7 @@ function MeuPlano() {
   });
   const [form, setForm] = useState(criarEstadoInicialPlano);
   const [plano, setPlano] = useState(null);
+  const [ultimoPlanoLocal, setUltimoPlanoLocal] = useState(() => lerUltimoPlanoLocal(localStorage));
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
   const [sucesso, setSucesso] = useState("");
@@ -266,6 +269,8 @@ function MeuPlano() {
 
   async function concluirPlanoDesenvolvimento(payload) {
     const resultado = await gerarPlanoComIA(payload);
+    salvarUltimoPlanoLocal(localStorage, resultado);
+    setUltimoPlanoLocal(resultado);
     setPlano(resultado);
     setVersaoPlano((atual) => atual + 1);
     setSucesso("Meu Plano foi gerado com sucesso!");
@@ -372,11 +377,17 @@ function MeuPlano() {
 
   async function verUltimoPlano() {
     const ultimoPlanoToken = localStorage.getItem(ULTIMO_PLANO_TOKEN_KEY);
-    if (carregando || !ultimoPlanoToken) return;
+    if (carregando || (!ultimoPlanoToken && !ultimoPlanoLocal)) return;
     setCarregando(true);
     setErro("");
     try {
-      await concluirComPlano(ultimoPlanoToken);
+      if (ultimoPlanoToken) {
+        await concluirComPlano(ultimoPlanoToken);
+      } else {
+        setPlano(ultimoPlanoLocal);
+        setVersaoPlano((atual) => atual + 1);
+        setSucesso("Meu Plano foi gerado com sucesso!");
+      }
     } catch (error) {
       setErro(obterMensagemErroIa(error, "Não foi possível carregar seu último plano."));
     } finally {
@@ -432,7 +443,7 @@ function MeuPlano() {
       )}
 
       {!pagamento && !plano && !solicitacaoSemPagamento &&
-        localStorage.getItem(ULTIMO_PLANO_TOKEN_KEY) && (
+        (localStorage.getItem(ULTIMO_PLANO_TOKEN_KEY) || ultimoPlanoLocal) && (
           <button
             className="coach-ia-gerar-novamente plano-ia-ver-ultimo"
             type="button"

@@ -6,6 +6,9 @@ import {
   estadoDoResultado,
   iniciarNovaJornadaMeuPlano,
   ULTIMO_PLANO_TOKEN_KEY,
+  ULTIMO_PLANO_LOCAL_KEY,
+  lerUltimoPlanoLocal,
+  salvarUltimoPlanoLocal,
   limparFluxoComercialMeuPlano
 } from "../src/utils/fluxoMeuPlano.js";
 
@@ -82,7 +85,7 @@ test("oferece recuperar somente o ultimo plano preservado pelo fluxo existente",
 
   assert.match(
     pagina,
-    /localStorage\.getItem\(ULTIMO_PLANO_TOKEN_KEY\) && \([\s\S]*Ver último plano/
+    /localStorage\.getItem\(ULTIMO_PLANO_TOKEN_KEY\) \|\| ultimoPlanoLocal\) && \([\s\S]*Ver último plano/
   );
   assert.match(recuperacao, /localStorage\.getItem\(ULTIMO_PLANO_TOKEN_KEY\)/);
   assert.match(recuperacao, /await concluirComPlano\(ultimoPlanoToken\)/);
@@ -93,11 +96,74 @@ test("oferece recuperar somente o ultimo plano preservado pelo fluxo existente",
   assert.ok(pagina.indexOf("Ver último plano") < pagina.indexOf("<FormularioPlanoSemanal"));
 });
 
+test("plano sem Pix permanece recuperável após nova jornada e leitura do armazenamento", () => {
+  const dados = new Map();
+  const storage = {
+    getItem: (chave) => dados.get(chave) ?? null,
+    setItem: (chave, valor) => dados.set(chave, valor),
+    removeItem: (chave) => dados.delete(chave)
+  };
+  const plano = { titulo: "Plano local", semanas: [] };
+  salvarUltimoPlanoLocal(storage, plano);
+  iniciarNovaJornadaMeuPlano(storage);
+  assert.deepEqual(lerUltimoPlanoLocal(storage), plano);
+  assert.equal(dados.has(ULTIMO_PLANO_TOKEN_KEY), false);
+  salvarUltimoPlanoLocal(storage, { titulo: "Novo plano local", semanas: [] });
+  assert.equal(lerUltimoPlanoLocal(storage).titulo, "Novo plano local");
+  dados.set(ULTIMO_PLANO_LOCAL_KEY, "json inválido");
+  assert.equal(lerUltimoPlanoLocal(storage), null);
+  assert.doesNotThrow(() => salvarUltimoPlanoLocal({ setItem() { throw new Error("Sem espaço"); } }, plano));
+});
+
+test("formulário real mostra Ver último plano com cache sem Pix e oculta sem referência", async () => {
+  const { createServer } = await import("vite");
+  const React = await import("react");
+  const { renderToStaticMarkup } = await import("react-dom/server");
+  const servidor = await createServer({ appType: "custom", logLevel: "silent", server: { middlewareMode: true } });
+  const anterior = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
+  const dados = new Map([[ULTIMO_PLANO_LOCAL_KEY, JSON.stringify({ titulo: "Plano local", semanas: [] })]]);
+  Object.defineProperty(globalThis, "localStorage", { configurable: true, value: {
+    getItem: (chave) => dados.get(chave) ?? null,
+    removeItem: (chave) => dados.delete(chave)
+  } });
+  try {
+    const { default: MeuPlano } = await servidor.ssrLoadModule("/src/pages/MeuPlano.jsx");
+    const html = renderToStaticMarkup(React.createElement(MeuPlano));
+    assert.equal((html.match(/Ver último plano/g) || []).length, 1);
+    assert.ok(html.indexOf("Ver último plano") < html.indexOf("Configure seu plano"));
+    dados.clear();
+    assert.doesNotMatch(renderToStaticMarkup(React.createElement(MeuPlano)), /Ver último plano/);
+  } finally {
+    if (anterior) Object.defineProperty(globalThis, "localStorage", anterior);
+    else delete globalThis.localStorage;
+    await servidor.close();
+  }
+});
+
+test("recuperação local não gera novamente e mantém prioridade do token pago", async () => {
+  const pagina = await readFile(new URL("../src/pages/MeuPlano.jsx", import.meta.url), "utf8");
+  const recuperacao = pagina.match(/async function verUltimoPlano\(\) \{([\s\S]*?)\n  \}/)[1];
+  assert.match(recuperacao, /if \(ultimoPlanoToken\)[\s\S]*await concluirComPlano\(ultimoPlanoToken\)[\s\S]*else[\s\S]*setPlano\(ultimoPlanoLocal\)/);
+  assert.doesNotMatch(recuperacao, /gerarPlanoComIA|criarPagamentoPix/);
+  assert.match(pagina, /async function concluirPlanoDesenvolvimento[\s\S]*salvarUltimoPlanoLocal\(localStorage, resultado\)/);
+});
+
 test("cabeçalho de Meu Plano não exibe badge duplicado", async () => {
   const pagina = await readFile(new URL("../src/pages/MeuPlano.jsx", import.meta.url), "utf8");
 
   assert.doesNotMatch(pagina, /<span>MEU PLANO<\/span>/);
   assert.match(pagina, /<header className="coach-ia-hero">\s*<h1>Meu Plano<\/h1>\s*<p>Receba um ciclo de corrida personalizado/);
+});
+
+test("e-mail explica finalidade e ausência de marketing sem mudar o input", async () => {
+  const formulario = await readFile(new URL("../src/components/plano/FormularioPlanoSemanal.jsx", import.meta.url), "utf8");
+  const campo = formulario.match(/<label[^>]*data-analytics-field="email">([\s\S]*?)<\/label>/)[1];
+  assert.match(campo, /type="email"[\s\S]*name="email"[\s\S]*onChange=\{onAlterar\}[\s\S]*required/);
+  assert.match(campo, /Seu e-mail será usado apenas para identificar seu pagamento e vincular seu plano\.[\s\S]*Sem spam ou mensagens promocionais\./);
+  assert.doesNotMatch(campo, /Necessário para processar|Mercado Pago|API/);
+  assert.ok(formulario.indexOf('name="observacoes"') < formulario.indexOf('name="email"'));
+  assert.ok(formulario.indexOf('name="email"') < formulario.indexOf('type="submit"'));
+  assert.equal((formulario.match(/name="email"/g) || []).length, 1);
 });
 
 test("card do formulário não repete o subtítulo principal", async () => {

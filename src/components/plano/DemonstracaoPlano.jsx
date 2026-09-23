@@ -24,7 +24,7 @@ function DemonstracaoPlano() {
           <span>Formato do treino</span>
           <strong>Personalizado para você</strong>
         </div>
-        <h3>Corrida leve</h3>
+        <h3>Intervalado</h3>
 
         <div className="plano-blocos">
           <h4>Estrutura do treino</h4>
@@ -38,10 +38,6 @@ function DemonstracaoPlano() {
 
       <p>Ritmos, distâncias, duração e progressão serão personalizados no seu plano.</p>
       <p>Seu plano será gerado de acordo com suas respostas após a confirmação do pagamento.</p>
-      <small>
-        Se houver algum problema com o pagamento ou a geração, você receberá um código de
-        atendimento para suporte.
-      </small>
     </section>
   );
 }

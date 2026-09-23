@@ -147,22 +147,6 @@ function FormularioPlanoSemanal({
       </div>
 
       <div className="coach-ia-campos plano-ia-campos">
-        <label className="coach-ia-campo coach-ia-largo" data-analytics-field="email">
-          <span>E-mail *</span>
-          <input
-            type="email"
-            name="email"
-            value={form.email || ""}
-            onChange={onAlterar}
-            placeholder="seu@email.com"
-            autoComplete="email"
-            required
-          />
-          <small className="coach-ia-campo-ajuda">
-            Necessário para processar e identificar seu pagamento via Pix.
-          </small>
-        </label>
-
         <label className="coach-ia-campo" data-analytics-field="idade">
           <span>Idade *</span>
           <input
@@ -442,6 +426,25 @@ function FormularioPlanoSemanal({
             onChange={onAlterar}
             placeholder="Fadiga, preferências ou limitações."
           />
+        </label>
+
+        <label className="coach-ia-campo coach-ia-largo" data-analytics-field="email">
+          <span>E-mail *</span>
+          <input
+            type="email"
+            name="email"
+            value={form.email || ""}
+            onChange={onAlterar}
+            placeholder="seu@email.com"
+            autoComplete="email"
+            required
+          />
+          <small className="coach-ia-campo-ajuda plano-ia-email-ajuda">
+            Seu e-mail será usado apenas para identificar seu pagamento e vincular seu plano.
+          </small>
+          <small className="coach-ia-campo-ajuda plano-ia-email-privacidade">
+            Sem spam ou mensagens promocionais.
+          </small>
         </label>
       </div>
 
