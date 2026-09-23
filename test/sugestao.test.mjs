@@ -71,11 +71,11 @@ test("componente preserva limite, estados e feedbacks da caixa de sugestões", a
 test("componente preserva o formulário como canal de sugestão ou problema", async () => {
   const landing = await readFile(new URL("../src/components/SugestaoProblema.jsx", import.meta.url), "utf8");
 
-  assert.match(landing, /Sugestão ou problema\?/);
-  assert.match(landing, /problema relacionado ao pagamento ou à geração do plano/);
+  assert.match(landing, /Sugestão ou suporte\?/);
+  assert.match(landing, /Envie sua sugestão ou fale com a gente caso precise de suporte\./);
   assert.match(landing, /<label htmlFor="sugestao">Mensagem<\/label>/);
   assert.match(landing, /name="message"/);
-  assert.match(landing, /placeholder="Conte sua sugestão ou problema\."/);
+  assert.match(landing, /placeholder="Descreva como podemos ajudar\."/);
   assert.match(landing, /maxLength=\{LIMITE_SUGESTAO\}/);
 });
 

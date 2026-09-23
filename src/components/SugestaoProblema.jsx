@@ -28,8 +28,8 @@ export default function SugestaoProblema({ codigoAtendimento }) {
         <section className="landing-sugestao sugestao-problema--pagamento" aria-labelledby="sugestao-title">
           <div>
             <span className="landing-eyebrow">SUA OPINIÃO IMPORTA</span>
-            <h2 id="sugestao-title">Sugestão ou problema?</h2>
-            <p>Envie uma sugestão ou relate algum problema relacionado ao pagamento ou à geração do plano.</p>
+            <h2 id="sugestao-title">Sugestão ou suporte?</h2>
+            <p>Envie sua sugestão ou fale com a gente caso precise de suporte.</p>
           </div>
           <form onSubmit={enviarSugestao}>
             <label htmlFor="sugestao">Mensagem</label>
@@ -42,7 +42,7 @@ export default function SugestaoProblema({ codigoAtendimento }) {
                 setFeedbackSugestao(null);
               }}
               maxLength={LIMITE_SUGESTAO}
-              placeholder="Conte sua sugestão ou problema."
+              placeholder="Descreva como podemos ajudar."
               required
             />
             <div className="landing-sugestao__rodape">

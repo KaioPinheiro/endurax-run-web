@@ -330,7 +330,7 @@ test("exibe suporte abaixo do Pix e repassa o código de atendimento existente",
   );
   assert.match(suporte, /enviarSugestaoFormspree\(sugestao, codigoAtendimento\)/);
   assert.match(suporte, /SUA OPINIÃO IMPORTA/);
-  assert.match(suporte, /Sugestão ou problema\?/);
+  assert.match(suporte, /Sugestão ou suporte\?/);
 });
 
 test("mantém somente o botão principal para copiar o código Pix", async () => {
