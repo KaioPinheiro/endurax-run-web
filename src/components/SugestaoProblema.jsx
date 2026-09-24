@@ -2,7 +2,7 @@ import { useState } from "react";
 import { enviarSugestaoFormspree, LIMITE_SUGESTAO } from "../utils/sugestao";
 import "../pages/LandingPage.css";
 
-export default function SugestaoProblema({ codigoAtendimento }) {
+export default function SugestaoProblema({ codigoAtendimento, id }) {
   const [sugestao, setSugestao] = useState("");
   const [enviandoSugestao, setEnviandoSugestao] = useState(false);
   const [feedbackSugestao, setFeedbackSugestao] = useState(null);
@@ -25,7 +25,11 @@ export default function SugestaoProblema({ codigoAtendimento }) {
   }
 
   return (
-        <section className="landing-sugestao sugestao-problema--pagamento" aria-labelledby="sugestao-title">
+        <section
+          id={id}
+          className={"landing-sugestao" + (codigoAtendimento ? " sugestao-problema--pagamento" : "")}
+          aria-labelledby="sugestao-title"
+        >
           <div>
             <span className="landing-eyebrow">SUA OPINIÃO IMPORTA</span>
             <h2 id="sugestao-title">Sugestão ou suporte?</h2>

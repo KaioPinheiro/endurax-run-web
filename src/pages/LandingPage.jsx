@@ -5,6 +5,7 @@ import { buscarConfigPublica } from "../services/api";
 import { formatarPrecoPlano } from "../utils/precoPlano";
 import Depoimentos from "../components/Depoimentos";
 import PrecoPlanoLanding from "../components/PrecoPlanoLanding";
+import SugestaoProblema from "../components/SugestaoProblema";
 import "./LandingPage.css";
 
 const treinosSemana = [
@@ -73,6 +74,11 @@ function LandingPage() {
     };
   }, []);
 
+  function irParaSuporte(event) {
+    event.preventDefault();
+    document.getElementById("sugestao-suporte")?.scrollIntoView({ behavior: "smooth" });
+  }
+
 
   return (
     <div className="landing-page">
@@ -80,13 +86,17 @@ function LandingPage() {
         <Link className="landing-logo" to="/" aria-label="Endurax Run — início">
           <img src={logoEndurax} alt="Endurax Run" />
         </Link>
-        <Link className="landing-header__acao" to="/meu-plano">CRIAR MEU PLANO <IconeSeta /></Link>
+        <nav className="landing-header__acoes" aria-label="Ações principais">
+          <a className="landing-header__acao" href="#sugestao-suporte" onClick={irParaSuporte}>
+            FALE CONOSCO
+          </a>
+          <Link className="landing-header__acao" to="/meu-plano">CRIAR MEU PLANO <IconeSeta /></Link>
+        </nav>
       </header>
 
       <main>
         <section className="landing-hero" aria-labelledby="hero-title">
           <div className="landing-hero__conteudo">
-            <span className="landing-eyebrow landing-reveal">PLANO DE CORRIDA PERSONALIZADO</span>
             <h1 id="hero-title" className="landing-reveal landing-reveal--delay-1">
               Seu plano de corrida.<br /><em>Feito para você.</em>
             </h1>
@@ -143,6 +153,8 @@ function LandingPage() {
           <PrecoPlanoLanding preco={precoPlano} />
           <Cta>CRIAR MEU PLANO</Cta>
         </section>
+
+        <SugestaoProblema id="sugestao-suporte" />
 
       </main>
 

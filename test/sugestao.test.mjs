@@ -79,15 +79,14 @@ test("componente preserva o formulário como canal de sugestão ou problema", as
   assert.match(landing, /maxLength=\{LIMITE_SUGESTAO\}/);
 });
 
-test("landing termina com conversão e rodapé sem formulário de suporte", async () => {
+test("landing exibe suporte após a conversão e antes do rodapé", async () => {
   const landing = await readFile(new URL("../src/pages/LandingPage.jsx", import.meta.url), "utf8");
 
   assert.match(landing, /className="landing-hero"/);
   assert.match(landing, /id="como-funciona"/);
-  assert.doesNotMatch(landing, /Sugestão ou problema|SUA OPINIÃO IMPORTA|<form|<textarea|enviarSugestao/);
   assert.match(landing, /PRONTO PARA COMEÇAR\?[\s\S]*Seu próximo plano começa aqui\.[\s\S]*Dê o próximo passo na sua corrida\. O Endurax mostra o caminho\./);
   assert.match(landing, /<PrecoPlanoLanding preco=\{precoPlano\} \/>/);
-  assert.match(landing, /<Cta>CRIAR MEU PLANO<\/Cta>\s*<\/section>\s*<\/main>\s*<footer/);
+  assert.match(landing, /<Cta>CRIAR MEU PLANO<\/Cta>\s*<\/section>\s*<SugestaoProblema id="sugestao-suporte" \/>\s*<\/main>\s*<footer/);
   assert.equal((landing.match(/<section\b/g) || []).length, 3);
   assert.doesNotMatch(landing, /Para quem é|PARA QUEM É|Treinar ficou muito mais simples/);
   assert.doesNotMatch(landing, /Veja o que|DIREÇÃO MUDA TUDO|COMECE AGORA/);
@@ -95,6 +94,12 @@ test("landing termina com conversão e rodapé sem formulário de suporte", asyn
   assert.match(landing, /className="landing-logo"[\s\S]*alt="Endurax Run"/);
   assert.match(landing, /className="landing-footer"[\s\S]*Direção para cada quilômetro\.[\s\S]*© \{new Date\(\)\.getFullYear\(\)\} Endurax Run/);
   assert.match(landing, /<Cta>CRIAR MEU PLANO<\/Cta>/);
+  assert.match(landing, /FALE CONOSCO/);
+  assert.equal((landing.match(/FALE CONOSCO/g) || []).length, 1);
+  const header = landing.slice(landing.indexOf('<header className="landing-header">'), landing.indexOf("</header>"));
+  assert.match(header, /FALE CONOSCO[\s\S]*CRIAR MEU PLANO/);
+  assert.match(landing, /href="#sugestao-suporte"[\s\S]*onClick=\{irParaSuporte\}/);
+  assert.match(landing, /scrollIntoView\(\{ behavior: "smooth" \}\)/);
 });
 
 test("landing exibe o valor público do plano formatado junto ao CTA", async () => {
@@ -126,7 +131,7 @@ test("como funciona termina após os três passos sem CTA redundante", async () 
 
 test("hero apresenta personalização e exemplo preservando CTA e card", async () => {
   const landing = await readFile(new URL("../src/pages/LandingPage.jsx", import.meta.url), "utf8");
-  assert.match(landing, /PLANO DE CORRIDA PERSONALIZADO/);
+  assert.doesNotMatch(landing, /PLANO DE CORRIDA PERSONALIZADO/);
   assert.match(landing, /Seu plano de corrida\.<br \/><em>Feito para você\.<\/em>/);
   assert.match(landing, /Você dá o primeiro passo\. O Endurax mostra os próximos\./);
   assert.match(landing, /Treinos que cabem na sua rotina\./);
