@@ -42,7 +42,7 @@ test("ciclo retorna do último ao primeiro e do primeiro ao último sem mudar co
   }
 });
 
-test("renderiza seis depoimentos informativos e controles acessíveis sem CTA nos cards", async () => {
+test("renderiza sete depoimentos informativos e controles acessíveis sem CTA nos cards", async () => {
   const { createServer } = await import("vite");
   const servidor = await createServer({ appType: "custom", logLevel: "silent", server: { middlewareMode: true } });
   try {
@@ -53,9 +53,9 @@ test("renderiza seis depoimentos informativos e controles acessíveis sem CTA no
     assert.match(html, /Conheça quem escolheu o Endurax para dar os próximos passos na corrida\./);
     const todos = [...html.matchAll(/<article\b[^>]*>([\s\S]*?)<\/article>/g)];
     const cards = todos.filter((card) => !card[0].includes('aria-hidden="true"'));
-    assert.equal(todos.length, 18);
-    assert.equal(cards.length, 6);
-    for (const [indice, nome] of ["Lucas", "Mariana", "Bruno", "Rafael", "Camila", "André"].entries()) {
+    assert.equal(todos.length, 21);
+    assert.equal(cards.length, 7);
+    for (const [indice, nome] of ["Lucia", "Fernanda", "Matheus", "João", "Carla", "André", "Camilla"].entries()) {
       assert.ok(cards[indice][1].includes(`<strong>${nome}</strong>`));
       assert.match(cards[indice][1], /<blockquote>.+<\/blockquote>/);
       assert.doesNotMatch(cards[indice][1], /<a\b|<button\b|<img\b/);

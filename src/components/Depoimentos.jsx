@@ -3,12 +3,13 @@ import { indiceCarrossel, indiceCircular, posicaoCentralCarrossel, posicoesCarro
 import "./Depoimentos.css";
 
 const depoimentos = [
-  { nome: "Lucas", perfil: "Corredor iniciante", texto: "Eu queria começar a correr, mas não sabia como montar os treinos sem exagerar. O plano me deu uma direção e ficou fácil entender o que fazer em cada dia." },
-  { nome: "Mariana", perfil: "Corredora amadora", texto: "O que mais gostei foi poder escolher os dias que consigo treinar. O plano se encaixou na minha semana, em vez de eu ter que adaptar toda a minha rotina aos treinos." },
-  { nome: "Bruno", perfil: "Corredor amador", texto: "Eu já corria há um tempo, mas treinava muito no improviso. Ter os treinos organizados para cada semana fez bastante diferença para manter uma sequência." },
-  { nome: "Rafael", perfil: "Foco nos 10 km", texto: "Queria evoluir nos 10 km, mas não sabia como distribuir os treinos durante a semana. Agora tenho um plano claro e sei o propósito de cada treino." },
-  { nome: "Camila", perfil: "Corredora iniciante", texto: "Achei muito prático. Respondi algumas perguntas, coloquei os dias que tenho disponíveis e recebi meu plano organizado para as próximas semanas." },
-  { nome: "André", perfil: "Corredor amador", texto: "Já tinha procurado vários treinos prontos na internet, mas sempre precisava adaptar alguma coisa. Gostei de receber um plano considerando meu nível, meu objetivo e os dias que posso correr." },
+  { nome: "Lucia", perfil: "Objetivo: Primeiros 5 km", texto: "Gosto muito do site, comecei a correr de verdade, graças ao plano. Estava fazendo tudo da minha cabeça e não conseguia ver evolução, já emagreci 3 kg." },
+  { nome: "Fernanda", perfil: "Objetivo: Melhorar tempo nos 5 km", texto: "Finalmenteeee consegui fazer 5km em menos de 30 min. Aleluiaaa irmãos kkkk Obrigada endurax. O plano que ele me deu encaixou muito bem, sem firulas. Em breve vou começar meu plano para fazer minha primeira meia <3" },
+  { nome: "Matheus", perfil: "Objetivo: Melhorar tempo na Meia Maratona", texto: "Deixei de pagar assessoria e fiquei só no endurax, estava pagando mais de 200 reais e os treinos daqui ainda são melhores." },
+  { nome: "João", perfil: "Objetivo: Primeira Maratona", texto: "Olha eu me surpreendi com o plano, paguei só pra ver como era, e foi uma surpresa boa. Vale muito a pena e dá um direcionamento legal. O plano é objetivo e bem dividido. Parabéns aos idealizadores." },
+  { nome: "Carla", perfil: "Objetivo: Primeiros 10 km", texto: "Já estou no meu terceiro plano, em breve vou estar fazendo 10 km. Estou seguindo direitinho e estou evoluindo muitooooo." },
+  { nome: "André", perfil: "Objetivo: Melhorar tempo nos 10 km", texto: "Já tinha procurado vários treinos prontos na internet, mas sempre precisava adaptar alguma coisa. Gostei de receber um plano considerando meu nível, meu objetivo e os dias que posso correr." },
+  { nome: "Camilla", perfil: "Objetivo: Primeira Meia Maratona", texto: "Achei muito prático. Respondi algumas perguntas, coloquei os dias que tenho disponíveis e recebi meu plano organizado para as próximas semanas." },
 ];
 
 const ciclos = [0, 1, 2];
