@@ -70,15 +70,15 @@ test("renderiza sete depoimentos informativos e controles acessíveis sem CTA no
   }
 });
 
-test("integra somente entre como funciona e conversão e usa scroll nativo responsivo", async () => {
+test("integra somente entre veja na prática e como funciona e usa scroll nativo responsivo", async () => {
   const [landing, componente, css] = await Promise.all([
     readFile(new URL("../src/pages/LandingPage.jsx", import.meta.url), "utf8"),
     readFile(new URL("../src/components/Depoimentos.jsx", import.meta.url), "utf8"),
     readFile(new URL("../src/components/Depoimentos.css", import.meta.url), "utf8"),
   ]);
   assert.equal((landing.match(/<Depoimentos \/>/g) || []).length, 1);
-  assert.ok(landing.indexOf('id="como-funciona"') < landing.indexOf("<Depoimentos />"));
-  assert.ok(landing.indexOf("<Depoimentos />") < landing.indexOf('className="landing-conversao"'));
+  assert.ok(landing.indexOf("<PreviaSemana />") < landing.indexOf("<Depoimentos />"));
+  assert.ok(landing.indexOf("<Depoimentos />") < landing.indexOf('id="como-funciona"'));
   assert.match(componente, /addEventListener\("scroll", atualizarIndice/);
   assert.match(componente, /new ResizeObserver\(medir\)/);
   assert.match(componente, /observer\?\.disconnect\(\)/);

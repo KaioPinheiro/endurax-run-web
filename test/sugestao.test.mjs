@@ -133,8 +133,8 @@ test("hero apresenta personalização e exemplo preservando CTA e card", async (
   const landing = await readFile(new URL("../src/pages/LandingPage.jsx", import.meta.url), "utf8");
   assert.doesNotMatch(landing, /PLANO DE CORRIDA PERSONALIZADO/);
   assert.match(landing, /Seu plano de corrida\.<br \/><em>Feito para você\.<\/em>/);
-  assert.match(landing, /Você dá o primeiro passo\. O Endurax mostra os próximos\./);
-  assert.match(landing, /Treinos que cabem na sua rotina\./);
+  assert.match(landing, /Tecnologia e expertise de treinadores para transformar seu <strong>objetivo, nível e rotina<\/strong> em treinos para você evoluir\./);
+  assert.doesNotMatch(landing, /Sem planilhas genéricas|Treinos que cabem na sua rotina/);
   assert.match(landing, /to="\/meu-plano">CRIAR MEU PLANO <IconeSeta \/>/);
   assert.match(landing, /VEJA NA PRÁTICA[\s\S]*Um plano que se adapta a você\.[\s\S]*className="landing-hero__tags"[\s\S]*<PreviaSemana \/>/);
   const tags = landing.match(/<p className="landing-hero__tags">([\s\S]*?)<\/p>/)[1];

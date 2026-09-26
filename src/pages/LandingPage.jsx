@@ -101,13 +101,12 @@ function LandingPage() {
               Seu plano de corrida.<br /><em>Feito para você.</em>
             </h1>
             <p className="landing-hero__subtitulo landing-reveal landing-reveal--delay-2">
-              Você dá o primeiro passo. O Endurax mostra os próximos.
+              Tecnologia e expertise de treinadores para transformar seu <strong>objetivo, nível e rotina</strong> em treinos para você evoluir.
             </p>
-            <p className="landing-hero__apoio landing-reveal landing-reveal--delay-2">
-              <span>Sem planilhas genéricas.</span><span>Treinos que cabem na sua rotina.</span>
-            </p>
-            <PrecoPlanoLanding preco={precoPlano} className="landing-reveal landing-reveal--delay-3" />
-            <div className="landing-reveal landing-reveal--delay-3"><Cta>CRIAR MEU PLANO</Cta></div>
+            <div className="landing-hero__conversao landing-reveal landing-reveal--delay-3">
+              <PrecoPlanoLanding preco={precoPlano} />
+              <Cta>CRIAR MEU PLANO</Cta>
+            </div>
           </div>
           <div className="landing-hero__visual landing-reveal landing-reveal--delay-2">
             <div className="landing-orbita landing-orbita--um" aria-hidden="true" />
@@ -126,6 +125,8 @@ function LandingPage() {
           </div>
         </section>
 
+        <Depoimentos />
+
         <section className="landing-section" id="como-funciona" aria-labelledby="como-title">
           <div className="landing-section__cabecalho">
             <span className="landing-eyebrow">COMO FUNCIONA</span>
@@ -143,8 +144,6 @@ function LandingPage() {
             ))}
           </div>
         </section>
-
-        <Depoimentos />
 
         <section className="landing-conversao" aria-labelledby="conversao-title">
           <span className="landing-eyebrow">PRONTO PARA COMEÇAR?</span>
