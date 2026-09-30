@@ -6,6 +6,58 @@
   box-sizing: border-box;
 }
 
+.pagina-nao-encontrada {
+  display: flex;
+  min-height: calc(100svh - 88px);
+  padding: 48px 24px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.pagina-nao-encontrada > span {
+  color: #38bdf8;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.pagina-nao-encontrada h1 {
+  margin: 14px 0 10px;
+  color: #f8fafc;
+  font-size: clamp(32px, 6vw, 54px);
+}
+
+.pagina-nao-encontrada p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.pagina-nao-encontrada a {
+  margin-top: 28px;
+  padding: 14px 22px;
+  color: #04101a;
+  background: #38bdf8;
+  border-radius: 10px;
+  font-weight: 900;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.pagina-nao-encontrada a:hover {
+  background: #7dd3fc;
+  transform: translateY(-2px);
+}
+
+.pagina-nao-encontrada a:focus-visible {
+  outline: 3px solid #f8fafc;
+  outline-offset: 4px;
+}
+
 .card-acoes {
   display: flex;
   gap: 12px;

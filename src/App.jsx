@@ -11,6 +11,7 @@ import GerarTreinoIA from "./pages/GerarTreinoIA";
 import MeuPlano from "./pages/MeuPlano";
 import Login from "./pages/Login";
 import LandingPage from "./pages/LandingPage";
+import NotFound from "./pages/NotFound";
 import { carregarUmami } from "./utils/analytics";
 
 import "./App.css";
@@ -91,6 +92,11 @@ function AppRoutes() {
           <Route
             path="/login"
             element={<Login atualizarToken={atualizarToken} />}
+          />
+
+          <Route
+            path="*"
+            element={<NotFound />}
           />
         </Routes>
     </div>
