@@ -1,5 +1,6 @@
 export const CHAVES_FLUXO_MEU_PLANO = {
   pagamentoToken: "pagamentoToken",
+  pagamentoMeuPlano: "pagamentoMeuPlano",
   planoToken: "planoToken",
   solicitacaoPlanoId: "solicitacaoPlanoId",
   payloadMeuPlano: "payloadMeuPlano",
@@ -26,6 +27,30 @@ export function salvarUltimoPlanoLocal(storage, plano) {
   }
 }
 
+export function lerPagamentoPersistido(storage, pagamentoToken) {
+  if (!pagamentoToken) return null;
+  try {
+    const pagamento = JSON.parse(
+      storage.getItem(CHAVES_FLUXO_MEU_PLANO.pagamentoMeuPlano)
+    );
+    return pagamento?.acessoToken === pagamentoToken ? pagamento : null;
+  } catch {
+    return null;
+  }
+}
+
+export function salvarPagamentoPersistido(storage, pagamento) {
+  if (!pagamento?.acessoToken) return;
+  try {
+    storage.setItem(
+      CHAVES_FLUXO_MEU_PLANO.pagamentoMeuPlano,
+      JSON.stringify(pagamento)
+    );
+  } catch {
+    // O polling continua funcionando mesmo se o navegador negar armazenamento.
+  }
+}
+
 export function limparFluxoComercialMeuPlano(storage) {
   Object.values(CHAVES_FLUXO_MEU_PLANO).forEach((chave) => storage.removeItem(chave));
 }
@@ -47,9 +72,17 @@ export function estadoDoResultado(resultado) {
   return "PENDING";
 }
 
-export function criarRecuperacaoCompra({ pagamentoToken, planoToken, solicitacaoPlanoId, payload }) {
+export function criarRecuperacaoCompra({
+  pagamentoToken,
+  pagamentoPersistido,
+  planoToken,
+  solicitacaoPlanoId,
+  payload
+}) {
   return {
-    pagamento: pagamentoToken ? { acessoToken: pagamentoToken } : null,
+    pagamento: pagamentoToken
+      ? pagamentoPersistido || { acessoToken: pagamentoToken }
+      : null,
     estadoPagamento: planoToken ? "COMPLETED" : pagamentoToken ? "PENDING" : null,
     solicitacaoSemPagamento: !pagamentoToken && !planoToken && Boolean(solicitacaoPlanoId && payload),
     payload

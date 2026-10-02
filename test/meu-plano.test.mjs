@@ -7,15 +7,48 @@ import {
   iniciarNovaJornadaMeuPlano,
   ULTIMO_PLANO_TOKEN_KEY,
   ULTIMO_PLANO_LOCAL_KEY,
+  lerPagamentoPersistido,
+  salvarPagamentoPersistido,
   lerUltimoPlanoLocal,
   salvarUltimoPlanoLocal,
   limparFluxoComercialMeuPlano
 } from "../src/utils/fluxoMeuPlano.js";
 
 test("recupera pagamento pendente depois do reload", () => {
-  const recuperacao = criarRecuperacaoCompra({ pagamentoToken: "token-pagamento", payload: {} });
-  assert.deepEqual(recuperacao.pagamento, { acessoToken: "token-pagamento" });
+  const pagamentoPersistido = {
+    acessoToken: "token-pagamento",
+    qrCodeBase64: "imagem-qr",
+    copiaCola: "codigo-pix"
+  };
+  const recuperacao = criarRecuperacaoCompra({
+    pagamentoToken: "token-pagamento",
+    pagamentoPersistido,
+    payload: {}
+  });
+  assert.deepEqual(recuperacao.pagamento, pagamentoPersistido);
   assert.equal(recuperacao.estadoPagamento, "PENDING");
+});
+
+test("persiste e recupera os dados visuais do Pix somente para o token ativo", () => {
+  const dados = new Map();
+  const storage = {
+    getItem: (chave) => dados.get(chave) ?? null,
+    setItem: (chave, valor) => dados.set(chave, valor)
+  };
+  const pagamento = {
+    acessoToken: "token-pagamento",
+    qrCodeBase64: "imagem-qr",
+    copiaCola: "codigo-pix",
+    expirationDate: "2026-10-02T15:00:00-03:00"
+  };
+
+  salvarPagamentoPersistido(storage, pagamento);
+
+  assert.deepEqual(
+    lerPagamentoPersistido(storage, "token-pagamento"),
+    pagamento
+  );
+  assert.equal(lerPagamentoPersistido(storage, "outro-token"), null);
 });
 
 test("recupera solicitação quando a criação do Pix não retornou", () => {
@@ -35,6 +68,7 @@ test("recupera plano concluído depois do reload", () => {
 test("reinicia somente o estado comercial e preserva outras chaves", () => {
   const dados = new Map([
     ["pagamentoToken", "pagamento-antigo"],
+    ["pagamentoMeuPlano", "{}"],
     ["planoToken", "plano-antigo"],
     ["solicitacaoPlanoId", "7"],
     ["payloadMeuPlano", "{}"],
@@ -47,6 +81,7 @@ test("reinicia somente o estado comercial e preserva outras chaves", () => {
   limparFluxoComercialMeuPlano(storage);
 
   assert.equal(dados.has("pagamentoToken"), false);
+  assert.equal(dados.has("pagamentoMeuPlano"), false);
   assert.equal(dados.has("planoToken"), false);
   assert.equal(dados.has("solicitacaoPlanoId"), false);
   assert.equal(dados.has("payloadMeuPlano"), false);
@@ -58,6 +93,7 @@ test("reinicia somente o estado comercial e preserva outras chaves", () => {
 test("nova jornada limpa o estado ativo e preserva a referencia do plano comprado", () => {
   const dados = new Map([
     ["pagamentoToken", "token-compra"],
+    ["pagamentoMeuPlano", "{}"],
     ["planoToken", "token-plano"],
     ["solicitacaoPlanoId", "7"],
     ["payloadMeuPlano", "{}"],
@@ -73,6 +109,7 @@ test("nova jornada limpa o estado ativo e preserva a referencia do plano comprad
 
   assert.equal(dados.get(ULTIMO_PLANO_TOKEN_KEY), "token-plano");
   assert.equal(dados.has("pagamentoToken"), false);
+  assert.equal(dados.has("pagamentoMeuPlano"), false);
   assert.equal(dados.has("planoToken"), false);
   assert.equal(dados.has("solicitacaoPlanoId"), false);
   assert.equal(dados.has("payloadMeuPlano"), false);
@@ -222,6 +259,31 @@ test("submit preserva formulário cru e cancelamento remove solicitação antiga
   assert.match(edicao, /limparFluxoComercialMeuPlano\(localStorage\)/);
   assert.match(edicao, /setSolicitacaoSemPagamento\(false\)/);
   assert.match(pagina, /let solicitacaoPlanoId = localStorage\.getItem\(SOLICITACAO_ID_KEY\)/);
+});
+
+test("formulário é restaurado e salvo a cada alteração antes mesmo do Pix", async () => {
+  const pagina = await readFile(new URL("../src/pages/MeuPlano.jsx", import.meta.url), "utf8");
+
+  assert.match(
+    pagina,
+    /const \[form, setForm\] = useState\(\s*\(\) => lerFormularioPersistido\(\) \|\| criarEstadoInicialPlano\(\)/
+  );
+  assert.match(
+    pagina,
+    /function alterar\(event\)[\s\S]*salvarFormularioPersistido\(atualizado\)/
+  );
+  assert.match(
+    pagina,
+    /function alternarDia\(dia\)[\s\S]*salvarFormularioPersistido\(atualizado\)/
+  );
+});
+
+test("logout preserva formulário e pagamento em andamento", async () => {
+  const navbar = await readFile(new URL("../src/components/Navbar.jsx", import.meta.url), "utf8");
+
+  assert.doesNotMatch(navbar, /localStorage\.clear\(\)/);
+  assert.match(navbar, /\["token", "userId", "nome", "role"\]/);
+  assert.match(navbar, /localStorage\.removeItem\(chave\)/);
 });
 
 test("editar preserva formulário e ignora polling antigo após cancelar o Pix", async () => {

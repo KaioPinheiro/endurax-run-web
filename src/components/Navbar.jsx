@@ -27,7 +27,9 @@ function Navbar({ atualizarToken }) {
   }, []);
 
   function logout() {
-    localStorage.clear();
+    ["token", "userId", "nome", "role"].forEach((chave) =>
+      localStorage.removeItem(chave)
+    );
     atualizarToken();
     navigate("/login");
   }

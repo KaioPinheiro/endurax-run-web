@@ -23,7 +23,9 @@ import {
   criarRecuperacaoCompra,
   estadoDoResultado,
   iniciarNovaJornadaMeuPlano,
+  lerPagamentoPersistido,
   lerUltimoPlanoLocal,
+  salvarPagamentoPersistido,
   salvarUltimoPlanoLocal,
   limparFluxoComercialMeuPlano,
   ULTIMO_PLANO_TOKEN_KEY
@@ -63,9 +65,22 @@ function lerPayloadPersistido() {
 function lerFormularioPersistido() {
   try {
     const formulario = JSON.parse(localStorage.getItem(FORMULARIO_PLANO_KEY)) || null;
-    return formulario ? normalizarFormularioPlanoRestaurado(formulario) : null;
+    const normalizado = formulario
+      ? normalizarFormularioPlanoRestaurado(formulario)
+      : null;
+    return normalizado
+      ? { ...criarEstadoInicialPlano(), ...normalizado }
+      : null;
   } catch {
     return null;
+  }
+}
+
+function salvarFormularioPersistido(formulario) {
+  try {
+    localStorage.setItem(FORMULARIO_PLANO_KEY, JSON.stringify(formulario));
+  } catch {
+    // A jornada continua mesmo se o navegador negar armazenamento.
   }
 }
 
@@ -78,13 +93,20 @@ function mensagemDoEstado(estado, mensagem) {
 }
 
 function MeuPlano() {
+  const pagamentoTokenPersistido = localStorage.getItem(PAGAMENTO_TOKEN_KEY);
   const recuperacaoInicial = criarRecuperacaoCompra({
-    pagamentoToken: localStorage.getItem(PAGAMENTO_TOKEN_KEY),
+    pagamentoToken: pagamentoTokenPersistido,
+    pagamentoPersistido: lerPagamentoPersistido(
+      localStorage,
+      pagamentoTokenPersistido
+    ),
     planoToken: localStorage.getItem(PLANO_TOKEN_KEY),
     solicitacaoPlanoId: localStorage.getItem(SOLICITACAO_ID_KEY),
     payload: lerPayloadPersistido()
   });
-  const [form, setForm] = useState(criarEstadoInicialPlano);
+  const [form, setForm] = useState(
+    () => lerFormularioPersistido() || criarEstadoInicialPlano()
+  );
   const [plano, setPlano] = useState(null);
   const [ultimoPlanoLocal, setUltimoPlanoLocal] = useState(() => lerUltimoPlanoLocal(localStorage));
   const [erro, setErro] = useState("");
@@ -121,7 +143,11 @@ function MeuPlano() {
       const resultado = await buscarResultadoPagamento(acessoToken);
       if (localStorage.getItem(PAGAMENTO_TOKEN_KEY) !== acessoToken) return;
       const estado = estadoDoResultado(resultado);
-      setPagamento((atual) => ({ ...atual, ...resultado, acessoToken }));
+      setPagamento((atual) => {
+        const atualizado = { ...atual, ...resultado, acessoToken };
+        salvarPagamentoPersistido(localStorage, atualizado);
+        return atualizado;
+      });
       setPagamentoSincronizado(true);
       setEstadoPagamento(estado);
       setMensagemPagamento(resultado.mensagem || "");
@@ -202,12 +228,23 @@ function MeuPlano() {
 
   function alterar(event) {
     const { name, value, type, checked } = event.target;
-    setForm((atual) => normalizarCampoPlano(atual, { name, value, type, checked }));
+    setForm((atual) => {
+      const atualizado = normalizarCampoPlano(
+        atual,
+        { name, value, type, checked }
+      );
+      salvarFormularioPersistido(atualizado);
+      return atualizado;
+    });
     setErro("");
   }
 
   function alternarDia(dia) {
-    setForm((atual) => alternarDiaDisponivel(atual, dia));
+    setForm((atual) => {
+      const atualizado = alternarDiaDisponivel(atual, dia);
+      salvarFormularioPersistido(atualizado);
+      return atualizado;
+    });
     setErro("");
   }
 
@@ -226,6 +263,7 @@ function MeuPlano() {
 
     const cobranca = await criarPagamentoPix(email, Number(solicitacaoPlanoId));
     localStorage.setItem(PAGAMENTO_TOKEN_KEY, cobranca.acessoToken);
+    salvarPagamentoPersistido(localStorage, cobranca);
     setPagamento(cobranca);
     setPagamentoSincronizado(true);
     setSolicitacaoSemPagamento(false);
