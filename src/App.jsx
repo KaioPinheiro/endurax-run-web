@@ -12,6 +12,7 @@ import MeuPlano from "./pages/MeuPlano";
 import Login from "./pages/Login";
 import LandingPage from "./pages/LandingPage";
 import NotFound from "./pages/NotFound";
+import PoliticaPrivacidade from "./pages/PoliticaPrivacidade";
 import { carregarUmami } from "./utils/analytics";
 
 import "./App.css";
@@ -19,14 +20,15 @@ import "./App.css";
 function AppRoutes() {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const location = useLocation();
+  const paginaPublicaSemNavbar = location.pathname === "/" || location.pathname === "/politica-de-privacidade";
 
   function atualizarToken() {
     setToken(localStorage.getItem("token"));
   }
 
   return (
-    <div className={location.pathname === "/" ? "landing-root" : "container"}>
-        {location.pathname !== "/" && <Navbar atualizarToken={atualizarToken} />}
+    <div className={paginaPublicaSemNavbar ? "landing-root" : "container"}>
+        {!paginaPublicaSemNavbar && <Navbar atualizarToken={atualizarToken} />}
 
         <Routes>
           <Route
@@ -37,6 +39,11 @@ function AppRoutes() {
           <Route
             path="/meu-plano"
             element={<MeuPlano />}
+          />
+
+          <Route
+            path="/politica-de-privacidade"
+            element={<PoliticaPrivacidade />}
           />
 
           <Route
