@@ -135,4 +135,24 @@ export async function buscarPlanoGerado(planoToken) {
   }
 }
 
+export function obterUrlAutorizacaoIntervalsIcu(planoToken) {
+  const baseUrl = String(api.defaults.baseURL || window.location.origin).replace(/\/$/, "");
+  return `${baseUrl}/api/integrations/intervals-icu/plans/${encodeURIComponent(planoToken)}/authorize`;
+}
+
+export async function buscarStatusIntervalsIcu(planoToken) {
+  const response = await api.get(
+    `/api/integrations/intervals-icu/plans/${encodeURIComponent(planoToken)}/status`
+  );
+  return response.data;
+}
+
+export async function enviarTreinoIntervalsIcu(planoToken, treino) {
+  const response = await api.post(
+    `/api/integrations/intervals-icu/plans/${encodeURIComponent(planoToken)}/workouts`,
+    treino
+  );
+  return response.data;
+}
+
 export default api;

@@ -1,5 +1,10 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import logoEndurax from "../../assets/brand/endurax-run-logo-light.svg";
+import {
+  buscarStatusIntervalsIcu,
+  enviarTreinoIntervalsIcu,
+  obterUrlAutorizacaoIntervalsIcu
+} from "../../services/api";
 import {
   ehTreinoCorrida,
   estimarDistanciaBloco,
@@ -271,7 +276,7 @@ function BlocosTreino({ descricao }) {
   );
 }
 
-function CardTreinoDia({ treino }) {
+function CardTreinoDia({ treino, integracao }) {
   const possuiBlocos = blocosDaDescricao(treino.descricao).length > 0;
   const pace = treino.paceSugerido ??
     treino.pace ??
@@ -292,11 +297,39 @@ function CardTreinoDia({ treino }) {
       </dl>
       <BlocosTreino descricao={treino.descricao} />
       {treino.observacoes && <small>{treino.observacoes}</small>}
+      {integracao && (
+        <div className="intervals-treino">
+          <label>
+            <span>Data no calendário</span>
+            <input
+              type="date"
+              value={integracao.data}
+              onChange={(event) => integracao.onData(event.target.value)}
+              disabled={integracao.enviando}
+            />
+          </label>
+          <button
+            type="button"
+            onClick={integracao.onEnviar}
+            disabled={!integracao.data || integracao.enviando}
+          >
+            {integracao.enviando ? "Enviando..." : "Enviar ao Intervals.icu"}
+          </button>
+          {integracao.feedback && (
+            <p
+              className={`intervals-feedback intervals-feedback--${integracao.feedback.tipo}`}
+              role="status"
+            >
+              {integracao.feedback.mensagem}
+            </p>
+          )}
+        </div>
+      )}
     </article>
   );
 }
 
-function SemanaPlano({ semana }) {
+function SemanaPlano({ semana, criarIntegracao }) {
   const treinosCorrida = (semana?.treinos ?? []).filter(ehTreinoCorrida);
 
   return (
@@ -313,17 +346,120 @@ function SemanaPlano({ semana }) {
 
       <div className="plano-ia-grid">
         {treinosCorrida.map((treino) => (
-          <CardTreinoDia treino={treino} key={treino.diaSemana} />
+          <CardTreinoDia
+            treino={treino}
+            integracao={criarIntegracao?.(semana, treino)}
+            key={treino.diaSemana}
+          />
         ))}
       </div>
     </section>
   );
 }
 
-function ResultadoMeuPlano({ plano }) {
+function mensagemErro(error, fallback) {
+  return error?.response?.data?.erro || error?.message || fallback;
+}
+
+function ResultadoMeuPlano({ plano, planoToken }) {
   const [semanaAtiva, setSemanaAtiva] = useState(0);
+  const [statusIntervals, setStatusIntervals] = useState(null);
+  const [consultandoIntervals, setConsultandoIntervals] = useState(false);
+  const [aguardandoOAuth, setAguardandoOAuth] = useState(false);
+  const [erroIntervals, setErroIntervals] = useState("");
+  const [datasEnvio, setDatasEnvio] = useState({});
+  const [envios, setEnvios] = useState({});
+  const pollingRef = useRef(null);
   const semanas = useMemo(() => plano?.semanas ?? [], [plano]);
   const semanaSelecionada = semanas[semanaAtiva] ?? semanas[0];
+
+  const consultarStatus = useCallback(async ({ silencioso = false } = {}) => {
+    if (!planoToken) return null;
+    if (!silencioso) setConsultandoIntervals(true);
+    try {
+      const status = await buscarStatusIntervalsIcu(planoToken);
+      setStatusIntervals(status);
+      setErroIntervals("");
+      if (status.connected) setAguardandoOAuth(false);
+      return status;
+    } catch (error) {
+      if (!silencioso) {
+        setErroIntervals(mensagemErro(error, "Não foi possível consultar o Intervals.icu."));
+      }
+      return null;
+    } finally {
+      if (!silencioso) setConsultandoIntervals(false);
+    }
+  }, [planoToken]);
+
+  useEffect(() => {
+    if (planoToken) consultarStatus();
+  }, [consultarStatus, planoToken]);
+
+  useEffect(() => {
+    if (!aguardandoOAuth || statusIntervals?.connected) return undefined;
+    pollingRef.current = window.setInterval(() => consultarStatus({ silencioso: true }), 2500);
+    return () => window.clearInterval(pollingRef.current);
+  }, [aguardandoOAuth, consultarStatus, statusIntervals?.connected]);
+
+  function conectarIntervals() {
+    const popup = window.open(
+      obterUrlAutorizacaoIntervalsIcu(planoToken),
+      "endurax-intervals-oauth",
+      "popup=yes,width=720,height=760"
+    );
+    if (!popup) {
+      setErroIntervals("O navegador bloqueou a janela de autorização. Permita pop-ups e tente novamente.");
+      return;
+    }
+    setErroIntervals("");
+    setAguardandoOAuth(true);
+  }
+
+  function chaveTreino(semana, treino) {
+    return `${semana.numeroSemana}:${treino.diaSemana}`;
+  }
+
+  function criarIntegracao(semana, treino) {
+    if (!planoToken || !statusIntervals?.connected) return null;
+    const chave = chaveTreino(semana, treino);
+    return {
+      data: datasEnvio[chave] || "",
+      enviando: envios[chave]?.enviando || false,
+      feedback: envios[chave]?.feedback || null,
+      onData: (data) => setDatasEnvio((atual) => ({ ...atual, [chave]: data })),
+      onEnviar: async () => {
+        const scheduledDate = datasEnvio[chave];
+        if (!scheduledDate) return;
+        setEnvios((atual) => ({ ...atual, [chave]: { enviando: true, feedback: null } }));
+        try {
+          const resultado = await enviarTreinoIntervalsIcu(planoToken, {
+            weekNumber: semana.numeroSemana,
+            dayOfWeek: treino.diaSemana,
+            scheduledDate
+          });
+          const mensagem = resultado.alreadySent
+            ? "Este treino já havia sido enviado para o Intervals.icu."
+            : "Treino enviado para o Intervals.icu com sucesso.";
+          setEnvios((atual) => ({
+            ...atual,
+            [chave]: { enviando: false, feedback: { tipo: "sucesso", mensagem } }
+          }));
+        } catch (error) {
+          setEnvios((atual) => ({
+            ...atual,
+            [chave]: {
+              enviando: false,
+              feedback: {
+                tipo: "erro",
+                mensagem: mensagemErro(error, "Não foi possível enviar o treino.")
+              }
+            }
+          }));
+        }
+      }
+    };
+  }
 
   if (!plano) {
     return null;
@@ -367,6 +503,37 @@ function ResultadoMeuPlano({ plano }) {
         />
       </div>
 
+      {planoToken && (
+        <section className="intervals-conexao" aria-live="polite">
+          <div>
+            <span>INTERVALS.ICU</span>
+            <h3>Enviar treinos ao calendário</h3>
+            {statusIntervals?.connected ? (
+              <p>Conectado{statusIntervals.athleteName ? ` como ${statusIntervals.athleteName}` : ""}.</p>
+            ) : (
+              <p>Conecte sua conta para enviar cada treino individualmente.</p>
+            )}
+            {aguardandoOAuth && !statusIntervals?.connected && (
+              <p className="intervals-aviso">
+                Autorize na janela aberta. O callback exibirá uma confirmação em JSON;
+                depois, feche a janela e volte para esta página.
+              </p>
+            )}
+            {erroIntervals && <p className="intervals-feedback intervals-feedback--erro">{erroIntervals}</p>}
+          </div>
+          <div className="intervals-conexao-acoes">
+            {!statusIntervals?.connected && (
+              <button type="button" onClick={conectarIntervals} disabled={consultandoIntervals}>
+                Conectar ao Intervals.icu
+              </button>
+            )}
+            <button type="button" onClick={() => consultarStatus()} disabled={consultandoIntervals}>
+              {consultandoIntervals ? "Verificando..." : "Verificar conexão"}
+            </button>
+          </div>
+        </section>
+      )}
+
       <div className="plano-ia-semanas-tabs" role="tablist" aria-label="Semanas do plano">
         {semanas.map((semana, indice) => (
           <button
@@ -384,7 +551,7 @@ function ResultadoMeuPlano({ plano }) {
 
       {semanaSelecionada && (
         <div className="plano-ia-semana-tela">
-          <SemanaPlano semana={semanaSelecionada} />
+          <SemanaPlano semana={semanaSelecionada} criarIntegracao={criarIntegracao} />
         </div>
       )}
 

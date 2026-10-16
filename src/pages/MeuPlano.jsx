@@ -538,7 +538,11 @@ function MeuPlano() {
         </>
       )}
 
-      <ResultadoMeuPlano key={versaoPlano} plano={plano} />
+      <ResultadoMeuPlano
+        key={versaoPlano}
+        plano={plano}
+        planoToken={localStorage.getItem(PLANO_TOKEN_KEY)}
+      />
     </section>
   );
 }
