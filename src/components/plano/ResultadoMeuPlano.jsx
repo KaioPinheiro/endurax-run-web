@@ -522,7 +522,7 @@ function ResultadoMeuPlano({ plano, planoToken }) {
             <span>INTERVALS.ICU</span>
             <h3>Enviar treinos ao calendário</h3>
             {statusIntervals?.connected ? (
-              <p>Conectado{statusIntervals.athleteName ? ` como ${statusIntervals.athleteName}` : ""}.</p>
+              <p>Intervals.icu conectado com sucesso.</p>
             ) : (
               <p>Conecte sua conta para enviar cada treino individualmente.</p>
             )}
@@ -540,9 +540,11 @@ function ResultadoMeuPlano({ plano, planoToken }) {
                 Conectar ao Intervals.icu
               </button>
             )}
-            <button type="button" onClick={() => consultarStatus()} disabled={consultandoIntervals}>
-              {consultandoIntervals ? "Verificando..." : "Verificar conexão"}
-            </button>
+            {erroIntervals && (
+              <button type="button" onClick={() => consultarStatus()} disabled={consultandoIntervals}>
+                {consultandoIntervals ? "Verificando..." : "Tentar novamente"}
+              </button>
+            )}
           </div>
         </section>
       )}

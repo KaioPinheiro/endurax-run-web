@@ -71,6 +71,10 @@ test("oferece ações no topo e impressão com todas as semanas", async () => {
   assert.match(resultado, /Data no calend.rio/);
   assert.doesNotMatch(resultado, /type="date"/);
   assert.match(resultado, /Este plano n.o possui uma data inicial v.lida/);
+  assert.match(resultado, /Intervals\.icu conectado com sucesso\./);
+  assert.match(resultado, /Tentar novamente/);
+  assert.doesNotMatch(resultado, /Verificar conex.o/);
+  assert.match(resultado, /if \(planoToken\) consultarStatus\(\)/);
   assert.match(resultado, /const distanciaEstimada = bloco\.distancia[\s\S]*\? ""[\s\S]*estimarDistanciaBloco/);
   assert.match(resultado, /distanciaEstimada && <small>/);
   assert.doesNotMatch(resultado, /<dt>Distância<\/dt>/);
