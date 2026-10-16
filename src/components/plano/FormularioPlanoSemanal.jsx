@@ -335,6 +335,17 @@ function FormularioPlanoSemanal({
           </label>
         )}
 
+        <label className="coach-ia-campo" data-analytics-field="data_inicio_plano">
+          <span>Data de início do plano *</span>
+          <input
+            type="date"
+            name="dataInicioPlano"
+            value={form.dataInicioPlano}
+            onChange={onAlterar}
+            required
+          />
+        </label>
+
         <fieldset className="coach-ia-dias" data-analytics-field="dias_disponiveis">
           <legend>Dias disponíveis para treinar *</legend>
           <div>

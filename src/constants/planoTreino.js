@@ -16,6 +16,7 @@ export const FORM_INICIAL_PLANO = {
   distanciaAlvo: "",
   outraDistanciaAlvo: "",
   duracaoSemanas: "4",
+  dataInicioPlano: "",
   diasDisponiveis: [],
   diaLongao: "",
   possuiLesao: false,

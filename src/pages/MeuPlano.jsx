@@ -308,9 +308,14 @@ function MeuPlano() {
 
   async function concluirPlanoDesenvolvimento(payload) {
     const resultado = await gerarPlanoComIA(payload);
-    salvarUltimoPlanoLocal(localStorage, resultado);
-    setUltimoPlanoLocal(resultado);
-    setPlano(resultado);
+    const planoComAgendamento = {
+      ...resultado,
+      dataInicioPlano: payload.dataInicioPlano,
+      diasDisponiveis: payload.diasDisponiveis
+    };
+    salvarUltimoPlanoLocal(localStorage, planoComAgendamento);
+    setUltimoPlanoLocal(planoComAgendamento);
+    setPlano(planoComAgendamento);
     setVersaoPlano((atual) => atual + 1);
     setSucesso("Meu Plano foi gerado com sucesso!");
   }

@@ -16,6 +16,7 @@ import {
 } from "../src/constants/planoTreino.js";
 import {
   alternarDiaDisponivel,
+  calcularDataTreinoPlano,
   completarEntradaTempo,
   completarTempo5Km,
   corre5KmSemCaminharEhAplicavel,
@@ -34,10 +35,48 @@ import {
   objetivosDisponiveisPorExperiencia,
   rotuloObjetivoPorExperiencia,
   validarFormularioPlano,
+  validarFormularioMeuPlano,
   validarComparacaoTemposPerformance,
   validarTempo5Km,
   volumesDisponiveisPorObjetivo
 } from "../src/utils/planoTreino.js";
+
+test("agenda semanas em UTC a partir da primeira ocorrência de cada dia", () => {
+  assert.equal(
+    calcularDataTreinoPlano(
+      "2026-10-21",
+      1,
+      "segunda-feira",
+      ["segunda-feira", "quarta-feira", "sábado"]
+    ),
+    "2026-10-26"
+  );
+  assert.equal(
+    calcularDataTreinoPlano(
+      "2026-10-21",
+      2,
+      "quarta-feira",
+      ["segunda-feira", "quarta-feira", "sábado"]
+    ),
+    "2026-10-28"
+  );
+  assert.equal(
+    calcularDataTreinoPlano("2026-10-21", 1, "terça-feira", ["quarta-feira"]),
+    null
+  );
+});
+
+test("Meu Plano exige data inicial válida sem quebrar planos restaurados antigos", () => {
+  const formulario = { ...formularioPerformance(), dataInicioPlano: "" };
+  assert.equal(
+    validarFormularioMeuPlano(formulario),
+    "Informe uma data de início válida para o plano."
+  );
+  assert.equal(
+    montarPayloadMeuPlano({ ...formulario, dataInicioPlano: "2026-10-21" }).dataInicioPlano,
+    "2026-10-21"
+  );
+});
 
 const objetivos = [
   "Começar a correr", "Melhorar condicionamento", "Emagrecer",

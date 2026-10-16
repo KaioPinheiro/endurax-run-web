@@ -121,7 +121,11 @@ export async function buscarPlanoGerado(planoToken) {
     if (!planoPersistido?.descricao) {
       throw new Error("O plano foi encontrado, mas está sem conteúdo. Tente novamente.");
     }
-    return planoPersistido.descricao;
+    return {
+      ...planoPersistido.descricao,
+      dataInicioPlano: planoPersistido.dataInicioPlano || null,
+      diasDisponiveis: planoPersistido.diasDisponiveis || []
+    };
   }
 
   try {
@@ -129,7 +133,11 @@ export async function buscarPlanoGerado(planoToken) {
     if (!descricao || typeof descricao !== "object") {
       throw new Error("O plano foi encontrado, mas seu conteúdo está inválido. Tente novamente.");
     }
-    return descricao;
+    return {
+      ...descricao,
+      dataInicioPlano: planoPersistido.dataInicioPlano || descricao.dataInicioPlano || null,
+      diasDisponiveis: planoPersistido.diasDisponiveis || descricao.diasDisponiveis || []
+    };
   } catch {
     throw new Error("O plano foi encontrado, mas seu conteúdo está inválido. Tente novamente.");
   }

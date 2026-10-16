@@ -6,6 +6,7 @@ import {
   obterUrlAutorizacaoIntervalsIcu
 } from "../../services/api";
 import {
+  calcularDataTreinoPlano,
   ehTreinoCorrida,
   estimarDistanciaBloco,
   extrairDistanciaExplicitaBloco,
@@ -299,22 +300,25 @@ function CardTreinoDia({ treino, integracao }) {
       {treino.observacoes && <small>{treino.observacoes}</small>}
       {integracao && (
         <div className="intervals-treino">
-          <label>
-            <span>Data no calendário</span>
-            <input
-              type="date"
-              value={integracao.data}
-              onChange={(event) => integracao.onData(event.target.value)}
-              disabled={integracao.enviando}
-            />
-          </label>
-          <button
-            type="button"
-            onClick={integracao.onEnviar}
-            disabled={!integracao.data || integracao.enviando}
-          >
-            {integracao.enviando ? "Enviando..." : "Enviar ao Intervals.icu"}
-          </button>
+          {integracao.data ? (
+            <>
+              <p className="intervals-data">
+                <span>Data no calendário</span>
+                <strong>{integracao.dataFormatada}</strong>
+              </p>
+              <button
+                type="button"
+                onClick={integracao.onEnviar}
+                disabled={integracao.enviando}
+              >
+                {integracao.enviando ? "Enviando..." : "Enviar ao Intervals.icu"}
+              </button>
+            </>
+          ) : (
+            <p className="intervals-feedback intervals-feedback--erro">
+              Este plano não possui uma data inicial válida para agendar o treino.
+            </p>
+          )}
           {integracao.feedback && (
             <p
               className={`intervals-feedback intervals-feedback--${integracao.feedback.tipo}`}
@@ -361,13 +365,17 @@ function mensagemErro(error, fallback) {
   return error?.response?.data?.erro || error?.message || fallback;
 }
 
+function formatarDataPlano(dataIso) {
+  const [ano, mes, dia] = String(dataIso).split("-");
+  return `${dia}/${mes}/${ano}`;
+}
+
 function ResultadoMeuPlano({ plano, planoToken }) {
   const [semanaAtiva, setSemanaAtiva] = useState(0);
   const [statusIntervals, setStatusIntervals] = useState(null);
   const [consultandoIntervals, setConsultandoIntervals] = useState(false);
   const [aguardandoOAuth, setAguardandoOAuth] = useState(false);
   const [erroIntervals, setErroIntervals] = useState("");
-  const [datasEnvio, setDatasEnvio] = useState({});
   const [envios, setEnvios] = useState({});
   const pollingRef = useRef(null);
   const semanas = useMemo(() => plano?.semanas ?? [], [plano]);
@@ -423,13 +431,18 @@ function ResultadoMeuPlano({ plano, planoToken }) {
   function criarIntegracao(semana, treino) {
     if (!planoToken || !statusIntervals?.connected) return null;
     const chave = chaveTreino(semana, treino);
+    const scheduledDate = calcularDataTreinoPlano(
+      plano.dataInicioPlano,
+      semana.numeroSemana,
+      treino.diaSemana,
+      plano.diasDisponiveis
+    );
     return {
-      data: datasEnvio[chave] || "",
+      data: scheduledDate,
+      dataFormatada: scheduledDate ? formatarDataPlano(scheduledDate) : "",
       enviando: envios[chave]?.enviando || false,
       feedback: envios[chave]?.feedback || null,
-      onData: (data) => setDatasEnvio((atual) => ({ ...atual, [chave]: data })),
       onEnviar: async () => {
-        const scheduledDate = datasEnvio[chave];
         if (!scheduledDate) return;
         setEnvios((atual) => ({ ...atual, [chave]: { enviando: true, feedback: null } }));
         try {

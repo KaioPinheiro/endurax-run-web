@@ -627,6 +627,10 @@ export function validarFormularioMeuPlano(formulario) {
     return erroBase;
   }
 
+  if (!dataIsoValida(formulario.dataInicioPlano)) {
+    return "Informe uma data de início válida para o plano.";
+  }
+
   const erroMaratona = validarBloqueiosMaratona(formulario);
   if (erroMaratona) {
     return erroMaratona;
@@ -724,6 +728,7 @@ export function montarPayloadMeuPlano(formulario) {
       : formulario.volumeSemanalAtual,
     ritmoConfortavel: formulario.ritmoConfortavel,
     distanciaAlvo,
+    dataInicioPlano: formulario.dataInicioPlano,
     diasDisponiveis: formulario.diasDisponiveis,
     diaLongao: diaLongaoEhAplicavel(formulario.experienciaCorrida)
       ? formulario.diaLongao || null
@@ -737,6 +742,67 @@ export function montarPayloadMeuPlano(formulario) {
     observacoes,
     duracaoSemanas: Number(formulario.duracaoSemanas)
   };
+}
+
+const INDICE_DIA_SEMANA = {
+  domingo: 0,
+  segunda: 1,
+  terca: 2,
+  quarta: 3,
+  quinta: 4,
+  sexta: 5,
+  sabado: 6
+};
+
+function normalizarDiaSemana(valor) {
+  return String(valor ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .split("-")[0]
+    .trim();
+}
+
+export function dataIsoValida(valor) {
+  const correspondencia = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(valor ?? ""));
+  if (!correspondencia) return false;
+  const [, ano, mes, dia] = correspondencia.map(Number);
+  const data = new Date(Date.UTC(ano, mes - 1, dia));
+  return data.getUTCFullYear() === ano &&
+    data.getUTCMonth() === mes - 1 &&
+    data.getUTCDate() === dia;
+}
+
+export function calcularDataTreinoPlano(
+  dataInicioPlano,
+  numeroSemana,
+  diaSemana,
+  diasDisponiveis = []
+) {
+  if (!dataIsoValida(dataInicioPlano) || !Number.isInteger(Number(numeroSemana))) return null;
+  const semana = Number(numeroSemana);
+  if (semana < 1) return null;
+
+  const diaNormalizado = normalizarDiaSemana(diaSemana);
+  const indiceDia = INDICE_DIA_SEMANA[diaNormalizado];
+  if (indiceDia === undefined) return null;
+  if (
+    Array.isArray(diasDisponiveis) &&
+    diasDisponiveis.length > 0 &&
+    !diasDisponiveis.some((dia) => normalizarDiaSemana(dia) === diaNormalizado)
+  ) return null;
+
+  const [ano, mes, dia] = dataInicioPlano.split("-").map(Number);
+  const inicioUtc = new Date(Date.UTC(ano, mes - 1, dia));
+  const deslocamentoNaSemana = (indiceDia - inicioUtc.getUTCDay() + 7) % 7;
+  inicioUtc.setUTCDate(
+    inicioUtc.getUTCDate() + deslocamentoNaSemana + ((semana - 1) * 7)
+  );
+  return [
+    inicioUtc.getUTCFullYear(),
+    String(inicioUtc.getUTCMonth() + 1).padStart(2, "0"),
+    String(inicioUtc.getUTCDate()).padStart(2, "0")
+  ].join("-");
 }
 
 function inferirDistanciaAlvo(formulario) {

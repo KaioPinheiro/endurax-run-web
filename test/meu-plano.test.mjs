@@ -182,7 +182,7 @@ test("recuperação local não gera novamente e mantém prioridade do token pago
   const recuperacao = pagina.match(/async function verUltimoPlano\(\) \{([\s\S]*?)\n  \}/)[1];
   assert.match(recuperacao, /if \(ultimoPlanoToken\)[\s\S]*await concluirComPlano\(ultimoPlanoToken\)[\s\S]*else[\s\S]*setPlano\(ultimoPlanoLocal\)/);
   assert.doesNotMatch(recuperacao, /gerarPlanoComIA|criarPagamentoPix/);
-  assert.match(pagina, /async function concluirPlanoDesenvolvimento[\s\S]*salvarUltimoPlanoLocal\(localStorage, resultado\)/);
+  assert.match(pagina, /async function concluirPlanoDesenvolvimento[\s\S]*salvarUltimoPlanoLocal\(localStorage, planoComAgendamento\)/);
 });
 
 test("cabeçalho de Meu Plano não exibe badge duplicado", async () => {

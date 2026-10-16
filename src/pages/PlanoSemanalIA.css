@@ -838,23 +838,18 @@
   border-top: 1px solid #334155;
 }
 
-.intervals-treino label {
+.intervals-data {
   display: grid;
   gap: 6px;
+  margin: 0;
   color: #cbd5e1;
   font-size: 12px;
   font-weight: 700;
 }
 
-.intervals-treino input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 9px 10px;
+.intervals-data strong {
   color: #f8fafc;
-  color-scheme: dark;
-  background: #0f172a;
-  border: 1px solid #475569;
-  border-radius: 8px;
+  font-size: 15px;
 }
 
 .intervals-feedback {

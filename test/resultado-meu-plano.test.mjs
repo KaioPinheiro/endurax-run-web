@@ -67,6 +67,10 @@ test("oferece ações no topo e impressão com todas as semanas", async () => {
   assert.ok(pagina.indexOf("Baixar PDF") < pagina.indexOf("<ResultadoMeuPlano"));
   assert.doesNotMatch(resultado, /Baixar PDF|Gerar novo plano/);
   assert.match(resultado, /plano-ia-semanas-impressao/);
+  assert.match(resultado, /calcularDataTreinoPlano/);
+  assert.match(resultado, /Data no calend.rio/);
+  assert.doesNotMatch(resultado, /type="date"/);
+  assert.match(resultado, /Este plano n.o possui uma data inicial v.lida/);
   assert.match(resultado, /const distanciaEstimada = bloco\.distancia[\s\S]*\? ""[\s\S]*estimarDistanciaBloco/);
   assert.match(resultado, /distanciaEstimada && <small>/);
   assert.doesNotMatch(resultado, /<dt>Distância<\/dt>/);
