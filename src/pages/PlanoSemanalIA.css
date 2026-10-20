@@ -812,6 +812,7 @@
 }
 
 .intervals-conexao button,
+.intervals-conexao .intervals-abrir,
 .intervals-treino button {
   padding: 10px 14px;
   color: #f8fafc;
@@ -820,6 +821,12 @@
   border: 0;
   border-radius: 8px;
   cursor: pointer;
+}
+
+.intervals-conexao .intervals-abrir {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
 }
 
 .intervals-conexao button:disabled,

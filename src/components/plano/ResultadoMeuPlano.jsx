@@ -378,6 +378,7 @@ function ResultadoMeuPlano({ plano, planoToken }) {
   const [erroIntervals, setErroIntervals] = useState("");
   const [envios, setEnvios] = useState({});
   const pollingRef = useRef(null);
+  const enviosEmAndamento = useRef(new Set());
   const semanas = useMemo(() => plano?.semanas ?? [], [plano]);
   const semanaSelecionada = semanas[semanaAtiva] ?? semanas[0];
 
@@ -410,6 +411,37 @@ function ResultadoMeuPlano({ plano, planoToken }) {
     return () => window.clearInterval(pollingRef.current);
   }, [aguardandoOAuth, consultarStatus, statusIntervals?.connected]);
 
+  const enviarTreino = useCallback(async ({ semana, treino, scheduledDate }) => {
+    const chave = `${semana.numeroSemana}:${treino.diaSemana}`;
+    if (!scheduledDate || enviosEmAndamento.current.has(chave)) return;
+    enviosEmAndamento.current.add(chave);
+    setEnvios((atual) => ({ ...atual, [chave]: { enviando: true, feedback: null } }));
+    try {
+      const resultado = await enviarTreinoIntervalsIcu(planoToken, {
+        weekNumber: semana.numeroSemana,
+        dayOfWeek: treino.diaSemana,
+        scheduledDate
+      });
+      const mensagem = resultado.alreadySent
+        ? "Este treino já havia sido enviado para o Intervals.icu."
+        : "Treino enviado para o Intervals.icu com sucesso.";
+      setEnvios((atual) => ({
+        ...atual,
+        [chave]: { enviando: false, feedback: { tipo: "sucesso", mensagem } }
+      }));
+    } catch (error) {
+      setEnvios((atual) => ({
+        ...atual,
+        [chave]: {
+          enviando: false,
+          feedback: { tipo: "erro", mensagem: mensagemErro(error, "Não foi possível enviar o treino.") }
+        }
+      }));
+    } finally {
+      enviosEmAndamento.current.delete(chave);
+    }
+  }, [planoToken]);
+
   function conectarIntervals() {
     const popup = window.open(
       obterUrlAutorizacaoIntervalsIcu(planoToken),
@@ -424,13 +456,9 @@ function ResultadoMeuPlano({ plano, planoToken }) {
     setAguardandoOAuth(true);
   }
 
-  function chaveTreino(semana, treino) {
-    return `${semana.numeroSemana}:${treino.diaSemana}`;
-  }
-
   function criarIntegracao(semana, treino) {
     if (!planoToken || !statusIntervals?.connected) return null;
-    const chave = chaveTreino(semana, treino);
+    const chave = `${semana.numeroSemana}:${treino.diaSemana}`;
     const scheduledDate = calcularDataTreinoPlano(
       plano.dataInicioPlano,
       semana.numeroSemana,
@@ -442,35 +470,7 @@ function ResultadoMeuPlano({ plano, planoToken }) {
       dataFormatada: scheduledDate ? formatarDataPlano(scheduledDate) : "",
       enviando: envios[chave]?.enviando || false,
       feedback: envios[chave]?.feedback || null,
-      onEnviar: async () => {
-        if (!scheduledDate) return;
-        setEnvios((atual) => ({ ...atual, [chave]: { enviando: true, feedback: null } }));
-        try {
-          const resultado = await enviarTreinoIntervalsIcu(planoToken, {
-            weekNumber: semana.numeroSemana,
-            dayOfWeek: treino.diaSemana,
-            scheduledDate
-          });
-          const mensagem = resultado.alreadySent
-            ? "Este treino já havia sido enviado para o Intervals.icu."
-            : "Treino enviado para o Intervals.icu com sucesso.";
-          setEnvios((atual) => ({
-            ...atual,
-            [chave]: { enviando: false, feedback: { tipo: "sucesso", mensagem } }
-          }));
-        } catch (error) {
-          setEnvios((atual) => ({
-            ...atual,
-            [chave]: {
-              enviando: false,
-              feedback: {
-                tipo: "erro",
-                mensagem: mensagemErro(error, "Não foi possível enviar o treino.")
-              }
-            }
-          }));
-        }
-      }
+      onEnviar: () => void enviarTreino({ semana, treino, scheduledDate })
     };
   }
 
@@ -535,6 +535,11 @@ function ResultadoMeuPlano({ plano, planoToken }) {
             {erroIntervals && <p className="intervals-feedback intervals-feedback--erro">{erroIntervals}</p>}
           </div>
           <div className="intervals-conexao-acoes">
+            {statusIntervals?.connected && (
+              <a href="https://intervals.icu/" target="_blank" rel="noopener noreferrer" className="intervals-abrir">
+                Abrir Intervals.icu
+              </a>
+            )}
             {!statusIntervals?.connected && (
               <button type="button" onClick={conectarIntervals} disabled={consultandoIntervals}>
                 Conectar ao Intervals.icu
