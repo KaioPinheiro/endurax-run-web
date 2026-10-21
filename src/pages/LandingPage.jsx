@@ -4,6 +4,7 @@ import logoEndurax from "../assets/brand/endurax-run-logo.svg";
 import { buscarConfigPublica } from "../services/api";
 import { formatarPrecoPlano } from "../utils/precoPlano";
 import Depoimentos from "../components/Depoimentos";
+import IntegracaoGarmin from "../components/IntegracaoGarmin";
 import PrecoPlanoLanding from "../components/PrecoPlanoLanding";
 import SugestaoProblema from "../components/SugestaoProblema";
 import "./LandingPage.css";
@@ -124,6 +125,8 @@ function LandingPage() {
             <span className="landing-hero__nota">Somente nos dias que você escolher</span>
           </div>
         </section>
+
+        <IntegracaoGarmin />
 
         <Depoimentos />
 
