@@ -783,6 +783,40 @@
   font-weight: 700;
 }
 
+.guia-intervals {
+  margin: 24px 0;
+  padding: 20px;
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, .92);
+  border: 1px solid #334155;
+  border-radius: 14px;
+}
+
+.guia-intervals__cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.guia-intervals__cabecalho span {
+  color: #38bdf8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.guia-intervals h3 { margin: 5px 0 0; color: #f8fafc; font-size: 19px; }
+.guia-intervals__cabecalho button { flex: 0 0 auto; padding: 10px 14px; color: #f8fafc; background: #0284c7; border: 0; border-radius: 8px; font: inherit; font-weight: 700; cursor: pointer; }
+.guia-intervals__cabecalho button:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 2px; }
+.guia-intervals__etapas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.guia-intervals__etapas > li { display: flex; gap: 10px; min-width: 0; padding: 14px; background: rgba(30, 41, 59, .7); border: 1px solid #334155; border-radius: 10px; }
+.guia-intervals__numero { color: #38bdf8; font-size: 12px; font-weight: 800; }
+.guia-intervals h4 { margin: 0 0 8px; color: #f8fafc; font-size: 14px; line-height: 1.35; }
+.guia-intervals ul { margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.5; }
+.guia-intervals ul li + li { margin-top: 5px; }
+
 .intervals-conexao {
   display: flex;
   align-items: center;
@@ -915,6 +949,10 @@
 }
 
 @media (max-width: 600px) {
+  .guia-intervals { padding: 16px; }
+  .guia-intervals__cabecalho { align-items: flex-start; }
+  .guia-intervals__etapas { grid-template-columns: 1fr; }
+
   .intervals-conexao {
     align-items: stretch;
     flex-direction: column;
@@ -1013,7 +1051,8 @@
 
   .plano-ia-semanas-tabs,
   .plano-ia-semana-tela,
-  .plano-ia-acoes {
+  .plano-ia-acoes,
+  .guia-intervals {
     display: none;
   }
 

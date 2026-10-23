@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import logoEndurax from "../../assets/brand/endurax-run-logo-light.svg";
+import GuiaIntervalsIcu from "./GuiaIntervalsIcu";
 import {
   buscarStatusIntervalsIcu,
   enviarTreinoIntervalsIcu,
@@ -515,6 +516,8 @@ function ResultadoMeuPlano({ plano, planoToken }) {
           alt="Endurax Run"
         />
       </div>
+
+      {planoToken && <GuiaIntervalsIcu />}
 
       {planoToken && (
         <section className="intervals-conexao" aria-live="polite">
