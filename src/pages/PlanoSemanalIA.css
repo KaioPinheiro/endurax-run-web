@@ -786,6 +786,11 @@
   border-radius: 14px;
 }
 
+.guia-intervals-reabrir { margin: 24px 0; }
+.guia-intervals-reabrir button { padding: 8px 12px; color: #7dd3fc; background: rgba(15, 23, 42, .75); border: 1px solid #334155; border-radius: 8px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.guia-intervals-reabrir button:hover { border-color: #38bdf8; }
+.guia-intervals-reabrir button:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 2px; }
+
 .guia-intervals__cabecalho {
   display: flex;
   align-items: center;
@@ -1046,7 +1051,8 @@
   .plano-ia-semanas-tabs,
   .plano-ia-semana-tela,
   .plano-ia-acoes,
-  .guia-intervals {
+  .guia-intervals,
+  .guia-intervals-reabrir {
     display: none;
   }
 

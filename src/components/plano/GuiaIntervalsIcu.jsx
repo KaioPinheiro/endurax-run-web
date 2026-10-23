@@ -13,8 +13,6 @@ function guiaFoiDispensado() {
 export default function GuiaIntervalsIcu() {
   const [dispensado, setDispensado] = useState(guiaFoiDispensado);
 
-  if (dispensado) return null;
-
   function dispensar() {
     try {
       window.localStorage.setItem(CHAVE_GUIA_DISPENSADO, "true");
@@ -22,6 +20,23 @@ export default function GuiaIntervalsIcu() {
       // O guia ainda pode ser dispensado nesta visita se o armazenamento estiver indisponível.
     }
     setDispensado(true);
+  }
+
+  function reabrir() {
+    try {
+      window.localStorage.setItem(CHAVE_GUIA_DISPENSADO, "false");
+    } catch {
+      // A abertura continua disponível nesta visita se o armazenamento estiver indisponível.
+    }
+    setDispensado(false);
+  }
+
+  if (dispensado) {
+    return (
+      <div className="guia-intervals-reabrir">
+        <button type="button" onClick={reabrir}>Como integrar meu relógio?</button>
+      </div>
+    );
   }
 
   return (

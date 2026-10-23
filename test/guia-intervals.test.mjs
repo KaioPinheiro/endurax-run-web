@@ -4,7 +4,7 @@ import test from "node:test";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-test("guia apresenta as três etapas e respeita a dispensa salva no navegador", async () => {
+test("guia apresenta as três etapas e pode ser reaberto após a dispensa salva", async () => {
   const { createServer } = await import("vite");
   const servidor = await createServer({ appType: "custom", logLevel: "silent", server: { middlewareMode: true } });
   const janelaOriginal = globalThis.window;
@@ -25,7 +25,12 @@ test("guia apresenta as três etapas e respeita a dispensa salva no navegador", 
     assert.match(html, /<button type="button">Entendi<\/button>/);
 
     armazenamento.set("endurax_guia_intervals_icu_dispensado", "true");
-    assert.equal(renderToStaticMarkup(React.createElement(GuiaIntervalsIcu)), "");
+    const recolhido = renderToStaticMarkup(React.createElement(GuiaIntervalsIcu));
+    assert.match(recolhido, /Como integrar meu relógio\?/);
+    assert.doesNotMatch(recolhido, /Configure o Intervals\.icu|Entendi/);
+
+    armazenamento.set("endurax_guia_intervals_icu_dispensado", "false");
+    assert.match(renderToStaticMarkup(React.createElement(GuiaIntervalsIcu)), /Configure o Intervals\.icu/);
   } finally {
     if (janelaOriginal === undefined) delete globalThis.window;
     else globalThis.window = janelaOriginal;
@@ -40,4 +45,5 @@ test("guia aparece somente no plano persistido, antes da conexão", async () => 
   ]);
   assert.ok(resultado.indexOf("{planoToken && <GuiaIntervalsIcu />}") < resultado.indexOf('className="intervals-conexao"'));
   assert.match(guia, /localStorage\.setItem\(CHAVE_GUIA_DISPENSADO, "true"\)/);
+  assert.match(guia, /localStorage\.setItem\(CHAVE_GUIA_DISPENSADO, "false"\)/);
 });
