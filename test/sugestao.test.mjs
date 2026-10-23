@@ -105,13 +105,13 @@ test("landing exibe suporte após a conversão e antes do rodapé", async () => 
 test("landing exibe o valor público do plano formatado junto ao CTA", async () => {
   const landing = await readFile(new URL("../src/pages/LandingPage.jsx", import.meta.url), "utf8");
 
-  assert.equal(formatarPrecoPlano(9.90), "R$ 9,90");
+  assert.equal(formatarPrecoPlano(19.90), "R$ 19,90");
   assert.equal(formatarPrecoPlano(14.90), "R$ 14,90");
   assert.equal(formatarPrecoPlano(undefined), null);
   assert.match(landing, /buscarConfigPublica\(\)/);
   assert.match(landing, /formatarPrecoPlano\(config\?\.valorPlano\)/);
   assert.equal((landing.match(/<PrecoPlanoLanding preco=\{precoPlano\}/g) || []).length, 2);
-  assert.doesNotMatch(landing, /R\$ 9,90|9\.90/);
+  assert.doesNotMatch(landing, /R\$ 19,90|19\.90/);
   assert.match(landing, /<Cta>CRIAR MEU PLANO<\/Cta>/);
 });
 

@@ -8,7 +8,7 @@ test("preço da landing compartilha referência riscada e valor atual dinâmico 
   const servidor = await createServer({ appType: "custom", logLevel: "silent", server: { middlewareMode: true } });
   try {
     const { default: PrecoPlanoLanding } = await servidor.ssrLoadModule("/src/components/PrecoPlanoLanding.jsx");
-    for (const preco of ["R$ 9,90", "R$ 14,90"]) {
+    for (const preco of ["R$ 19,90", "R$ 14,90"]) {
       const html = renderToStaticMarkup(React.createElement(PrecoPlanoLanding, { preco }));
       assert.match(html, /<s[^>]*>R\$ 99,90<\/s>/);
       assert.ok(html.includes(`<strong class="landing-preco__linha">${preco} por plano · pagamento único · sem assinatura</strong>`));
