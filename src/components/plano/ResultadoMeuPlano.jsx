@@ -503,9 +503,6 @@ function ResultadoMeuPlano({ plano, planoToken }) {
           </div>
         </div>
 
-        {plano.resumo && (
-          <p className="plano-ia-observacoes">{plano.resumo}</p>
-        )}
         {plano.alerta && (
           <p className="plano-ia-alerta">Atenção: {plano.alerta}</p>
         )}

@@ -23,11 +23,13 @@ test("oculta apenas a descricao de aquecimento e desaquecimento", async () => {
     ].join(" | ");
     const plano = {
       titulo: "Plano teste",
+      resumo: "Este plano de 6 semanas visa melhorar sua corrida.",
       objetivoPlano: "Corrida",
       duracaoSemanas: 1,
       semanas: [{
         numeroSemana: 1,
         titulo: "Semana teste",
+        foco: "Construir resistência",
         treinos: [{
           diaSemana: "Segunda-feira",
           tipo: "Corrida",
@@ -39,6 +41,9 @@ test("oculta apenas a descricao de aquecimento e desaquecimento", async () => {
     };
 
     const html = renderToStaticMarkup(React.createElement(ResultadoMeuPlano, { plano }));
+    assert.doesNotMatch(html, /Este plano de 6 semanas visa/);
+    assert.match(html, /Plano teste/);
+    assert.match(html, /Foco:<\/strong> Construir resistência/);
     assert.doesNotMatch(html, /10 min de trote leve a/);
     assert.doesNotMatch(html, /10 min de trote suave a/);
     assert.match(html, /30 min de corrida confortavel a 5:30-5:50 min\/km/);
