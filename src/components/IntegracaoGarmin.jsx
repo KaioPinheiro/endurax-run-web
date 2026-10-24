@@ -11,13 +11,13 @@ function IconeIntervals() {
   );
 }
 
-function IconeGarmin() {
+function IconeRelogio() {
   return (
     <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
       <path d="M24 10V5h16v5M24 54v5h16v-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
       <rect x="15" y="10" width="34" height="44" rx="11" stroke="currentColor" strokeWidth="2.5" />
       <rect x="21" y="18" width="22" height="28" rx="5" stroke="currentColor" strokeWidth="2" />
-      <path d="m27 34 4 4 7-10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M32 24v9l6 4" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -27,8 +27,8 @@ export default function IntegracaoGarmin() {
     <section className="landing-garmin" aria-labelledby="landing-garmin-title">
       <div className="landing-garmin__cabecalho">
         <span className="landing-eyebrow">SEU TREINO NO RELÓGIO</span>
-        <h2 id="landing-garmin-title">Do seu plano direto para o seu Garmin.</h2>
-        <p>Envie seus treinos pelo Intervals.icu e acompanhe etapas e metas de ritmo no relógio durante a corrida.</p>
+        <h2 id="landing-garmin-title">Do seu plano direto para o seu relógio.</h2>
+        <p>Envie seus treinos pelo Intervals.icu e acompanhe cada etapa diretamente no seu relógio.</p>
       </div>
 
       <ol className="landing-garmin__fluxo" aria-label="Fluxo do treino até o relógio">
@@ -43,12 +43,15 @@ export default function IntegracaoGarmin() {
           <strong>Intervals.icu</strong>
         </li>
         <li className="landing-garmin__card">
-          <span className="landing-garmin__icone" aria-hidden="true"><IconeGarmin /></span>
-          <strong>Garmin</strong>
+          <span className="landing-garmin__icone" aria-hidden="true"><IconeRelogio /></span>
+          <strong>Seu relógio</strong>
+          <span className="landing-garmin__marcas" aria-label="Marcas de relógios">
+            <span>Garmin</span><span>COROS</span><span>Suunto</span><span>Amazfit</span>
+          </span>
         </li>
       </ol>
 
-      <p className="landing-garmin__rodape">Integração via Intervals.icu. Requer contas conectadas e dispositivo compatível.</p>
+      <p className="landing-garmin__rodape">A sincronização de treinos depende da integração e da compatibilidade do dispositivo.</p>
     </section>
   );
 }

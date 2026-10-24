@@ -21,6 +21,8 @@
 .landing-garmin__icone svg { width: 48px; height: 48px; }
 .landing-garmin__icone--endurax img { width: 55px; height: 55px; object-fit: contain; }
 .landing-garmin__card strong { color: var(--ink); font-size: clamp(20px, 2vw, 25px); letter-spacing: -.025em; }
+.landing-garmin__marcas { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 100%; }
+.landing-garmin__marcas span { padding: 4px 7px; border: 1px solid #2a5066; border-radius: 999px; color: #a9bfcb; font-size: 10px; font-weight: 700; line-height: 1.2; }
 .landing-garmin__rodape { margin: 34px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; text-align: center; }
 
 @media (max-width: 700px) {
